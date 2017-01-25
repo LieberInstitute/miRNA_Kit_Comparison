@@ -1,8 +1,6 @@
 # miRNA_Kit_Comparison
 This project evaluates 4 different commercially available small RNA sequencing kits.
 
-This project evaluates 4 different commercially available small RNA sequencing kits.
-
 There are two main analyses:
 
 1)	Reproducibility
