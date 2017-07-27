@@ -1,4 +1,5 @@
 #The synthetic miRNA were mapped using bowtie...directly to the sequence that was known. The synth sequences were equimolar.
+#this is only for human data
 setwd("~/synthetic_miRNA/counts/")#set directory where all of the files are
 #Clontech<-read.table("~/synthetic_miRNA/Clontech.txt", header =  T) #name, length, #mapped reads, #unmapped reads from samtools idxstat
 
