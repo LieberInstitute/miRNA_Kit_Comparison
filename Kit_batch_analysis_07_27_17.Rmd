@@ -20,6 +20,20 @@ miR_RPMs<-read.table("/home/carrie/UMI/after_UMI_tools_Nextflex_kitcomparison/UM
 rownames(miR_RPMs)<- miR_RPMs$miRNA#make miRNA rownames
 miR_RPMs<-miR_RPMs[,2:length(colnames(miR_RPMs))]#remove miRNA col
 Pheno<- read.table("/home/carrie/UMI/Pheno_1000ng_full", header = T)
-pheno_all <- Pheno[-grep('deduped', Pheno$File), ]
-pheno_all$Kit <- relevel(droplevels(pheno_all$Kit), ref = "NextFlex")
-load("/home/carrie/UMI/All_intersect_over10RPM.rda")
+```
+
+Make dendrogram to see how data clusters
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(rafalib)
+library(dendextend)
+yGene<-as.matrix(miR_RPMs)
+miRNAc <- hclust(dist(t(yGene)))
+pdD<-Pheno
+par(mar=c(10,2,3,0))
+myplclust(miRNAc, labels=pdD$TriplicateGroup,lab.col=(as.numeric(pdD$Kit)))
+#newcol<-recode(colors,"1= '5'")
+#myplclust(miRNAc, labels=pdD$TriplicateGroup,lab.col=(as.numeric(newcol)))
+#colors = as.numeric(pdD$Kit)
+#newcol<-replace(colors, 4, '5')
+```
+
