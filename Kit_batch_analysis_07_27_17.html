@@ -136,6 +136,28 @@ myplclust(miRNAc, labels=pdD$TriplicateGroup,lab.col=(as.numeric(pdD$Kit)))</cod
 #myplclust(miRNAc, labels=pdD$TriplicateGroup,lab.col=(as.numeric(newcol)))
 #colors = as.numeric(pdD$Kit)
 #newcol&lt;-replace(colors, 4, '5')</code></pre>
+<p>Load the full repro data with the nomissmatch option (no UMI deduped data)</p>
+<pre class="r"><code>#path to data was &quot;/home/carrie/miRge/HiSeq_newrun_nomissmatch_alltogether/&quot;)
+nodedup_miR_RPM&lt;-read.table( &quot;nodeduped.miR.RPM.csv&quot;, header = T, sep = &quot;,&quot;)### This is the RPM data output from miRge
+rownames(nodedup_miR_RPM) &lt;- nodedup_miR_RPM$miRNA#make miRNA rownames
+nodedup_miR_RPM &lt;- nodedup_miR_RPM[,2:length(colnames(nodedup_miR_RPM))]#remove miRNA col
+nodedup_miR_RPM_synth &lt;- nodedup_miR_RPM[grep(&quot;mm0_acc&quot; , colnames(nodedup_miR_RPM))]#grab just the synthetic data
+nodedup_miR_RPM_brain &lt;- nodedup_miR_RPM[grep(&quot;mm0_acc&quot; , colnames(nodedup_miR_RPM), invert = TRUE)]#remove the accuracy data - to just have the human brain data</code></pre>
+<div id="load-just-the-nextflex-umi-data" class="section level3">
+<h3>Load just the nextflex UMI data</h3>
+<pre class="r"><code>#path to data was &quot;/UMI/after_UMI_tools_Nextflex_kitcomparison/NextFlex_across_amounts/NEXT_all_combined&quot;
+dedup_miR_RPM_brain&lt;-read.table( &quot;deduped.miR.RPM.csv&quot;, header = T, sep = &quot;,&quot;)# this is only brain data
+rownames(dedup_miR_RPM_brain) &lt;- dedup_miR_RPM_brain$miRNA#make miRNA rownames
+dedup_miR_RPM_brain &lt;- dedup_miR_RPM_brain[,2:length(colnames(dedup_miR_RPM_brain))]#remove miRNA col
+#path to data was &quot;/home/carrie/UMI/after_UMI_tools_Nextflex_kitcomparison/Synthetic_accuracy/NEXT_sample4_combined/miRge.1491773214&quot;
+dedup_miR_RPM_synth &lt;- read.table( &quot;deduped.miR.RPM.acc.csv&quot;, header = T, sep = &quot;,&quot;)
+rownames(dedup_miR_RPM_synth) &lt;- dedup_miR_RPM_synth$miRNA#make miRNA rownames
+dedup_miR_RPM_synth &lt;- dedup_miR_RPM_synth[,2:length(colnames(dedup_miR_RPM_synth))]#remove miRNA col</code></pre>
+</div>
+<div id="testdata-is-ok" class="section level3">
+<h3>Testdata is ok</h3>
+<p>Make sure the nextflex raw data is the same in both sets of files (deduped vs nodeduped)</p>
+</div>
 
 
 
