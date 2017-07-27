@@ -1,0 +1,25 @@
+---
+title: "Kit_batch_analysis_07_27_17"
+author: "carriewright"
+date: "7/27/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+First need to load the data using the raw counts and the RPM values from miRge
+```{r, echo=FALSE}
+miR_counts<-read.table("/home/carrie/UMI/after_UMI_tools_Nextflex_kitcomparison/UMI_NEXTflex_and_all_kits_1000ng/All_combined_1000ng/miR.Counts.csv", header = TRUE, sep = ",") 
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+miR_counts<-miR_counts[-1,]#remove miRNA col
+
+miR_RPMs<-read.table("/home/carrie/UMI/after_UMI_tools_Nextflex_kitcomparison/UMI_NEXTflex_and_all_kits_1000ng/All_combined_1000ng/miR.RPM.csv", header = TRUE, sep = ",")
+rownames(miR_RPMs)<- miR_RPMs$miRNA#make miRNA rownames
+miR_RPMs<-miR_RPMs[,2:length(colnames(miR_RPMs))]#remove miRNA col
+Pheno<- read.table("/home/carrie/UMI/Pheno_1000ng_full", header = T)
+pheno_all <- Pheno[-grep('deduped', Pheno$File), ]
+pheno_all$Kit <- relevel(droplevels(pheno_all$Kit), ref = "NextFlex")
+load("/home/carrie/UMI/All_intersect_over10RPM.rda")
