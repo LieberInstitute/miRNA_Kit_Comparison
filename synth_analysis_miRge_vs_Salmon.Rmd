@@ -1,0 +1,181 @@
+---
+title: "Synth_analysis_miRge_vs_Salmon"
+author: "carriewright"
+date: "8/4/2017"
+output:
+  html_document:
+    code_folding: hide
+---
+############################################################MIRGE vs SALMON
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+###Load just the synthetic no deduped data from miRge
+```{r}
+synth_miRge_UMI<-read.table("/home/carrie/UMI/after_UMI_tools_Nextflex_kitcomparison/Synthetic_accuracy/4kits_sample4_3originalsNEXTdeduped/miRge.1491774983/miR.RPM.csv", header = T, sep = ",")### This is the RPM data output from miRge
+synth_miRge_raw<-read.table("/home/carrie/UMI/after_UMI_tools_Nextflex_kitcomparison/Synthetic_accuracy/4kits_sample4_allOriginals/miRge.1491829384/miR.RPM.csv", header = T, sep = ",")### This is the RPM data output from miRge
+rownames(synth_miRge_raw)<- synth_miRge_raw$miRNA #make miRNAs rownames
+rownames(synth_miRge_UMI)<- synth_miRge_UMI$miRNA#make miRNAs rownames
+synth_miRge_raw<-synth_miRge_raw[-1]#remove miRNA column
+synth_miRge_UMI<-synth_miRge_UMI[-1]#remove miRNA column
+### these are not quite the same length
+synth_miRge_raw_2<-synth_miRge_raw[-which(!rownames(synth_miRge_raw) %in% rownames(synth_miRge_UMI)),]##this row is not in the UMI data
+###because it is all zero's we will remove it
+identical(synth_miRge_raw_2$mm0_acc_NEB_trimmed.4_R1.fq, synth_miRge_UMI$mm0_acc_NEB_trimmed.4_R1.fq)
+#salmon data using the fasta file with only unqiue sequences (962 sequences - for some reason not 963)
+miRgeNEXTflex<-data.frame(synth_miRge_raw_2$mm0_acc_NEXT_trimmed.4_R1.fq, synth_miRge_UMI$dedupped_acc_4_bam2fastq.fq)
+rownames(miRgeNEXTflex)<-rownames(synth_miRge_raw_2)
+###########################################Synthetic accuracy across Kits################################################################
+synth_clon<-read.table("/home/carrie/synthetic_miRNA/counts/unique_all_species/Clontech.txt", header =TRUE)#settings: single read Forward no GC correction
+synth_Ill<-read.table("/home/carrie/synthetic_miRNA/counts/unique_all_species/Illumina.txt", header =TRUE)#settings: single read Forward no GC correction
+synth_NEB<-read.table("/home/carrie/synthetic_miRNA/counts/unique_all_species/NEB.txt", header =TRUE)#settings: single read Forward no GC correction
+synth_NEXT<-read.table("/home/carrie/synthetic_miRNA/counts/unique_all_species/NEXT.txt", header =TRUE)#settings: single read Forward no GC correction
+synth_UMI<-read.table("/home/carrie/synthetic_miRNA/counts/unique_all_species/UMI_tools_NEXT.txt", header =TRUE)#settings: single read Forward no GC correction
+identical(synth_NEXT$Name, synth_UMI$Name)
+SalmonNEXTflex<-data.frame(synth_NEXT$Name, synth_NEXT$TPM, synth_UMI$TPM)
+
+```
+
+###Older synth data before collapsing fasta file to unique sequences
+```{r, include =FALSE}
+### if you want all sequences not using collapsed fasta
+synth_clon1<-read.table("/home/carrie/synthetic_miRNA/counts/allspecies/Clontech.txt", header =TRUE)#settings: single read Forward no GC correction
+synth_Ill1<-read.table("/home/carrie/synthetic_miRNA/counts/allspecies/Illumina.txt", header =TRUE)#settings: single read Forward no GC correction
+synth_NEB1<-read.table("/home/carrie/synthetic_miRNA/counts/allspecies/NEB.txt", header =TRUE)#settings: single read Forward no GC correction
+synth_NEXT1<-read.table("/home/carrie/synthetic_miRNA/counts/allspecies/NEXT.txt", header =TRUE)#settings: single read Forward no GC correction
+synth_UMI1<-read.table("/home/carrie/synthetic_miRNA/counts/allspecies_UMI/UMI_tools_NEXT.txt", header =TRUE)#settings: single read Forward no GC correction
+```
+
+#### Put data together
+```{R}
+synth_raw<-cbind(synth_NEXT$TPM, synth_clon$TPM, synth_Ill$TPM, synth_NEB$TPM, synth_UMI$TPM)
+rownames(synth_raw) = make.names(synth_Ill$Name, unique=TRUE)
+colnames(synth_raw) = c("NextFlex", "Clontech", "Illumina", "NEB", "UMI")
+dim(synth_raw)
+head(synth_raw)
+library(matrixStats)
+```
+#### Put data together MIRGe
+```{R}
+synth_raw<-cbind(synth_miRge_raw_2$mm0_acc_Illumina_trimmed.4_R1.fq, synth_miRge_raw_2$mm0_acc_NEXT_trimmed.4_R1.fq, synth_miRge_raw_2$mm0_acc_NEB_trimmed.4_R1.fq, synth_miRge_raw_2$mm0_acc_Clontech_acc_trimmed.4_R1.fq, synth_miRge_UMI$dedupped_acc_4_bam2fastq.fq)
+rownames(synth_raw) = make.names(rownames(synth_miRge_raw_2), unique=TRUE)
+colnames(synth_raw) = c("NextFlex", "Clontech", "Illumina", "NEB", "UMI")
+dim(synth_raw)
+head(synth_raw)
+library(matrixStats)
+### Determine Error Across Sequences
+```{R}
+library(reshape2)
+library(ggplot2)
+########new error####################
+#my_scale <- function(x) { (x - colMeans(x))/ colSds(x) }# decided we didn't want to obscure any differences by scaling... instead scale after obtaining differences form the mean #### This might be what we were doing differently with the within batch effect analsyis for UMI
+my_scale <- function(x) { abs(x - colMeans(x))} # seems that the abs is critical for finding differences...
+error_synth <- data.frame((my_scale(synth_raw))) # not a normal dist at this point... but will normalize for ttests
+#head(error_synth)
+error_synth<-error_synth[,c(3,1,4,2,5)]
+head(error_synth)
+colnames(error_synth)[2]<-c("NEXTflex")
+#colnames(error_synth)
+synth<-melt(error_synth)
+error_synth <- log2(error_synth+1)# normalize for ttests but not plots
+```
+###Plot###########
+```{r}
+plot1000<-ggplot(data = synth, aes(x = variable, y = value, color= variable))+geom_boxplot(aes(fill = variable, alpha =.7))
+  labs(y = "Error from the mean")+
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 60, face = "bold", hjust = 0.5), 
+        axis.text.x = element_text(size = 40),
+        axis.text.y = element_text(size = 40), 
+        axis.title.y = element_text(size =35),
+        legend.position= "none") 
+#plot1000 +ylim(0,1.5)+scale_fill_manual(values=c("firebrick3", "blue","green3", "black", "yellow"))+ scale_color_manual(values=rep("black", 5))
+plot1000 +scale_fill_manual(values=c("firebrick3", "blue","green3", "black", "yellow"))+ scale_color_manual(values=rep("black", 5))
+```
+
+###FUNCTIONS to get ttests results and output nicely
+```{r, echo = TRUE}
+library(dplyr)
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(colnames(data), m= 2))
+}
+
+get_test_results<- function(data,test_names) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    #tested_names[[i]]<<-(test_names[i][,1])
+    Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+    Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-colnames(Kit1)
+    tested_names2[[i]]<<-colnames(Kit2)
+    colnames(Kit1)<-c("error")
+    colnames(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1$error, y=Kit2$error, paired = TRUE) ### may have messed things up adding paired = TRUE previously had more ))
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni = format(.05/length(names(x)), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(names(x))), "yes", "no"))
+}
+```
+
+
+###Callfunctions on the data
+```{r}
+get_test_names(data = error_synth)
+#sink("/home/carrie/Kit_comparison/log.txt")
+get_test_results(test_names = test_names, data = error_synth)
+#sink()
+ttestStats<-data.frame(lapply(tresults, get_ttestStats))
+
+colnames(ttestStats)<-tested_kits
+
+ttestStats
+
+
+# ttests <- list()
+# ttests[[1]]<- t.test(error_synth$NEXTflex , error_synth$Illumina, paired = TRUE)
+# ttests[[2]]<-t.test(error_synth$NEXTflex, error_synth$Clontech, paired = TRUE)
+# ttests[[3]]<-t.test(error_synth$NEXTflex, error_synth$NEB, paired = TRUE)
+# ttests[[4]]<-t.test(error_synth$Illumina, error_synth$Clontech, paired = TRUE)
+# ttests[[5]]<-t.test(error_synth$Illumina, error_synth$NEB, paired = TRUE)
+# ttests[[6]]<-t.test(error_synth$Clontech, error_synth$NEB, paired = TRUE)
+
+# extract your values using `sapply`
+# Acc_ttestStats<-sapply(ttests, function(x) {
+#   c(t =format(x$statistic, digits = 2),
+#     df = format(x$parameter, digits = 0),
+#     p.value = format(x$p.value, scientific = TRUE, digits = 2),
+#     bonferroni = format(.05/6, digits = 2),
+#     sig = ifelse(x$p.value<(.05/6), "yes", "no"))
+# })
+# colnames(Acc_ttestStats)<-sapply(ttests, function(x) {
+#   c(test = x$data.name)
+# })
+# 
+# Acc_ttestStats
+
+fit = lm(synth$value ~ synth$variable)
+anova(fit)
+
+###################################log2 normalization of RPM values
+# synth_clon$TPM <- log2(synth_clon$TPM +1)
+# synth_Ill$TPM <- log2(synth_Ill$TPM +1)
+# synth_NEB$TPM <- log2(synth_NEB$TPM +1)
+# synth_NEXT$TPM <- log2(synth_NEXT$TPM +1)
+# setwd("/home/carrie/synthetic_miRNA/counts/allspecies/")
+# all.the.files <-list.files()#make a list of all the files in the directory
+# all.the.data <- lapply(all.the.files, read.table, header = F)#read the data from each file into a list of list
+# names(all.the.data)<- c(all.the.files)#name each of the lists the name of the file
+# #miRNA<-lapply(all.the.data, function(x) x[1])
+# synthCounts<-data.frame(all.the.data)
+# synthCounts<-synthCounts[1:(length(rownames(synthCounts))-1),]#last row needs to be removed
+```
