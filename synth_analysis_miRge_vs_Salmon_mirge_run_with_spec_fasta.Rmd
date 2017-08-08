@@ -13,19 +13,13 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 ###Load just the synthetic no deduped data from miRge
 ```{r}
-synth_miRge_UMI<-read.table("/home/carrie/UMI/after_UMI_tools_Nextflex_kitcomparison/Synthetic_accuracy/4kits_sample4_3originalsNEXTdeduped/miRge.1491774983/miR.RPM.csv", header = T, sep = ",")### This is the RPM data output from miRge
-synth_miRge_raw<-read.table("/home/carrie/UMI/after_UMI_tools_Nextflex_kitcomparison/Synthetic_accuracy/4kits_sample4_allOriginals/miRge.1491829384/miR.RPM.csv", header = T, sep = ",")### This is the RPM data output from miRge
-rownames(synth_miRge_raw)<- synth_miRge_raw$miRNA #make miRNAs rownames
-rownames(synth_miRge_UMI)<- synth_miRge_UMI$miRNA#make miRNAs rownames
-synth_miRge_raw<-synth_miRge_raw[-1]#remove miRNA column
-synth_miRge_UMI<-synth_miRge_UMI[-1]#remove miRNA column
-### these are not quite the same length
-synth_miRge_raw_2<-synth_miRge_raw[-which(!rownames(synth_miRge_raw) %in% rownames(synth_miRge_UMI)),]##this row is not in the UMI data
-###because it is all zero's we will remove it
-identical(synth_miRge_raw_2$mm0_acc_NEB_trimmed.4_R1.fq, synth_miRge_UMI$mm0_acc_NEB_trimmed.4_R1.fq)
+miRge_synth<-read.table("/home/carrie/miRge/miRge-master/Synthetic_miRge_with_synth_spec_fasta/miR.RPM.csv", header = T, sep = ",")### This is the RPM data output from miRge###something weird
+rownames(miRge_synth)<- miRge_synth$miRNA#make miRNAs rownames
+miRge_synth<-miRge_synth[-1]#remove miRNA column
+miRge_synth<-miRge_synth[-6]
 #salmon data using the fasta file with only unqiue sequences (962 sequences - for some reason not 963)
-miRgeNEXTflex<-data.frame(synth_miRge_raw_2$mm0_acc_NEXT_trimmed.4_R1.fq, synth_miRge_UMI$dedupped_acc_4_bam2fastq.fq)
-rownames(miRgeNEXTflex)<-rownames(synth_miRge_raw_2)
+#miRgeNEXTflex<-data.frame(synth_miRge_raw_2$mm0_acc_NEXT_trimmed.4_R1.fq, synth_miRge_UMI$dedupped_acc_4_bam2fastq.fq)
+#rownames(miRgeNEXTflex)<-rownames(synth_miRge_raw_2)
 ###########################################Synthetic accuracy across Kits################################################################
 synth_clon<-read.table("/home/carrie/synthetic_miRNA/counts/unique_all_species/Clontech.txt", header =TRUE)#settings: single read Forward no GC correction
 synth_Ill<-read.table("/home/carrie/synthetic_miRNA/counts/unique_all_species/Illumina.txt", header =TRUE)#settings: single read Forward no GC correction
@@ -37,9 +31,9 @@ SalmonNEXTflex<-data.frame(synth_NEXT$Name, synth_NEXT$TPM, synth_UMI$TPM)
 
 ```
 
-###Older synth data before collapsing fasta file to unique sequences
+
 ```{r, include =FALSE}
-### if you want all sequences not using collapsed fasta
+### ###Older synth data before collapsing fasta file to unique sequences
 synth_clon1<-read.table("/home/carrie/synthetic_miRNA/counts/allspecies/Clontech.txt", header =TRUE)#settings: single read Forward no GC correction
 synth_Ill1<-read.table("/home/carrie/synthetic_miRNA/counts/allspecies/Illumina.txt", header =TRUE)#settings: single read Forward no GC correction
 synth_NEB1<-read.table("/home/carrie/synthetic_miRNA/counts/allspecies/NEB.txt", header =TRUE)#settings: single read Forward no GC correction
@@ -54,32 +48,51 @@ rownames(synth_raw) = make.names(synth_Ill$Name, unique=TRUE)
 colnames(synth_raw) = c("NextFlex", "Clontech", "Illumina", "NEB", "UMI")
 dim(synth_raw)
 head(synth_raw)
+Salmon_synth <-synth_raw
 library(matrixStats)
 ```
-#### Put data together MIRGe
+#### Put data together miRge
 ```{R}
-synth_raw<-cbind(synth_miRge_raw_2$mm0_acc_Illumina_trimmed.4_R1.fq, synth_miRge_raw_2$mm0_acc_NEXT_trimmed.4_R1.fq, synth_miRge_raw_2$mm0_acc_NEB_trimmed.4_R1.fq, synth_miRge_raw_2$mm0_acc_Clontech_acc_trimmed.4_R1.fq, synth_miRge_UMI$dedupped_acc_4_bam2fastq.fq)
-rownames(synth_raw) = make.names(rownames(synth_miRge_raw_2), unique=TRUE)
-colnames(synth_raw) = c("NextFlex", "Clontech", "Illumina", "NEB", "UMI")
-dim(synth_raw)
-head(synth_raw)
+colnames(miRge_synth) = c("UMI", "Illumina", "NEXTFlex", "Clontech", "NEB")
+dim(miRge_synth)
+head(miRge_synth)
+
 library(matrixStats)
-### Determine Error Across Sequences
+```
+
+### Function to Determine Error Across Sequences
 ```{R}
 library(reshape2)
 library(ggplot2)
 ########new error####################
 #my_scale <- function(x) { (x - colMeans(x))/ colSds(x) }# decided we didn't want to obscure any differences by scaling... instead scale after obtaining differences form the mean #### This might be what we were doing differently with the within batch effect analsyis for UMI
-my_scale <- function(x) { abs(x - colMeans(x))} # seems that the abs is critical for finding differences...
-error_synth <- data.frame((my_scale(synth_raw))) # not a normal dist at this point... but will normalize for ttests
-#head(error_synth)
-error_synth<-error_synth[,c(3,1,4,2,5)]
-head(error_synth)
-colnames(error_synth)[2]<-c("NEXTflex")
-#colnames(error_synth)
-synth<-melt(error_synth)
-error_synth <- log2(error_synth+1)# normalize for ttests but not plots
+my_scale <- function(x) { 
+  errorData<-abs(x - colMeans(x))
+  errorData<-data.frame(errorData)
+  colnames(errorData) <-gsub("Next", "NEXT", colnames(errorData))
+  #error_synth<<-errorData[,c(3,1,4,2,5)]# want to somehow order the same... if we could do it based on names.. think you can.
+  error_synth<<-errorData[,c("Illumina","NEB","Clontech","NEXTFlex","UMI")]# want to somehow order the same... if we could do it based on names.. think you can.
+
+  synth<<-melt(error_synth)
+  errpr_synth<<-log2(error_synth+1)
+  } # seems that the abs is critical for finding differences...
+# error_synth <- data.frame((my_scale(synthDATA))) # not a normal dist at this point... but will normalize for ttests
+# head(error_synth)
+# error_synth<-error_synth[,c(3,1,4,2,5)]# order the kits the way we like
+# head(error_synth)
+# colnames(error_synth)[2]<-c("NEXTflex")# change spelling of NEXTflex
+# #colnames(error_synth)
+# synth<-melt(error_synth)
+# error_synth <- log2(error_synth+1)# normalize for ttests but not plots
+
 ```
+###Select which data to use
+```{r}
+synthDATA<-miRge_synth
+#synthDATA<-Salmon_synth
+my_scale(synthDATA)
+```
+
 ###Plot###########
 ```{r}
 plot1000<-ggplot(data = synth, aes(x = variable, y = value, color= variable))+geom_boxplot(aes(fill = variable, alpha =.7))
@@ -179,3 +192,4 @@ anova(fit)
 # synthCounts<-data.frame(all.the.data)
 # synthCounts<-synthCounts[1:(length(rownames(synthCounts))-1),]#last row needs to be removed
 ```
+#so the data shows the same relationship now that we have used the fasta file specific for the synthetic sequences... this was not the case when we used the human indexes and ran this in mirge... which makes sense becuase virus data etc would try to get mapped onto human. However, there are also no zero's in this case. I wonder if having any zero values is making our brain data look strange.
