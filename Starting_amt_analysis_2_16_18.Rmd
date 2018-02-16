@@ -1,0 +1,222 @@
+---
+title: "ComparsionofAmt"
+author: "Carrie Wright"
+date: "2/13/2018"
+output: html_document
+---
+
+
+###Prepare for UMI tools Shell Script on SRV4: /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_tools_bespoke_code.sh
+```{r, engine='bash', eval = FALSE, echo=FALSE}
+mkdir UMI_duplicates_rem
+
+InDir=/media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq
+outDir=/media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem
+
+#reading every 4th line starting with line 2, get first 4 characters of sequence
+#awk2='NR%4==2'
+#< list_for_UMI.txt parallel -P4 "cat $InDir/mm0_acc_NEXT_trim1.{}_R1.fq | awk '$awk2' | cut -d' ' -f2 | cut -c1-4 > $outDir/first4_{}.txt"
+
+#reading every 4th line starting with line 2, get last 4 characters of sequence
+#< list_for_UMI.txt parallel -P4 "cat $InDir/mm0_acc_NEXT_trim1.{}_R1.fq | awk '$awk2' | sed 's/^.*\(.\{4\}\)/\1/' > $outDir/last4_{}.txt"
+
+#pasting first UMI 4 nuc. with last UMI 4 nuc.
+#< list_for_UMI.txt parallel -P4 "paste -d'\0' $outDir/first4_{}.txt $outDir/last4_{}.txt > $outDir/UMI_{}.txt"
+
+#quadruple UMIs
+#< list_for_UMI.txt parallel -P4 "awk '{for(i=0;i<4;i++)print}' $outDir/UMI_{}.txt >$outDir/quad_UMI_{}.txt"
+
+# add an "_" to the front of every UMI line
+#awk3='$0="_"$0'
+#< list_for_UMI.txt parallel -P4 "awk '$awk3'  $outDir/quad_UMI_{}.txt > $outDir/final_UMI_{}.txt"
+
+# add the UMI to the fastq file identifier line
+#awk4='{getline p<f} (NR%4==1){$1=$1" "$2;$2=p}1'
+#< list_for_UMI.txt parallel -P4 "awk '$awk4' OFS= f=$outDir/final_UMI_{}.txt $InDir/mm0_acc_NEXT_trim1.{}_R1.fq > $outDir/NEXT_{}_UMItools_R1.fq"
+
+#remove reads from fastq with Ns in the UMI: DID NOT RUN THIS COMMAND!!!!!!!!!!!!!!!!!!!!
+#< list_for_UMI.txt parallel -P4 "sed -e '/_N\|_.*N/,+3d' $outDir/NEXT_{}_UMItools_R1.fq > $outDir/NEXT_Ns_rem_{}_UMItools_R1.fq"
+
+#remove random 4 base pair seqs that make up the UMI from the fastq read sequence line:
+< list_for_UMI.txt parallel -P4 "cutadapt -u 4 -o $outDir/trim2_{}_Ns_kept_forUMI_tools.fq $outDir/NEXT_{}_UMItools_R1.fq"
+
+< list_for_UMI.txt parallel -P4 "cutadapt -m 18 -u  -4 -o $outDir/trimmed_{}_Ns_kept_forUMI_tools.fq $outDir/trim2_{}_Ns_kept_forUMI_tools.fq"
+
+
+#remove space form the identifier of the fastq
+< list_for_UMI.txt parallel -P4 "sed 's/ /-/' $outDir/trimmed_{}_Ns_kept_forUMI_tools.fq > $outDir/nospace_trimmed_{}_Ns_kept_forUMI_tools.fq"
+
+#bowtie allignment
+< list_for_UMI.txt parallel -P3 "/usr/bin/bowtie /media/DATA/carrie/miRge/miRge-master/miRge.seqLibs/human/mirna --fullref -n 0 -S $outDir/nospace_trimmed_{}_Ns_kept_forUMI_tools.fq $outDir/NEXT_{}_Ns_kept_readyforUMItools.sam"
+
+#convert to bams
+< list_for_UMI.txt parallel -P3 "samtools view -bS -o $outDir/NEXT_{}_Ns_kept_readyforUMItools.bam $outDir/NEXT_{}_Ns_kept_readyforUMItools.sam"
+
+#index and sort bams
+< list_for_UMI.txt parallel -P3 "samtools sort $outDir/NEXT_{}_Ns_kept_readyforUMItools.bam $outDir/NEXT_{}_Ns_kept_readyforUMItools_sorted"
+< list_for_UMI.txt parallel -P3 "samtools index $outDir/NEXT_{}_Ns_kept_readyforUMItools_sorted.bam"
+
+#UMItools
+< list_for_UMI.txt parallel -P3 "umi_tools dedup --method directional -I $outDir/NEXT_{}_Ns_kept_readyforUMItools_sorted.bam -S $outDir/directional_deduped_Ns_kept_{}_UMItools.bam"
+
+
+#convert deduped bam files to fastq files
+<list_for_UMI.txt parallel -P3 "bam2fastx -q -Q -A -o $outDir/directional_dedupped_Ns_kept_{}_bam2fastq.fq $outDir/directional_deduped_Ns_kept_{}_UMItools.bam"
+
+
+#same but adjacency method
+#< list_for_UMI.txt parallel -P3 "umi_tools dedup --method adjacency -I /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem/NEXT_acc_{}_readyforUMItools_sorted.bam -S /media/Backup1_/smallRN
+A/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem/adjacency_deduped_acc_{}_UMItools.bam"
+#<list_for_UMI.txt parallel -P3 "bam2fastx -q -Q -A -o $outDir/adjacency_dedupped_acc_{}_bam2fastq.fq $outDir/adjacency_deduped_acc_{}_UMItools.bam"
+
+#same but unique method
+#< list_for_UMI.txt parallel -P3 "umi_tools dedup  --method unique -I /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem/NEXT_acc_{}_readyforUMItools_sorted.bam -S /media/Backup1_/smallRNA/
+FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem/unique_deduped_acc_{}_UMItools.bam"
+#<list_for_UMI.txt parallel -P3 "bam2fastx -q -Q -A -o $outDir/unique_dedupped_acc_{}_bam2fastq.fq $outDir/unique_deduped_acc_{}_UMItools.bam"
+
+```
+
+###miRge analysis on SRV2:/miRge/miRge-master: #first to run all 1000ng samples...then going to run all samples, except synthetic
+```{r,engine='bash', eval = FALSE, echo=FALSE}
+
+perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles mm0_acc_Clontech_acc_trimmed.1_R1.fq,mm0_acc_Clontech_acc_trimmed.2_R1.fq,mm0_acc_Clontech_acc_trimmed.3_R1.fq,mm0_acc_Illumina_trimmed.1_R1.fq,mm0_acc_Illumina_trimmed.2_R1.fq,mm0_acc_Illumina_trimmed.3_R1.fq,mm0_acc_NEB_trimmed.1_R1.fq,mm0_acc_NEB_trimmed.2_R1.fq,mm0_acc_NEB_trimmed.3_R1.fq,mm0_acc_NEXT_trimmed.1_R1.fq,mm0_acc_NEXT_trimmed.2_R1.fq,mm0_acc_NEXT_trimmed.3_R1.fq,directional_dedupped_acc_Ns_kept_1_bam2fastq.fq,directional_dedupped_acc_Ns_kept_2_bam2fastq.fq,directional_dedupped_acc_Ns_kept_3_bam2fastq.fq,mm0_Clontech_trimmed.1_R1.fq,mm0_Clontech_trimmed.2_R1.fq,mm0_Clontech_trimmed.3_R1.fq,mm0_Clontech_trimmed.4_R1.fq,mm0_Clontech_trimmed.5_R1.fq,mm0_Clontech_trimmed.6_R1.fq,mm0_Clontech_trimmed.7_R1.fq,mm0_Clontech_trimmed.8_R1.fq,mm0_Clontech_trimmed.9_R1.fq,mm0_Clontech_trimmed.10_R1.fq,mm0_Clontech_trimmed.11_R1.fq,mm0_Clontech_trimmed.12_R1.fq,mm0_Clontech_trimmed.13_R1.fq,mm0_Clontech_trimmed.14_R1.fq,mm0_Clontech_trimmed.15_R1.fq,mm0_Clontech_trimmed.16_R1.fq,mm0_Clontech_trimmed.17_R1.fq,mm0_Clontech_trimmed.18_R1.fq,mm0_Illumina_trimmed.1_R1.fq,mm0_Illumina_trimmed.2_R1.fq,mm0_Illumina_trimmed.3_R1.fq,mm0_Illumina_trimmed.4_R1.fq,mm0_Illumina_trimmed.5_R1.fq,mm0_Illumina_trimmed.6_R1.fq,mm0_Illumina_trimmed.7_R1.fq,mm0_Illumina_trimmed.8_R1.fq,mm0_Illumina_trimmed.9_R1.fq,mm0_NEB_trimmed.1_R1.fq,mm0_NEB_trimmed.2_R1.fq,mm0_NEB_trimmed.3_R1.fq,mm0_NEB_trimmed.4_R1.fq,mm0_NEB_trimmed.5_R1.fq,mm0_NEB_trimmed.6_R1.fq,mm0_NEB_trimmed.7_R1.fq,mm0_NEB_trimmed.8_R1.fq,mm0_NEB_trimmed.9_R1.fq,mm0_NEB_trimmed.10_R1.fq,mm0_NEB_trimmed.11_R1.fq,mm0_NEB_trimmed.12_R1.fq,mm0_NEXT_trimmed.1_R1.fq,mm0_NEXT_trimmed.2_R1.fq,mm0_NEXT_trimmed.3_R1.fq,mm0_NEXT_trimmed.4_R1.fq,mm0_NEXT_trimmed.5_R1.fq,mm0_NEXT_trimmed.6_R1.fq,mm0_NEXT_trimmed.7_R1.fq,mm0_NEXT_trimmed.8_R1.fq,mm0_NEXT_trimmed.9_R1.fq,mm0_NEXT_trimmed.10_R1.fq,mm0_NEXT_trimmed.11_R1.fq,mm0_NEXT_trimmed.12_R1.fq,mm0_NEXT_trimmed.13_R1.fq,mm0_NEXT_trimmed.14_R1.fq,mm0_NEXT_trimmed.15_R1.fq,mm0_NEXT_trimmed.16_R1.fq,mm0_NEXT_trimmed.17_R1.fq,mm0_NEXT_trimmed.18_R1.fq,directional_dedupped_Ns_kept_1_bam2fastq.fq,directional_dedupped_Ns_kept_2_bam2fastq.fq,directional_dedupped_Ns_kept_3_bam2fastq.fq,directional_dedupped_Ns_kept_4_bam2fastq.fq,directional_dedupped_Ns_kept_5_bam2fastq.fq,directional_dedupped_Ns_kept_6_bam2fastq.fq,directional_dedupped_Ns_kept_7_bam2fastq.fq,directional_dedupped_Ns_kept_8_bam2fastq.fq,directional_dedupped_Ns_kept_9_bam2fastq.fq,directional_dedupped_Ns_kept_10_bam2fastq.fq,directional_dedupped_Ns_kept_11_bam2fastq.fq,directional_dedupped_Ns_kept_12_bam2fastq.fq,directional_dedupped_Ns_kept_13_bam2fastq.fq,directional_dedupped_Ns_kept_14_bam2fastq.fq,directional_dedupped_Ns_kept_15_bam2fastq.fq,directional_dedupped_Ns_kept_16_bam2fastq.fq,directional_dedupped_Ns_kept_17_bam2fastq.fq,directional_dedupped_Ns_kept_18_bam2fastq.fq
+
+```
+
+###load data into R
+```{r, echo=FALSE}
+Pheno<- read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/Pheno_repro_full_1_16_18_ns_kept", header = T)
+
+#miR_counts<-read.table("/home/carrie/miRge/miRge-master/Keeping_Ns_Repro_Analysis/miR.Counts.csv", header = TRUE, sep = ",") #original location
+miR_counts<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/ReproData/miR.Counts.csv", header = TRUE, sep = ",")
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+miR_counts<-miR_counts[-1,]#remove total miRNA counts row
+
+colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
+colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
+
+```
+
+
+### comparison of error for each kit for given starting amount
+##Split the data
+```{r}
+
+Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
+###split the data by starting Amount
+split_startingAmt <- list() 
+for(i in Pheno$startingAmt) { 
+  split_startingAmt[[i]] <- data.frame(miR_counts[which(Pheno$startingAmt==i)])
+}
+
+
+```
+###TMM Normalization
+
+Normalization by kit for each starting amount
+```{r, eval= TRUE, echo =FALSE}
+#library(tweeDEseq)
+#miR_1000_TMM<-data.frame(normalizeCounts(miR_1000_raw)
+#dim(norm_miR_1000)
+#or
+library(edgeR)
+norm_miR <-list()
+for(i in unique(Pheno$startingAmt)){
+d<<-DGEList(counts = split_startingAmt[[i]], group = Pheno$Kit[which(Pheno$startingAmt==i)])
+miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
+norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
+}
+```
+
+###DESeq2
+```{r, eval=FALSE,warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+dds<-DESeqDataSetFromMatrix(countData = miR_1000_raw, colData = Pheno1000, design = ~ Kit)
+dds <- estimateSizeFactors(dds)
+norm_miR_1000<-data.frame(counts(dds, normalized = TRUE))
+dim(norm_miR_1000)
+```
+
+##Split the data
+```{r}
+###split the data by kit
+split_kit <- list() 
+for(i in Pheno$Kit) { 
+  split_kit[[i]] <- data.frame(norm_miR[which(Pheno$Kit==i)])
+} 
+
+###split the data by kit and batch
+split_batch <- list() 
+for(i in Pheno$TriplicateGroup) { 
+  split_batch[[i]] <- data.frame(norm_miR[which(Pheno$TriplicateGroup==i)])
+}
+```
+
+###Filter the data
+```{r}
+###genefilter
+library(genefilter)
+#poverafun <- genefilter::pOverA(p = .5, A = 529)# at least 529 reads for 50% of samples
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 100 normalized reads in all samples of the set... 
+#poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 raw reads in all samples #292
+#poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 raw reads in all samples #125
+
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+thresh<-lapply(split_kit, genefilt_fun)
+
+split_kit_thresh <-list()
+split_kit_thresh$Clontech<-split_kit$Clontech[thresh$Clontech,]
+split_kit_thresh$Illumina<-split_kit$Illumina[thresh$Illumina,]
+split_kit_thresh$NEB<-split_kit$NEB[thresh$NEB,]
+split_kit_thresh$NEXTflex<-split_kit$NEXTflex[thresh$NEXTflex,]
+split_kit_thresh$Deduped<-split_kit$Deduped[thresh$Deduped,]
+
+
+
+thresh<-lapply(split_batch, genefilt_fun)
+
+
+split_batch_thresh <-list()
+split_batch_thresh$Clontech1000_Batch1<-split_batch$Clontech1000_Batch1[thresh$Clontech1000_Batch1,]
+split_batch_thresh$Clontech1000_Batch2<-split_batch$Clontech1000_Batch2[thresh$Clontech1000_Batch2,]
+split_batch_thresh$Illumina1000_Batch1<-split_batch$Illumina1000_Batch1[thresh$Illumina1000_Batch1,]
+split_batch_thresh$Illumina1000_Batch2<-split_batch$Illumina1000_Batch2[thresh$Illumina1000_Batch2,]
+split_batch_thresh$NEB1000_Batch1<-split_batch$NEB1000_Batch1[thresh$NEB1000_Batch1,]
+split_batch_thresh$NEB1000_Batch2<-split_batch$NEB1000_Batch2[thresh$NEB1000_Batch2,]
+split_batch_thresh$NEXTflex1000_Batch1<-split_batch$NEXTflex1000_Batch1[thresh$NEXTflex1000_Batch1,]
+split_batch_thresh$NEXTflex1000_Batch2<-split_batch$NEXTflex1000_Batch2[thresh$NEXTflex1000_Batch2,]
+
+split_batch_thresh$Deduped1000_Batch1<-split_batch$Deduped1000_Batch1[thresh$Deduped1000_Batch1,]
+split_batch_thresh$Deduped1000_Batch2<-split_batch$Deduped1000_Batch2[thresh$Deduped1000_Batch2,]
+
+
+split_batch_thresh_batch1 <- split_batch_thresh[grep("Batch1", names(split_batch_thresh))]
+split_batch_thresh_batch2 <- split_batch_thresh[grep("Batch2", names(split_batch_thresh))]
+```
+
+#detection rate
+```{r}
+detected_amounts<-list()
+detect_fun <- function(data, kits) {
+  for (i in kits){
+    data_totest <<- data[grep(i, names(data)) ]
+    detected_amounts[[i]]<<-length(rownames(as.data.frame(data_totest)))
+  }
+}
+
+detect_fun(data = split_kit_thresh, kits = names(split_kit))
+detected_amounts_kit <- detected_amounts
+detected_amounts_kit
+
+detect_fun(data = split_batch_thresh_batch1, kits = names(split_batch_thresh_batch1))
+detected_amounts_batch1 <- detected_amounts
+detected_amounts_batch1
+
+detect_fun(data = split_batch_thresh_batch2, kits = names(split_batch_thresh_batch2))
+detected_amounts_batch2 <- detected_amounts
+detected_amounts_batch2
+```
