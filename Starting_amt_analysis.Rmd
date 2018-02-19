@@ -116,13 +116,6 @@ for(i in Pheno$startingAmt) {
   Pheno_Amt[[i]] <- data.frame(Pheno[which(Pheno$startingAmt==i),])
 }
 
-
-###split the data by starting Amount
-split_trip <- list() 
-for(i in Pheno$TriplicateGroup) { 
-  split_trip[[i]] <- data.frame(miR_counts[which(Pheno$TriplicateGroup==i)])
-}
-
 ```
 ###TMM Normalization
 
@@ -146,15 +139,6 @@ norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
 
 str(norm_miR)
 
-
-###hmm could do this... maybe
-# norm_miR_trip <-list()
-# for(i in unique(Pheno$TriplicateGroup)){
-#  d<-DGEList(counts = split_trip[[i]], group = Pheno$Triplicate[1:3])
-#  miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
-# TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
-#  norm_miR_trip[[i]] <-data.frame(TMM$pseudo.counts)
-# }
 ```
 
 Now split normalized data by kit for each amount
@@ -193,27 +177,58 @@ thresh[[amt]]<-lapply(split_norm_Amt[[amt]], genefilt_fun)
 
 test <-split_norm_Amt$starting_amt_1000$Clontech[thresh$starting_amt_1000$Clontech,]
 
-split_batch_thresh <-list()
+split_amt_thresh <-list()
 for(amt in names(split_norm_Amt)){
 for(kit in names(split_norm_Amt[[amt]])){
- split_batch_thresh[[amt]][[kit]]<- split_norm_Amt[[amt]][[kit]][thresh[[amt]][[kit]],]}
+ split_amt_thresh[[amt]][[kit]]<- split_norm_Amt[[amt]][[kit]][thresh[[amt]][[kit]],]}
 }
 ```
 
 
 #detection rate
 ```{r}
+#100
+lapply(split_amt_thresh$starting_amt_100, dim)
+#250
+lapply(split_amt_thresh$starting_amt_250, dim)
+#500
+lapply(split_amt_thresh$starting_amt_500, dim)
+#1000
+lapply(split_amt_thresh$starting_amt_1000, dim)
+#1500
+lapply(split_amt_thresh$starting_amt_1500, dim)
+#2000
+lapply(split_amt_thresh$starting_amt_2000, dim)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
 detected_amounts<-list()
 detect_fun <- function(data, kits) {
   for (i in kits){
-    data_totest <<- data[grep(i, names(data)) ]
+    data_totest <- data[grep(i, names(data)) ]
     detected_amounts[[i]]<<-length(rownames(as.data.frame(data_totest)))
   }
 }
 
-detect_fun(data = split_kit_thresh, kits = names(split_kit))
+length(rownames(as.data.frame(split_amt_thresh$starting_amt_1000[grep("NEB", names(split_amt_thresh$starting_amt_1000))])))
+
+detect_fun(data = split_amt_thresh$starting_amt_100, kits = names(split_amt_thresh$starting_amt_100))
 detected_amounts_kit <- detected_amounts
 detected_amounts_kit
+
+lapply(split_amt_thresh, detect_fun, kits = names(split_batch_thresh))
 
 detect_fun(data = split_batch_thresh_batch1, kits = names(split_batch_thresh_batch1))
 detected_amounts_batch1 <- detected_amounts
