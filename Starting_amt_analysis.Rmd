@@ -191,74 +191,15 @@ for(amt in names(split_norm_Amt))
 thresh[[amt]]<-lapply(split_norm_Amt[[amt]], genefilt_fun)
 
 
-
-
-
-
-
-
-
-
-lowamts<-c("starting_amt_100","starting_amt_250", "starting_amt_500")
-low_start <- norm_miR[which(names(norm_miR) %in% lowamts)]
-
-# Need to filter across the triplicates for a given kit for a given starting amount
-
-for(x in names(norm_miR)){print(names(norm_miR[[x]]))}
-
-grep("NEB", names(norm_miR$starting_amt_100))
-
-
-
-for(x in Pheno$TriplicateGroup{lapply(norm_miR[x], genefilt_fun)})
-
-
-
-
-
-
-filt_data <-list()
-for(i in unique(Pheno$Kit[which(Pheno$startingAmt %in% lowamts)] )){
-  for (x in Pheno$startingAmt %in% lowamts){
-  filt_data[[i]][x]<-lapply(norm_miR(grep(x, names(norm_miR))), genefilt_fun)
-}
-
-  grep("NEB", names(norm_miR$starting_amt_100))
-  
-for(i in unique(Pheno$Kit[which(Pheno$startingAmt=="starting_amt_100")])) {
-  for(x in names(norm_miR)){
-  data <-norm_miR$[grep(i, names(norm_miR$starting_amt_100))]
-  
-
-split_kit_thresh <-list()
-split_kit_thresh$Clontech<-norm_miR$Clontech[thresh$Clontech,]
-split_kit_thresh$Illumina<-norm_miR$Illumina[thresh$Illumina,]
-split_kit_thresh$NEB<-norm_miR[thresh$NEB,]
-split_kit_thresh$NEXTflex<-norm_miR$NEXTflex[thresh$NEXTflex,]
-split_kit_thresh$Deduped<-norm_miR$Deduped[thresh$Deduped,]
-
-
-
-thresh<-lapply(split_batch, genefilt_fun)
-
+test <-split_norm_Amt$starting_amt_1000$Clontech[thresh$starting_amt_1000$Clontech,]
 
 split_batch_thresh <-list()
-split_batch_thresh$Clontech1000_Batch1<-split_batch$Clontech1000_Batch1[thresh$Clontech1000_Batch1,]
-split_batch_thresh$Clontech1000_Batch2<-split_batch$Clontech1000_Batch2[thresh$Clontech1000_Batch2,]
-split_batch_thresh$Illumina1000_Batch1<-split_batch$Illumina1000_Batch1[thresh$Illumina1000_Batch1,]
-split_batch_thresh$Illumina1000_Batch2<-split_batch$Illumina1000_Batch2[thresh$Illumina1000_Batch2,]
-split_batch_thresh$NEB1000_Batch1<-split_batch$NEB1000_Batch1[thresh$NEB1000_Batch1,]
-split_batch_thresh$NEB1000_Batch2<-split_batch$NEB1000_Batch2[thresh$NEB1000_Batch2,]
-split_batch_thresh$NEXTflex1000_Batch1<-split_batch$NEXTflex1000_Batch1[thresh$NEXTflex1000_Batch1,]
-split_batch_thresh$NEXTflex1000_Batch2<-split_batch$NEXTflex1000_Batch2[thresh$NEXTflex1000_Batch2,]
-
-split_batch_thresh$Deduped1000_Batch1<-split_batch$Deduped1000_Batch1[thresh$Deduped1000_Batch1,]
-split_batch_thresh$Deduped1000_Batch2<-split_batch$Deduped1000_Batch2[thresh$Deduped1000_Batch2,]
-
-
-split_batch_thresh_batch1 <- split_batch_thresh[grep("Batch1", names(split_batch_thresh))]
-split_batch_thresh_batch2 <- split_batch_thresh[grep("Batch2", names(split_batch_thresh))]
+for(amt in names(split_norm_Amt)){
+for(kit in names(split_norm_Amt[[amt]])){
+ split_batch_thresh[[amt]][[kit]]<- split_norm_Amt[[amt]][[kit]][thresh[[amt]][[kit]],]}
+}
 ```
+
 
 #detection rate
 ```{r}
