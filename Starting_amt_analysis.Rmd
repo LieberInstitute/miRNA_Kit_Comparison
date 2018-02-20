@@ -704,3 +704,111 @@ for(i in names(norm_miR_kit)) {
 }
 str(split_norm_Kit)
 ```
+
+###Filter the data across triplicates for given kit at a given amount
+```{r}
+###genefilter
+library(genefilter)
+
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 100 normalized reads in all samples of the set... 
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+
+thresh <-list()
+for(amt in names(split_norm_Kit))
+thresh[[amt]]<-lapply(split_norm_Kit[[amt]], genefilt_fun)
+
+
+test <-split_norm_Kit$Clontech$starting_amt_1000[thresh$Clontech$starting_amt_1000,]
+
+split_kit_thresh <-list()
+for(kit in names(split_norm_Kit)){
+for(amt in names(split_norm_Kit[[kit]])){
+ split_kit_thresh[[kit]][[amt]]<- split_norm_Kit[[kit]][[amt]][thresh[[kit]][[amt]],]}
+}
+```
+
+
+#detected miRNAs - relationship between amount and detected
+```{r}
+get_miRNAs <- function(x) {rownames(as.data.frame(x))}
+
+
+miRNA_det_data<-list()
+get_miRNAS_det <- function(data) {
+miRNA_det_data<<-lapply(data, get_miRNAs)
+lengths<<-lapply(miRNA_det_data, length)
+names(lengths)<<-vapply(strsplit(names(lengths),"_"), `[`, 3, FUN.VALUE=character(1))
+#lengths<- paste0(lengths, "\n")
+names(miRNA_det_data) <-paste0(names(miRNA_det_data), "\n")
+names(miRNA_det_data) <<-paste0(names(miRNA_det_data), lengths)
+lengths <-melt(lengths)
+lengths$L1 <-as.numeric(as.character(lengths$L1))
+lengths$value <-as.numeric(as.character(lengths$value))
+lengths <<-lengths
+cor_result<<-cor.test(x = lengths$L1, y =lengths$value)
+cor_result$estimate<-format(cor_result$estimate, digits = 2)
+cor_result$p.value <-format(cor_result$p.value, digits = 2)
+cor_result_1<-paste("cor", cor_result$estimate)
+cor_result_final<<-paste(cor_result_1, paste("p = ", cor_result$p.value))
+plot_amt<-ggplot(lengths, aes(x = L1, y = value)) + geom_point() + stat_smooth(method = lm)
+plot_amt<-plot_amt + theme(axis.title.x = element_text(size =0),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10), 
+        axis.title.y = element_text(size =18))
+
+plot_amt<<-plot_amt + labs( title = "Number of Detected miRNA Across Starting Amounts") 
+#plot_amt <<-plot_amt+ geom_text(x= min(lengths$value) +100, y = min(lengths$L1)+100, label =cor_result_final)
+plot_amt
+}
+
+
+get_miRNAS_det(data = split_kit_thresh$Clontech)
+cor_result_final
+miRNA_det_Clontech <-miRNA_det_data
+
+get_miRNAS_det(data = split_kit_thresh$Illumina)
+cor_result_final
+miRNA_det_Illumina <-miRNA_det_data
+
+get_miRNAS_det(data = split_kit_thresh$NEB)
+miRNA_det_NEB <-miRNA_det_data
+cor_result_final
+
+get_miRNAS_det(data = split_kit_thresh$NEXTflex)
+miRNA_det_NEXTflex <-miRNA_det_data
+cor_result_final
+
+get_miRNAS_det(data = split_kit_thresh$NEXTflex_deduped)
+miRNA_det_NEXTflex_deduped <-miRNA_det_data
+cor_result_final
+
+
+#plot_amt+ geom_text(x= 1600, y = 460, label =cor_result_final)
+
+```
+
+
+Too many starting amounts to make venn diagram...
+VennDiagram
+```{r}
+library(VennDiagram)
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 5
+cols = gg_color_hue(n)
+cols <-c(cols[1], cols[3:5])
+
+vp_Clontech <- venn.diagram(miRNA_det_Clontech, alpha = 0.5, filename = NULL, margin = 0.2)
+vp_Illumina <- venn.diagram(miRNA_det_Illumina, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_NEB <- venn.diagram(miRNA_det_NEB, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_NEXTflex <- venn.diagram(miRNA_det_NEXTflex, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_NEXTflex_deduped <- venn.diagram(miRNA_det_Nextflex_deduped, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+
+```
+
+
+
