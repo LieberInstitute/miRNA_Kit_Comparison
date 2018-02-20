@@ -766,23 +766,27 @@ plot_amt
 get_miRNAS_det(data = split_kit_thresh$Clontech)
 cor_result_final
 miRNA_det_Clontech <-miRNA_det_data
+names(miRNA_det_Clontech)
 
 get_miRNAS_det(data = split_kit_thresh$Illumina)
 cor_result_final
 miRNA_det_Illumina <-miRNA_det_data
+names(miRNA_det_Illumina)
 
 get_miRNAS_det(data = split_kit_thresh$NEB)
 miRNA_det_NEB <-miRNA_det_data
 cor_result_final
+names(miRNA_det_NEB)
 
 get_miRNAS_det(data = split_kit_thresh$NEXTflex)
 miRNA_det_NEXTflex <-miRNA_det_data
 cor_result_final
+names(miRNA_det_NEXTflex)
 
 get_miRNAS_det(data = split_kit_thresh$NEXTflex_deduped)
 miRNA_det_NEXTflex_deduped <-miRNA_det_data
 cor_result_final
-
+names(miRNA_det_NEXTflex_deduped)
 
 #plot_amt+ geom_text(x= 1600, y = 460, label =cor_result_final)
 
@@ -791,7 +795,7 @@ cor_result_final
 
 Too many starting amounts to make venn diagram...
 VennDiagram
-```{r}
+```{r, eval =FALSE}
 library(VennDiagram)
 gg_color_hue <- function(n) {
   hues = seq(15, 375, length = n + 1)
@@ -811,4 +815,337 @@ vp_NEXTflex_deduped <- venn.diagram(miRNA_det_Nextflex_deduped, fill = c(cols), 
 ```
 
 
+
+consistency of results for each kit across amounts
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE, eval = TRUE}
+
+library(reshape2)
+library(limma)
+library(edgeR)
+library(dplyr)
+
+
+    errorData <-list()
+    errordata <-data.frame()
+get_error<- function(data) {
+  for(i in names(data)){
+  data_kit <-data[which(names(data) ==i)]
+  data_kit <-as.data.frame(data_kit[[1]])
+  errordata <-data_kit - rowMeans(data_kit)
+  errordata <-abs(errordata)
+  #error_for_graph<<-melt(errordata)
+  errordata <-log2(errordata +1)
+  errorData[[i]]<<-errordata
+  }
+}
+
+
+
+finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
+
+```
+
+###Within Error Clontech
+```{r, eval = FALSE}
+Names_thresh <-list()
+get_names_thresh<-function(data) {
+Names_thresh<<-intersect(intersect(intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]]))), rownames(as.data.frame(data[[5]]))), rownames(as.data.frame(data[[6]])))}
+
+kits <-names(split_kit_thresh$Clontech)
+tested_data <- split_kit_thresh$Clontech
+test_names <- data.frame(combn(kits, m= 2))
+
+get_names_thresh(data = tested_data)
+get_error(data = tested_data)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_test <-lapply(mean_errors_1, data.frame)
+errorData_test <- lapply(errorData_test, finding_rows)  
+errorData_test <- data.frame(errorData_test)
+colnames(errorData_test) <-names(tested_data)
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
+
+
+```
+
+###Within Error Clontech Plot#
+```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+library(ggplot2)
+
+melted_errordata_1 <- melt(errorData_test)
+Within_error_df <- melted_errordata_1
+fit = lm(Within_error_df$value ~ Within_error_df$variable)
+anova(fit)
+make_plot <- function(Within_error_df) {
+    Within_error_df$variable <- factor(Within_error_df$variable, levels =c("starting_amt_100", "starting_amt_250", "starting_amt_500","starting_amt_1000" ,"starting_amt_1500", "starting_amt_2000"))
+  plot1000<<-ggplot(data = melt(Within_error_df), aes(x = variable, y = value, color= variable)) +geom_jitter(aes(color = variable, alpha =.7)) +
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10), 
+        axis.title.y = element_text(size =18))
+}
+make_plot(Within_error_df = Within_error_df)
+
+
+plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across starting amounts for Clontech") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
+```
+
+
+###Within Error NEXTflex
+```{r, eval = FALSE}
+Names_thresh <-list()
+get_names_thresh<-function(data) {
+Names_thresh<<-intersect(intersect(intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]]))), rownames(as.data.frame(data[[5]]))), rownames(as.data.frame(data[[6]])))}
+
+kits <-names(split_kit_thresh$NEXTflex)
+tested_data <- split_kit_thresh$NEXTflex
+test_names <- data.frame(combn(kits, m= 2))
+
+get_names_thresh(data = tested_data)
+get_error(data = tested_data)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_test <-lapply(mean_errors_1, data.frame)
+errorData_test <- lapply(errorData_test, finding_rows)  
+errorData_test <- data.frame(errorData_test)
+colnames(errorData_test) <-names(tested_data)
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
+
+
+```
+
+###Within Error NEXTflex Plot#
+```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+library(ggplot2)
+
+melted_errordata_1 <- melt(errorData_test)
+Within_error_df <- melted_errordata_1
+fit = lm(Within_error_df$value ~ Within_error_df$variable)
+anova(fit)
+make_plot <- function(Within_error_df) {
+    Within_error_df$variable <- factor(Within_error_df$variable, levels =c("starting_amt_100", "starting_amt_250", "starting_amt_500","starting_amt_1000" ,"starting_amt_1500", "starting_amt_2000"))
+  plot1000<<-ggplot(data = melt(Within_error_df), aes(x = variable, y = value, color= variable)) +geom_jitter(aes(color = variable, alpha =.7)) +
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10), 
+        axis.title.y = element_text(size =18))
+}
+make_plot(Within_error_df = Within_error_df)
+
+
+plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across starting amounts for NEXTflex") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
+```
+
+
+
+###Within Error NEXTflex Deduped
+```{r, eval = FALSE}
+Names_thresh <-list()
+get_names_thresh<-function(data) {
+Names_thresh<<-intersect(intersect(intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]]))), rownames(as.data.frame(data[[5]]))), rownames(as.data.frame(data[[6]])))}
+
+kits <-names(split_kit_thresh$NEXTflex_deduped)
+tested_data <- split_kit_thresh$NEXTflex_deduped
+test_names <- data.frame(combn(kits, m= 2))
+
+get_names_thresh(data = tested_data)
+get_error(data = tested_data)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_test <-lapply(mean_errors_1, data.frame)
+errorData_test <- lapply(errorData_test, finding_rows)  
+errorData_test <- data.frame(errorData_test)
+colnames(errorData_test) <-names(tested_data)
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
+
+
+```
+
+###Within Error NEXTflex Deduped Plot#
+```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+library(ggplot2)
+
+melted_errordata_1 <- melt(errorData_test)
+Within_error_df <- melted_errordata_1
+fit = lm(Within_error_df$value ~ Within_error_df$variable)
+anova(fit)
+make_plot <- function(Within_error_df) {
+    Within_error_df$variable <- factor(Within_error_df$variable, levels =c("starting_amt_100", "starting_amt_250", "starting_amt_500","starting_amt_1000" ,"starting_amt_1500", "starting_amt_2000"))
+  plot1000<<-ggplot(data = melt(Within_error_df), aes(x = variable, y = value, color= variable)) +geom_jitter(aes(color = variable, alpha =.7)) +
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10), 
+        axis.title.y = element_text(size =18))
+}
+make_plot(Within_error_df = Within_error_df)
+
+
+plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across starting amounts for NEXTflex Deduped") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
+```
+
+###Within Error NEB
+```{r, echo=TRUE, message=FALSE, warning=FALSE, eval = TRUE}
+
+library(reshape2)
+library(limma)
+library(edgeR)
+library(dplyr)
+
+
+    errorData <-list()
+    errordata <-data.frame()
+
+get_error<- function(data) {
+  for(i in names(data)){
+  data_kit <-data[which(names(data) ==i)]
+  data_kit <-as.data.frame(data_kit[[1]])
+  errordata <-data_kit - rowMeans(data_kit)
+  errordata <-abs(errordata)
+  #error_for_graph<<-melt(errordata)
+  errordata <-log2(errordata +1)
+  errorData[[i]]<<-errordata
+  }
+}
+
+
+finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
+
+```
+
+```{r, eval = FALSE}
+Names_thresh <-list()
+get_names_thresh<-function(data) {
+Names_thresh<<-intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]])))}
+
+kits <-names(split_kit_thresh$NEB)
+tested_data <- split_kit_thresh$NEB
+test_names <- data.frame(combn(kits, m= 2))
+
+get_names_thresh(data = tested_data)
+get_error(data = tested_data)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_test <-lapply(mean_errors_1, data.frame)
+errorData_test <- lapply(errorData_test, finding_rows)  
+errorData_test <- data.frame(errorData_test)
+colnames(errorData_test) <-names(tested_data)
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
+
+
+```
+
+###Within Error NEBPlot#
+```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+library(ggplot2)
+
+melted_errordata_1 <- melt(errorData_test)
+Within_error_df <- melted_errordata_1
+fit = lm(Within_error_df$value ~ Within_error_df$variable)
+anova(fit)
+make_plot <- function(Within_error_df) {
+    Within_error_df$variable <- factor(Within_error_df$variable, levels =c("starting_amt_100", "starting_amt_250", "starting_amt_500","starting_amt_1000" ,"starting_amt_1500", "starting_amt_2000"))
+  plot1000<<-ggplot(data = melt(Within_error_df), aes(x = variable, y = value, color= variable)) +geom_jitter(aes(color = variable, alpha =.7)) +
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10), 
+        axis.title.y = element_text(size =18))
+}
+make_plot(Within_error_df = Within_error_df)
+
+
+plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across starting amounts for NEB") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
+```
+
+
+
+
+###Within Error Illumina
+```{r, echo=TRUE, message=FALSE, warning=FALSE, eval = TRUE}
+
+library(reshape2)
+library(limma)
+library(edgeR)
+library(dplyr)
+
+
+    errorData <-list()
+    errordata <-data.frame()
+get_error<- function(data) {
+  for(i in names(data)){
+  data_kit <-data[grep(i,names(data))]
+  data_kit <-as.data.frame(data_kit[[1]])
+  errordata <-data_kit - rowMeans(data_kit)
+  errordata <-abs(errordata)
+  #error_for_graph<<-melt(errordata)
+  errordata <-log2(errordata +1)
+  errorData[[i]]<<-errordata
+  }
+}
+
+
+
+finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
+
+```
+
+```{r, eval = FALSE}
+Names_thresh <-list()
+get_names_thresh<-function(data) {
+Names_thresh<<-intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]])))}
+finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
+
+kits <-names(split_kit_thresh$Illumina)
+tested_data <- split_kit_thresh$Illumina
+test_names <- data.frame(combn(kits, m= 2))
+
+get_names_thresh(data = tested_data)
+get_error(data = tested_data)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_test <-lapply(mean_errors_1, data.frame)
+errorData_test <- lapply(errorData_test, finding_rows)  
+errorData_test <- data.frame(errorData_test)
+colnames(errorData_test) <-names(tested_data)
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
+
+
+```
+
+###Within Error NEBPlot#
+```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+library(ggplot2)
+
+melted_errordata_1 <- melt(errorData_test)
+Within_error_df <- melted_errordata_1
+fit = lm(Within_error_df$value ~ Within_error_df$variable)
+anova(fit)
+make_plot <- function(Within_error_df) {
+    Within_error_df$variable <- factor(Within_error_df$variable, levels =c("starting_amt_100", "starting_amt_250", "starting_amt_500","starting_amt_1000" ,"starting_amt_1500", "starting_amt_2000"))
+  plot1000<<-ggplot(data = melt(Within_error_df), aes(x = variable, y = value, color= variable)) +geom_jitter(aes(color = variable, alpha =.7)) +
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10), 
+        axis.title.y = element_text(size =18))
+}
+make_plot(Within_error_df = Within_error_df)
+
+
+plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across starting amounts for Illumina") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
+```
 
