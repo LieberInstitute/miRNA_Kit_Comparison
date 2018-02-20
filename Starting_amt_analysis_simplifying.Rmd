@@ -358,7 +358,7 @@ errorData_test <- data.frame(errorData_test)
 colnames(errorData_test) <-names(split_norm_Amt$starting_amt_100)
 
 get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
-
+#get_test_results(data = mean_errors_1, test_names = test_names)
 
 ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
 colnames(ttestStats_within_1)<-tested_kits
@@ -385,6 +385,10 @@ make_plot <- function(Within_error_df) {
 }
 make_plot(Within_error_df = Within_error_df)
 
+# if you want the original plot colors :
+#plot1000 +scale_color_manual(values=kit_colors) + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits in first batch") + ylim(0,10000)
+
+# if you want boxplot : +geom_boxplot(aes(fill = L1, alpha =.7), outlier.shape = NA)
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 100ng Starting Amount") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 ```
@@ -490,6 +494,10 @@ make_plot <- function(Within_error_df) {
 }
 make_plot(Within_error_df = Within_error_df)
 
+# if you want the original plot colors :
+#plot1000 +scale_color_manual(values=kit_colors) + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits in first batch") + ylim(0,10000)
+
+# if you want boxplot : +geom_boxplot(aes(fill = L1, alpha =.7), outlier.shape = NA)
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 500ng Starting Amount") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 ```
@@ -543,6 +551,7 @@ errorData_test <- data.frame(errorData_test)
 colnames(errorData_test) <-names(split_norm_Amt$starting_amt_1500)
 
 get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
+#get_test_results(data = mean_errors_1, test_names = test_names)
 
 
 ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
@@ -557,7 +566,7 @@ library(ggplot2)
 
 melted_errordata_1 <- melt(errorData_test)
 Within_error_df <- melted_errordata_1
-#Within_error_df$variable<-gsub("1000_Batch1", "", Within_error_df$variable)
+Within_error_df$variable<-gsub("1000_Batch1", "", Within_error_df$variable)
 
 make_plot <- function(Within_error_df) {
     Within_error_df$variable <- factor(Within_error_df$variable, levels =c("Clontech","Illumina","NEXTflex","NEXTflex_deduped"))
@@ -590,10 +599,9 @@ mean_errors_1 <- lapply(errorData, rowMeans)
 errorData_test <-lapply(mean_errors_1, data.frame)
 errorData_test <- lapply(errorData_test, finding_rows)
 errorData_test <- data.frame(errorData_test)
-colnames(errorData_test) <-names(split_norm_Amt$starting_amt_2000)
+colnames(errorData_test) <- names(split_amt_thresh$starting_amt_2000)
 
 get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
-#get_test_results(data = mean_errors_1, test_names = test_names)
 
 ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
 colnames(ttestStats_within_1)<-tested_kits
@@ -622,10 +630,6 @@ make_plot <- function(Within_error_df) {
 }
 make_plot(Within_error_df = Within_error_df)
 
-# if you want the original plot colors :
-#plot1000 +scale_color_manual(values=kit_colors) + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits in first batch") + ylim(0,10000)
-
-# if you want boxplot : +geom_boxplot(aes(fill = L1, alpha =.7), outlier.shape = NA)
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 2000ng Starting Amount") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 ```
@@ -633,10 +637,8 @@ plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the 
 ##Unpaired Test
 get_error(data = split_amt_thresh$starting_amt_2000)
 mean_errors_1 <- lapply(errorData, rowMeans)
-
-
 errorData_test <-lapply(mean_errors_1, data.frame)
-names(errorData_test) <-names(split_norm_Amt$starting_amt_2000)
+#names(errorData_test) <-names(split_norm_Amt$starting_amt_2000)
 
 get_test_results(data = errorData_test, test_names = test_names, pairedvalue = FALSE)
 
@@ -672,5 +674,4 @@ plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the 
 ###################################################################################
 
 Check the similarity of the data across starting amts for a given kit
-
 
