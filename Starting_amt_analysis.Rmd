@@ -610,7 +610,11 @@ make_plot(Within_error_df = Within_error_df)
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 2000ng Starting Amount") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 ```
-```{r}
+
+
+
+
+```{r, unpaired}
 ##Unpaired Test
 get_error(data = split_amt_thresh$starting_amt_2000)
 mean_errors_1 <- lapply(errorData, rowMeans)
@@ -847,7 +851,7 @@ finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
 ```
 
 ###Within Error Clontech
-```{r, eval = FALSE}
+```{r}
 Names_thresh <-list()
 get_names_thresh<-function(data) {
 Names_thresh<<-intersect(intersect(intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]]))), rownames(as.data.frame(data[[5]]))), rownames(as.data.frame(data[[6]])))}
@@ -872,7 +876,7 @@ ttestStats_within_1
 ```
 
 ###Within Error Clontech Plot#
-```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 library(ggplot2)
 
 melted_errordata_1 <- melt(errorData_test)
@@ -894,9 +898,22 @@ make_plot(Within_error_df = Within_error_df)
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across starting amounts for Clontech") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 ```
 
+```{r}
+##Unpaired Test
+get_error(data = tested_data)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_test <-lapply(mean_errors_1, data.frame)
+names(errorData_test) <-names(tested_data)
+
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = FALSE)
+
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
+```
 
 ###Within Error NEXTflex
-```{r, eval = FALSE}
+```{r}
 Names_thresh <-list()
 get_names_thresh<-function(data) {
 Names_thresh<<-intersect(intersect(intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]]))), rownames(as.data.frame(data[[5]]))), rownames(as.data.frame(data[[6]])))}
@@ -921,7 +938,7 @@ ttestStats_within_1
 ```
 
 ###Within Error NEXTflex Plot#
-```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 library(ggplot2)
 
 melted_errordata_1 <- melt(errorData_test)
@@ -943,10 +960,22 @@ make_plot(Within_error_df = Within_error_df)
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across starting amounts for NEXTflex") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 ```
 
+```{r}
+##Unpaired Test
+get_error(data = tested_data)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_test <-lapply(mean_errors_1, data.frame)
+names(errorData_test) <-names(tested_data)
 
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = FALSE)
+
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
+```
 
 ###Within Error NEXTflex Deduped
-```{r, eval = FALSE}
+```{r}
 Names_thresh <-list()
 get_names_thresh<-function(data) {
 Names_thresh<<-intersect(intersect(intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]]))), rownames(as.data.frame(data[[5]]))), rownames(as.data.frame(data[[6]])))}
@@ -971,7 +1000,7 @@ ttestStats_within_1
 ```
 
 ###Within Error NEXTflex Deduped Plot#
-```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 library(ggplot2)
 
 melted_errordata_1 <- melt(errorData_test)
@@ -992,9 +1021,21 @@ make_plot(Within_error_df = Within_error_df)
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across starting amounts for NEXTflex Deduped") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 ```
+```{r}
+##Unpaired Test
+get_error(data = tested_data)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_test <-lapply(mean_errors_1, data.frame)
+names(errorData_test) <-names(tested_data)
 
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = FALSE)
+
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
+```
 ###Within Error NEB
-```{r, echo=TRUE, message=FALSE, warning=FALSE, eval = TRUE}
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
 
 library(reshape2)
 library(limma)
@@ -1022,7 +1063,7 @@ finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
 
 ```
 
-```{r, eval = FALSE}
+```{r}
 Names_thresh <-list()
 get_names_thresh<-function(data) {
 Names_thresh<<-intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]])))}
@@ -1047,7 +1088,7 @@ ttestStats_within_1
 ```
 
 ###Within Error NEBPlot#
-```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 library(ggplot2)
 
 melted_errordata_1 <- melt(errorData_test)
@@ -1069,7 +1110,19 @@ make_plot(Within_error_df = Within_error_df)
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across starting amounts for NEB") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 ```
 
+```{r}
+##Unpaired Test
+get_error(data = tested_data)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_test <-lapply(mean_errors_1, data.frame)
+names(errorData_test) <-names(tested_data)
 
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = FALSE)
+
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
+```
 
 
 ###Within Error Illumina
@@ -1101,7 +1154,7 @@ finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
 
 ```
 
-```{r, eval = FALSE}
+```{r}
 Names_thresh <-list()
 get_names_thresh<-function(data) {
 Names_thresh<<-intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]])))}
@@ -1127,7 +1180,7 @@ ttestStats_within_1
 ```
 
 ###Within Error NEBPlot#
-```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 library(ggplot2)
 
 melted_errordata_1 <- melt(errorData_test)
@@ -1147,5 +1200,24 @@ make_plot(Within_error_df = Within_error_df)
 
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across starting amounts for Illumina") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
+```
+
+
+<<chunk2, ref.label='chunk1', eval = TRUE, echo =TRUE, results='markup'>>=
+
+\ref{unpaired}
+
+```{r}
+##Unpaired Test
+get_error(data = tested_data)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_test <-lapply(mean_errors_1, data.frame)
+names(errorData_test) <-names(tested_data)
+
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = FALSE)
+
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
 ```
 

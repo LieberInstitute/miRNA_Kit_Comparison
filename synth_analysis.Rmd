@@ -348,7 +348,7 @@ plot1000<-ggplot(data = synth, aes(x = variable, y = value, color= variable))+ge
         axis.title.y = element_text(size =18))
 
 plot1000   + ylim(5,20) +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") 
-plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection")
+#plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection")
 #plot1000 +scale_fill_manual(values=c("firebrick3", "blue","green3", "black", "yellow"))+ scale_color_manual(values=rep("black", 5))
 ```
 
@@ -628,6 +628,8 @@ pheatmap(sorted_aggdata, color = myColor, breaks =myBreaks, cluster_cols = FALSE
 melteddata <-melt(t(sorted_aggdata))
 
 ggplot(melteddata, aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")
+
+ggplot(melteddata, aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(60, 110))
 #ggplot(sorted_error, aes(x=x, y = value, fill = variable)) + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")
 #ggplot(melteddata, aes(x = Var1, y = value, fill = Var2)) +geom_bar(stat = "identity")
 }
@@ -747,7 +749,7 @@ myColorabove<-colorRampPalette(c("white","red"))(length(which(myBreaks>100)))###
 myColor<-c(myColorbelow, myColorabove)
 
 pheatmap(aggdata, color=myColor, breaks=myBreaks, main = "Length", cluster_cols = FALSE, cluster_rows = FALSE)
-ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(min(myBreaks-10), max(myBreaks+10)))
+ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(min(myBreaks-10), max(myBreaks+10)))+coord_cartesian(ylim=c(60, 140))
 ```
 LengthStats
 ```{r}
@@ -1080,4 +1082,6 @@ VarExp[which(VarExp$variable == "First_base"),]
 VarExp[which(VarExp$variable == "Last_base"),]
 VarExp[grep("First", VarExp$variable),]
 VarExp[grep("Last", VarExp$variable),]
+
+pheatmap(VarExp)
 ```
