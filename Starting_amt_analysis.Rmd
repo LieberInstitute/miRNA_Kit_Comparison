@@ -144,9 +144,6 @@ str(norm_miR)
 Now split normalized data by kit for each amount
 ```{r}
 
-#Pheno_Amt[[1]][[3]]
-#norm_miR[[1]]
-
 split_norm_Amt <- list() 
 for(i in names(norm_miR)) {
   for(kit in unique(Pheno_Amt[[i]][3]$Kit))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
@@ -162,11 +159,8 @@ str(split_norm_Amt)
 ```{r}
 ###genefilter
 library(genefilter)
-#poverafun <- genefilter::pOverA(p = .5, A = 529)# at least 529 reads for 50% of samples
-poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 100 normalized reads in all samples of the set... 
-#poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 raw reads in all samples #292
-#poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 raw reads in all samples #125
 
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 100 normalized reads in all samples of the set... 
 ffun <- filterfun(poverafun)
 genefilt_fun<- function(x){genefilter(x, ffun)}
 
@@ -404,7 +398,6 @@ errorData_test <- data.frame(errorData_test)
 colnames(errorData_test) <-names(split_norm_Amt$starting_amt_250)
 
 get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
-#get_test_results(data = mean_errors_1, test_names = test_names)
 
 ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
 colnames(ttestStats_within_1)<-tested_kits
@@ -432,11 +425,6 @@ make_plot <- function(Within_error_df) {
 }
 make_plot(Within_error_df = Within_error_df)
 
-# if you want the original plot colors :
-#plot1000 +scale_color_manual(values=kit_colors) + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits in first batch") + ylim(0,10000)
-
-# if you want boxplot : +geom_boxplot(aes(fill = L1, alpha =.7), outlier.shape = NA)
-
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 250ng Starting Amount") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 ```
 
@@ -462,7 +450,6 @@ errorData_test <- data.frame(errorData_test)
 colnames(errorData_test) <-names(split_norm_Amt$starting_amt_500)
 
 get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
-#get_test_results(data = mean_errors_1, test_names = test_names)
 
 ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
 colnames(ttestStats_within_1)<-tested_kits
@@ -557,7 +544,6 @@ library(ggplot2)
 
 melted_errordata_1 <- melt(errorData_test)
 Within_error_df <- melted_errordata_1
-#Within_error_df$variable<-gsub("1000_Batch1", "", Within_error_df$variable)
 
 make_plot <- function(Within_error_df) {
     Within_error_df$variable <- factor(Within_error_df$variable, levels =c("Clontech","Illumina","NEXTflex","NEXTflex_deduped"))
@@ -621,11 +607,6 @@ make_plot <- function(Within_error_df) {
         axis.title.y = element_text(size =18))
 }
 make_plot(Within_error_df = Within_error_df)
-
-# if you want the original plot colors :
-#plot1000 +scale_color_manual(values=kit_colors) + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits in first batch") + ylim(0,10000)
-
-# if you want boxplot : +geom_boxplot(aes(fill = L1, alpha =.7), outlier.shape = NA)
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 2000ng Starting Amount") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 ```
