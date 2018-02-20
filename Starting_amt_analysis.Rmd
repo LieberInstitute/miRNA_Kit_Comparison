@@ -654,4 +654,53 @@ plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the 
 
 Check the similarity of the data across starting amts for a given kit
 
+##Split the data
+```{r}
 
+###split the data by Kit
+split_Kit <- list() 
+for(i in Pheno$Kit) { 
+  split_Kit[[i]] <- data.frame(miR_counts[which(Pheno$Kit==i)])
+}
+###split the pheno by starting Amount
+Pheno_Kit <- list() 
+for(i in Pheno$Kit) { 
+  Pheno_Kit[[i]] <- data.frame(Pheno[which(Pheno$Kit==i),])
+}
+
+```
+###TMM Normalization
+
+Normalization by kit for each starting amount - to allow tests to compare kits at a given starting amt
+
+Later will do normalization by starting amount for each kit  individually to compare how consistent the data is between starting amounts for each kit
+```{r, eval= TRUE, echo =FALSE}
+#library(tweeDEseq)
+#miR_1000_TMM<-data.frame(normalizeCounts(miR_1000_raw)
+#dim(norm_miR_1000)
+#or
+library(edgeR)
+
+norm_miR_kit <-list()
+for(i in unique(Pheno$Kit)){
+d<-DGEList(counts = split_Kit[[i]], group = Pheno$startingAmt[which(Pheno$Kit==i)])
+miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
+norm_miR_kit[[i]] <-data.frame(TMM$pseudo.counts)
+}
+
+str(norm_miR_kit)
+
+```
+
+
+Now split normalized data by kit for each amount
+```{r}
+
+split_norm_Kit <- list() 
+for(i in names(norm_miR_kit)) {
+  for(amt in unique(Pheno_Kit[[i]][4]$startingAmt))# take the fourth list from each respective kit selected from norm_miR_kit names - the fourth is amount - so for each kit in the list of amounts for a given kit...
+  split_norm_Kit[[i]][[amt]] <-data.frame(norm_miR_kit[[i]][which(Pheno_Kit[[i]][4] == amt)]) # take only the values that correspond to that amount for that kit
+}
+str(split_norm_Kit)
+```
