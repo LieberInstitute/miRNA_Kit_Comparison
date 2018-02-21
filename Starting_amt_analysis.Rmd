@@ -137,7 +137,7 @@ TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
 norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
 }
 
-str(norm_miR)
+#str(norm_miR)
 
 ```
 
@@ -149,7 +149,7 @@ for(i in names(norm_miR)) {
   for(kit in unique(Pheno_Amt[[i]][3]$Kit))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
   split_norm_Amt[[i]][[kit]] <-data.frame(norm_miR[[i]][which(Pheno_Amt[[i]][3] == kit)]) # take only the values that correspond to that kit for that amount
 }
-str(split_norm_Amt)
+#str(split_norm_Amt)
 ```
 
 
@@ -314,7 +314,7 @@ library(dplyr)
     errordata <-data.frame()
 get_error<- function(data) {
   for(i in names(data)){
-  data_kit <-data[grep(i,names(data))]
+  data_kit <-data[which(names(data) ==i)]
   data_kit <-as.data.frame(data_kit[[1]])
   errordata <-data_kit - rowMeans(data_kit)
   errordata <-abs(errordata)
@@ -493,7 +493,7 @@ library(dplyr)
     errordata <-data.frame()
 get_error<- function(data) {
   for(i in names(data)){
-  data_kit <-data[grep(i,names(data))]
+  data_kit <-data[which(names(data) ==i)]
   data_kit <-as.data.frame(data_kit[[1]])
   errordata <-data_kit - rowMeans(data_kit)
   errordata <-abs(errordata)
@@ -693,7 +693,7 @@ TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
 norm_miR_kit[[i]] <-data.frame(TMM$pseudo.counts)
 }
 
-str(norm_miR_kit)
+#str(norm_miR_kit)
 
 ```
 
@@ -706,7 +706,7 @@ for(i in names(norm_miR_kit)) {
   for(amt in unique(Pheno_Kit[[i]][4]$startingAmt))# take the fourth list from each respective kit selected from norm_miR_kit names - the fourth is amount - so for each kit in the list of amounts for a given kit...
   split_norm_Kit[[i]][[amt]] <-data.frame(norm_miR_kit[[i]][which(Pheno_Kit[[i]][4] == amt)]) # take only the values that correspond to that amount for that kit
 }
-str(split_norm_Kit)
+#str(split_norm_Kit)
 ```
 
 ###Filter the data across triplicates for given kit at a given amount
@@ -799,7 +799,7 @@ names(miRNA_det_NEXTflex_deduped)
 
 Too many starting amounts to make venn diagram...
 VennDiagram
-```{r, eval =FALSE}
+```{r, eval =FALSE, echo =FALSE}
 library(VennDiagram)
 gg_color_hue <- function(n) {
   hues = seq(15, 375, length = n + 1)
@@ -1138,7 +1138,7 @@ library(dplyr)
     errordata <-data.frame()
 get_error<- function(data) {
   for(i in names(data)){
-  data_kit <-data[grep(i,names(data))]
+  data_kit <-data[which(names(data) ==i)]
   data_kit <-as.data.frame(data_kit[[1]])
   errordata <-data_kit - rowMeans(data_kit)
   errordata <-abs(errordata)
