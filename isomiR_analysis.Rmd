@@ -1,0 +1,144 @@
+---
+title: "isomiR_analysis"
+author: "Carrie Wright"
+date: "2/22/2018"
+output: html_document
+---
+
+Trimming code on SRV4 /media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq_liberal
+```{bash, eval = FALSE}
+< trim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -a TGGAATTCTCGGGTGCCAAGG -o $outDir/NEXT_trim1.{}.fq $inDir/NEXTFlex{}_*_R1_001.fastq.gz"
+
+< NEXTtrim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -u 4 -o NEXT_trim2.{}.fq NEXT_trim1.{}.fq"
+
+< NEXTtrim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -m 10 -u -4 -o NEXT_trimmed.{}.fq NEXT_trim2.{}.fq"
+
+< trim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -m 16 -u 3 -a AAAAAAAAAA -o  $outDir/Clontech_trimmed.{}.fq $inDir/Clontech{}_*_R1_001.fastq.gz"
+
+< trim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -m 16 -a TGGAATTCTCGGGTGCCAAGG -o $outDir/Illumina_trimmed.{}.fq $inDir/Illumina{}_*_R1_001.fastq.gz"
+
+< trim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -m 16 -a AGATCGGAAGAGCACACGTCT -o $outDir/NEB_trimmed.{}.fq $inDir/NEB{}_*_R1_001.fastq.gz"
+```
+
+UMI Script for isomiRs on SRV4
+
+```{bash, eval =FALSE}
+mkdir UMI_duplicates_rem
+
+inDir=/media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq_liberal
+outDir=/media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq_liberal/UMI_duplicates_rem
+
+#reading every 4th line starting with line 2, get first 4 characters of sequence
+awk2='NR%4==2'
+< list_for_UMI.txt parallel -P4 "cat $inDir/NEXT_trim1.{}.fq | awk '$awk2' | cut -d' ' -f2 | cut -c1-4 > $outDir/first4_{}.txt"
+
+#reading every 4th line starting with line 2, get last 4 characters of sequence
+< list_for_UMI.txt parallel -P4 "cat $inDir/NEXT_trim1.{}.fq | awk '$awk2' | sed 's/^.*\(.\{4\}\)/\1/' > $outDir/last4_{}.txt"
+
+#pasting first UMI 4 nuc. with last UMI 4 nuc.
+< list_for_UMI.txt parallel -P4 "paste -d'\0' $outDir/first4_{}.txt $outDir/last4_{}.txt > $outDir/UMI_{}.txt"
+
+#quadruple UMIs
+< list_for_UMI.txt parallel -P4 "awk '{for(i=0;i<4;i++)print}' $outDir/UMI_{}.txt >$outDir/quad_UMI_{}.txt"
+
+# add an "_" to the front of every UMI line
+awk3='$0="_"$0'
+< list_for_UMI.txt parallel -P4 "awk '$awk3'  $outDir/quad_UMI_{}.txt > $outDir/final_UMI_{}.txt"
+
+# add the UMI to the fastq file identifier line
+awk4='{getline p<f} (NR%4==1){$1=$1" "$2;$2=p}1'
+< list_for_UMI.txt parallel -P4 "awk '$awk4' OFS= f=$outDir/final_UMI_{}.txt $inDir/NEXT_trim1.{}.fq > $outDir/NEXT_{}_UMItools_R1.fq"
+
+#remove reads from fastq with Ns in the UMI:
+#< list_for_UMI.txt parallel -P4 "sed -e '/_N\|_.*N/,+3d' $outDir/NEXT_{}_UMItools_R1.fq > $outDir/NEXT_Ns_rem_{}_UMItools_R1.fq"
+
+#remove random 4 base pair seqs that make up the UMI from the fastq read sequence line:
+< list_for_UMI.txt parallel -P4 "/home/carrie/cutadapt -u 4 -o $outDir/trim2_{}_Ns_kept_forUMI_tools.fq $outDir/NEXT_{}_UMItools_R1.fq"
+
+< list_for_UMI.txt parallel -P4 "/home/carrie/cutadapt -m 10 -u  -4 -o $outDir/trimmed_{}_Ns_kept_forUMI_tools.fq $outDir/trim2_{}_Ns_kept_forUMI_tools.fq"
+
+
+#remove space form the identifier of the fastq
+< list_for_UMI.txt parallel -P4 "sed 's/ /-/' $outDir/trimmed_{}_Ns_kept_forUMI_tools.fq > $outDir/nospace_trimmed_{}_Ns_kept_forUMI_tools.fq"
+
+#bowtie allignment
+< list_for_UMI.txt parallel -P3 "/usr/bin/bowtie /media/DATA/carrie/miRge/miRge-master/miRge.seqLibs/human/mirna --fullref  -S $outDir/nospace_trimmed_{}_Ns_kept_forUMI_tools.fq $outDir/NEXT_{}_Ns_kept_readyforUMItools.sam"
+
+#convert to bams
+< list_for_UMI.txt parallel -P3 "samtools view -bS -o $outDir/NEXT_{}_Ns_kept_readyforUMItools.bam $outDir/NEXT_{}_Ns_kept_readyforUMItools.sam"
+
+#index and sort bams
+< list_for_UMI.txt parallel -P3 "samtools sort $outDir/NEXT_{}_Ns_kept_readyforUMItools.bam $outDir/NEXT_{}_Ns_kept_readyforUMItools_sorted"
+< list_for_UMI.txt parallel -P3 "samtools index $outDir/NEXT_{}_Ns_kept_readyforUMItools_sorted.bam"
+
+#UMItools
+< list_for_UMI.txt parallel -P3 "umi_tools dedup --method directional -I $outDir/NEXT_{}_Ns_kept_readyforUMItools_sorted.bam -S $outDir/directional_deduped_Ns_kept_{}_UMItools.bam"
+
+
+#convert deduped bam files to fastq files
+<list_for_UMI.txt parallel -P3 "bam2fastx -q -Q -A -o $outDir/directional_dedupped_Ns_kept_{}_TEST.fq $outDir/directional_deduped_Ns_kept_{}_UMItools.bam"
+```
+
+
+miRge command on SRV2
+```{bash, eval = FALSE}
+perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles Clontech_trimmed.1.fq,Clontech_trimmed.2.fq,Clontech_trimmed.3.fq,Clontech_trimmed.4.fq,Clontech_trimmed.5.fq,Clontech_trimmed.6.fq,Clontech_trimmed.7.fq,Clontech_trimmed.8.fq,Clontech_trimmed.9.fq,Clontech_trimmed.10.fq,Clontech_trimmed.11.fq,Clontech_trimmed.12.fq,Clontech_trimmed.13.fq,Clontech_trimmed.14.fq,Clontech_trimmed.15.fq,Clontech_trimmed.16.fq,Clontech_trimmed.17.fq,Clontech_trimmed.18.fq,Clontech_trimmed.1_acc.fq,Clontech_trimmed.2_acc.fq,Clontech_trimmed.3_acc.fq,Illumina_trimmed.1.fq,Illumina_trimmed.2.fq,Illumina_trimmed.3.fq,Illumina_trimmed.4.fq,Illumina_trimmed.5.fq,Illumina_trimmed.6.fq,Illumina_trimmed.7.fq,Illumina_trimmed.8.fq,Illumina_trimmed.9.fq,Illumina_trimmed.1_acc.fq,Illumina_trimmed.2_acc.fq,Illumina_trimmed.3_acc.fq,NEB_trimmed.1.fq,NEB_trimmed.2.fq,NEB_trimmed.3.fq,NEB_trimmed.4.fq,NEB_trimmed.5.fq,NEB_trimmed.6.fq,NEB_trimmed.7.fq,NEB_trimmed.8.fq,NEB_trimmed.9.fq,NEB_trimmed.10.fq,NEB_trimmed.11.fq,NEB_trimmed.12.fq,NEB_trimmed.1_acc.fq,NEB_trimmed.2_acc.fq,NEB_trimmed.3_acc.fq,NEXT_trimmed.1.fq,NEXT_trimmed.1.fq,NEXT_trimmed.2.fq,NEXT_trimmed.3.fq,NEXT_trimmed.4.fq,NEXT_trimmed.5.fq,NEXT_trimmed.6.fq,NEXT_trimmed.7.fq,NEXT_trimmed.8.fq,NEXT_trimmed.9.fq,NEXT_trimmed.10.fq,NEXT_trimmed.11.fq,NEXT_trimmed.12.fq,NEXT_trimmed.13.fq,NEXT_trimmed.14.fq,NEXT_trimmed.15.fq,NEXT_trimmed.16.fq,NEXT_trimmed.17.fq,NEXT_trimmed.18.fq,NEXT_trimmed.1_acc.fq,NEXT_trimmed.2_acc.fq,NEXT_trimmed.3_acc.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_2_TEST.fq,directional_dedupped_Ns_kept_3_TEST.fq,directional_dedupped_Ns_kept_4_TEST.fq,directional_dedupped_Ns_kept_5_TEST.fq,directional_dedupped_Ns_kept_6_TEST.fq,directional_dedupped_Ns_kept_7_TEST.fq,directional_dedupped_Ns_kept_8_TEST.fq,directional_dedupped_Ns_kept_9_TEST.fq,directional_dedupped_Ns_kept_10_TEST.fq,directional_dedupped_Ns_kept_11_TEST.fq,directional_dedupped_Ns_kept_12_TEST.fq,directional_dedupped_Ns_kept_13_TEST.fq,directional_dedupped_Ns_kept_14_TEST.fq,directional_dedupped_Ns_kept_15_TEST.fq,directional_dedupped_Ns_kept_16_TEST.fq,directional_dedupped_Ns_kept_17_TEST.fq,directional_dedupped_Ns_kept_18_TEST.fq,directional_dedupped_Ns_kept_1_acc_TEST.fq,directional_dedupped_Ns_kept_2_acc_TEST.fq,directional_dedupped_Ns_kept_3_acc_TEST.fq
+```
+
+
+################Analysis starts here#########################
+
+```{r}
+library(here)
+here()#should be Kit_comparison_project
+#need subdirectory IsomiR_data with isomirs.csv inside
+#isomiR_Counts <-read.table(here("IsomiR_data/isomirs.csv"), header = TRUE, sep = ",", row.names = NULL)
+#colnames(isomiR_Counts)<-colnames(isomiR_Counts)[-(grep("row.names", colnames(isomiR_Counts)))]
+#isomiR_Counts<-as.data.frame(isomiR_Counts)
+#Entropy <- isomiR_Counts$Entropy
+#save(isomiR_Counts, file =here("IsomiR_data/isomiR_Counts.rda"))
+Pheno<- read.table(here("Pheno_repro_full_1_16_18_ns_kept.txt"), header = T)
+#Counts <-isomiR_Counts[3:101]
+#Counts <-Counts[-grep("fq.", colnames(Counts))]
+
+#colnames(Counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(Counts))
+#colnames(Counts)<-gsub("NEXT_", "NEXTflex_", colnames(Counts))
+
+#save(Counts, file =here("IsomiR_data/Counts.rda"))
+#save(Entropy, file = here("IsomiR_data/Entropy.rda"))
+
+
+load(here("IsomiR_data/Entropy.rda"))
+load(here("IsomiR_data/Counts.rda"))
+```
+
+###TMM Normalization
+
+Normalization by kit for each starting amount - to allow tests to compare kits
+
+```{r, eval= TRUE, echo =FALSE}
+library(edgeR)
+
+norm_isomiR <-list()
+for(i in unique(Pheno$Kit)){
+d<-DGEList(counts = Counts[[i]], group = Pheno$Kit[which(Pheno$Kit==i)])
+miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
+norm_isomiR[[i]] <-data.frame(TMM$pseudo.counts)
+}
+
+#str(norm_miR)
+
+```
+
+Now split normalized data by kit for each amount
+```{r}
+
+split_norm_Amt <- list() 
+for(i in names(norm_miR)) {
+  for(kit in unique(Pheno_Amt[[i]][3]$Kit))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
+  split_norm_Amt[[i]][[kit]] <-data.frame(norm_miR[[i]][which(Pheno_Amt[[i]][3] == kit)]) # take only the values that correspond to that kit for that amount
+}
+#str(split_norm_Amt)
+```
+
