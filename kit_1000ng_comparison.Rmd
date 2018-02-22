@@ -81,6 +81,9 @@ norm_miR_1000 <-data.frame(TMM$pseudo.counts)
 dim(norm_miR_1000)
 ```
 
+
+
+
 ###DESeq2
 ```{r, eval=FALSE,warning=FALSE, message=FALSE, echo =FALSE}
 library(DESeq2)
@@ -88,6 +91,81 @@ dds<-DESeqDataSetFromMatrix(countData = miR_1000_raw, colData = Pheno1000, desig
 dds <- estimateSizeFactors(dds)
 norm_miR_1000<-data.frame(counts(dds, normalized = TRUE))
 dim(norm_miR_1000)
+```
+
+###For Marc
+```{r}
+ranks_number <-sapply(miR_1000_raw, rank, ties.method = "random") # where 1 is the lowest - no ties -randomly chooses
+ranks_number <-data.frame(ranks_number)
+ranks_number$miRNA<- rownames(miR_1000_raw)
+ranks_number_raw <-ranks_number
+
+ranks_number <-sapply(norm_miR_1000, rank, ties.method = "random") # where 1 is the lowest - no ties -randomly chooses
+ranks_number <-data.frame(ranks_number)
+ranks_number$miRNA<- rownames(norm_miR_1000)
+ranks_number_TMM <-ranks_number
+
+RPMs <-data.frame(miR_RPMs)
+ranks_number <-sapply(data.frame(RPMs), rank, ties.method = "random") # where 1 is the lowest - no ties -randomly chooses
+ranks_number <-data.frame(ranks_number)
+ranks_number$miRNA<- rownames(miR_RPMs)
+ranks_number_RPM <-ranks_number
+
+mir_9_raw_ranks <-ranks_number_raw[grep("hsa-miR-9-5p", ranks_number_raw$miRNA),]
+mir_9_TMM_ranks <-ranks_number_TMM[grep("hsa-miR-9-5p", ranks_number_TMM$miRNA),]
+mir_9_RPM_ranks <-ranks_number_RPM[grep("hsa-miR-9-5p", ranks_number_RPM$miRNA),]
+
+
+mir_9_raw_ranks_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_raw_ranks_avg[[i]] <- rowMeans(mir_9_raw_ranks[grep(i, colnames(mir_9_raw_ranks))]) 
+}
+mir_9_TMM_ranks_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_TMM_ranks_avg[[i]] <- rowMeans(mir_9_TMM_ranks[grep(i, colnames(mir_9_TMM_ranks))]) 
+}
+mir_9_RPM_ranks_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_RPM_ranks_avg[[i]] <- rowMeans(mir_9_RPM_ranks[grep(i, colnames(mir_9_RPM_ranks))]) 
+}
+mir_9_raw <-miR_1000_raw[grep("hsa-miR-9-5p", rownames(miR_1000_raw)),]
+mir_9_TMM <-norm_miR_1000[grep("hsa-miR-9-5p", rownames(norm_miR_1000)),]
+mir_9_RPM <-RPMs[grep("hsa-miR-9-5p", rownames(miR_RPMs)),]
+
+
+mir_9_raw_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_raw_avg[[i]] <- rowMeans(mir_9_raw[grep(i, colnames(mir_9_raw))]) 
+}
+mir_9_TMM_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_TMM_avg[[i]] <- rowMeans(mir_9_TMM[grep(i, colnames(mir_9_TMM))]) 
+}
+mir_9_RPM_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_RPM_avg[[i]] <- rowMeans(mir_9_RPM[grep(i, colnames(mir_9_RPM))]) 
+}
+
+ggplot(melt(mir_9_raw_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,25)
+ggplot(melt(mir_9_RPM_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,25)
+ggplot(melt(mir_9_TMM_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,25)
+
+ggplot(melt(mir_9_raw_ranks_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,12)
+ggplot(melt(mir_9_RPM_ranks_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,12)
+ggplot(melt(mir_9_TMM_ranks_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,12)
+
+melt(mir_9_raw_avg)
+melt(mir_9_RPM_avg)
+melt(mir_9_TMM_avg)
+
+ggplot(melt(mir_9_raw_avg), aes(x = L1, y =(value), col = L1)) + geom_boxplot()+ylim(0,2000000)+ ggtitle(label = "RAW")
+ggplot(melt(mir_9_RPM_avg), aes(x = L1, y =(value), col = L1)) + geom_boxplot()+ylim(0,2000000)+ ggtitle(label = "RPM")
+ggplot(melt(mir_9_TMM_avg), aes(x = L1, y =(value), col = L1)) + geom_boxplot()+ylim(0,2000000)+ ggtitle(label = "TMM")
+
+melt(mir_9_raw_ranks_avg)#rank is not improved by normalization - miR-9 is the top for NEB, secod top for NEXTflex and Deduped and 10 down for Illumina nd 15 down for Clontech
+melt(mir_9_RPM_ranks_avg)
+melt(mir_9_TMM_ranks_avg)
+
 ```
 
 
@@ -250,7 +328,7 @@ raw_table
 percent_table_noBatcheffect<-(raw_table[which(rownames(raw_table) == "TRUE"),] / colSums(raw_table))*100
 percent_table_Batcheffect<-(raw_table[which(rownames(raw_table) == "FALSE"),] / colSums(raw_table))*100
 #round(sapply(qval_df_single, function(x) { table(x > 0.05 )}) / nrow(qval_df_single) * 100, 2)
-percent_table
+
 ```
 
 
@@ -642,7 +720,7 @@ alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTfl
         axis.text.y = element_text(size = 20), 
         axis.title.y = element_text(size =20))
         
-  plot1002 +labs(x = "Rank of miRNA error", y = "log2 Average Expression", title = "Average batch error across kits") + stat_smooth(method = lm) 
+  plot1002 +labs(x = "Rank of miRNA error", y = "log2 Average Expression", title = "Average batch error across kits") + stat_smooth(method = "loess") 
 }
 
 make_exp_plot(alldata = alldata)
@@ -665,7 +743,7 @@ alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTfl
         axis.text.y = element_text(size = 20), 
         axis.title.y = element_text(size =20))
         
-  plot1002 +labs(x = "GC_Content", y = "log2 Average Expression", title = "Average batch error across kits") + stat_smooth(method = lm) 
+  plot1002 +labs(x = "GC_Content", y = "log2 Average Expression", title = "Average batch error across kits") + stat_smooth(method = loess) 
 
 
   alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
