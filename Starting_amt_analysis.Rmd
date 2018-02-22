@@ -100,21 +100,16 @@ colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
 
 library(XML)
 library(RCurl)
-library(rlist)
+
 report_url<-"/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/Kit_comparison_project/report.html"
 report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
 report <-as.data.frame(report)
 report <-report[1:9]
 
 report <-report[seq(from =1, to = nrow(report), by = 5),]
-
-tables <- list.clean(report, fun = is.null, recursive = FALSE)
-n.rows <- unlist(lapply(tables, function(t) dim(t)[1]))
-
-library(rvest)
-file<-read_html(report_url)
-tables<-html_nodes(file, "table")
-table1 <- html_table(tables[1], fill = TRUE) 
+total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
+report$miRNAtotalreads <- miRNAtotal
+report$percentmiRNA <-as.vector((miRNAtotal/total_reads)*100))
 ```
 
 
