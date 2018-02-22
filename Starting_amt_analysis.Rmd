@@ -97,6 +97,24 @@ miR_counts<-miR_counts[-1,]#remove total miRNA counts row
 colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
 colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
 
+
+library(XML)
+library(RCurl)
+library(rlist)
+report_url<-"/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/Kit_comparison_project/report.html"
+report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
+report <-as.data.frame(report)
+report <-report[1:9]
+
+report <-report[seq(from =1, to = nrow(report), by = 5),]
+
+tables <- list.clean(report, fun = is.null, recursive = FALSE)
+n.rows <- unlist(lapply(tables, function(t) dim(t)[1]))
+
+library(rvest)
+file<-read_html(report_url)
+tables<-html_nodes(file, "table")
+table1 <- html_table(tables[1], fill = TRUE) 
 ```
 
 
@@ -243,21 +261,21 @@ grid.draw(vp_500);
 ```{r}
 library(GGally)
 set.seed(42)
-ggpairs(split_amt_thresh$starting_amt_100$Clontech)
-ggpairs(split_amt_thresh$starting_amt_100$NEB)
-ggpairs(split_amt_thresh$starting_amt_100$NEXTflex)
-ggpairs(split_amt_thresh$starting_amt_100$NEXTflex_deduped)
+ggpairs(log2(split_amt_thresh$starting_amt_100$Clontech+1))
+ggpairs(log2(split_amt_thresh$starting_amt_100$NEB+1))
+ggpairs(log2(split_amt_thresh$starting_amt_100$NEXTflex+1))
+ggpairs(log2(split_amt_thresh$starting_amt_100$NEXTflex_deduped+1))
 # estimated density in diagonal
 
-ggpairs(split_amt_thresh$starting_amt_250$Clontech)
-ggpairs(split_amt_thresh$starting_amt_250$NEB)
-ggpairs(split_amt_thresh$starting_amt_250$NEXTflex)
-ggpairs(split_amt_thresh$starting_amt_250$NEXTflex_deduped)
+ggpairs(log2(split_amt_thresh$starting_amt_250$Clontech+1))
+ggpairs(log2(split_amt_thresh$starting_amt_250$NEB+1))
+ggpairs(log2(split_amt_thresh$starting_amt_250$NEXTflex+1))
+ggpairs(log2(split_amt_thresh$starting_amt_250$NEXTflex_deduped+1))
 
-ggpairs(split_amt_thresh$starting_amt_500$Clontech)
-ggpairs(split_amt_thresh$starting_amt_500$NEB)
-ggpairs(split_amt_thresh$starting_amt_500$NEXTflex)
-ggpairs(split_amt_thresh$starting_amt_500$NEXTflex_deduped)
+ggpairs(log2(split_amt_thresh$starting_amt_500$Clontech+1))
+ggpairs(log2(split_amt_thresh$starting_amt_500$NEB+1))
+ggpairs(log2(split_amt_thresh$starting_amt_500$NEXTflex+1))
+ggpairs(log2(split_amt_thresh$starting_amt_500$NEXTflex_deduped+1))
 
 
 ```
@@ -660,6 +678,9 @@ Check the similarity of the data across starting amts for a given kit
 
 ##Split the data
 ```{r}
+#remove second batch for 1000ng
+miR_counts<-miR_counts[-grep("acc", colnames(miR_counts))]
+Pheno <- Pheno [-grep("Accur", Pheno$Batch ),]
 
 ###split the data by Kit
 split_Kit <- list() 
@@ -671,6 +692,7 @@ Pheno_Kit <- list()
 for(i in Pheno$Kit) { 
   Pheno_Kit[[i]] <- data.frame(Pheno[which(Pheno$Kit==i),])
 }
+
 
 ```
 ###TMM Normalization
