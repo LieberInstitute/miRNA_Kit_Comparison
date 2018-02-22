@@ -109,7 +109,13 @@ report <-report[1:9]
 report <-report[seq(from =1, to = nrow(report), by = 5),]
 total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
 report$miRNAtotalreads <- miRNAtotal
-report$percentmiRNA <-as.vector((miRNAtotal/total_reads)*100))
+report$percentmiRNA <-as.vector((miRNAtotal/total_reads)*100)
+report$percentnoncoding <-as.vector((as.numeric(as.character(report$NULL.Other.Noncoding.RNA.Reads))/total_reads)*100)
+report$percentmRNA<-as.vector((as.numeric(as.character(report$NULL.mRNA.Reads))/total_reads)*100)
+report$percenthairpin <-as.vector((as.numeric(as.character(report$NULL.Hairpin.Reads))/total_reads)*100)
+percentages <-report[grep("percent", colnames(report))]
+rownames(percentages) <- report$NULL.File.name.s.
+percentages$total <- rowSums(percentages)
 ```
 
 
