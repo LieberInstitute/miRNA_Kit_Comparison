@@ -96,7 +96,7 @@ here()#should be Kit_comparison_project
 #colnames(isomiR_Counts)<-colnames(isomiR_Counts)[-(grep("row.names", colnames(isomiR_Counts)))]
 #isomiR_Counts<-as.data.frame(isomiR_Counts)
 #Entropy <- isomiR_Counts$Entropy
-#save(isomiR_Counts, file =here("IsomiR_data/isomiR_Counts.rda"))
+
 Pheno<- read.table(here("Pheno_repro_full_1_16_18_ns_kept.txt"), header = T)
 #Counts <-isomiR_Counts[3:101]
 #Counts <-Counts[-grep("fq.", colnames(Counts))]
@@ -142,3 +142,73 @@ for(i in names(norm_miR)) {
 #str(split_norm_Amt)
 ```
 
+################Analysis starts here#########################
+
+```{r}
+library(here)
+here()#should be Kit_comparison_project
+#need subdirectory IsomiR_data with isomirs.csv inside
+#isomiR_Counts <-read.table(here("IsomiR_data/isomirs.csv"), header = TRUE, sep = ",", row.names = NULL)
+#colnames(isomiR_Counts)<-colnames(isomiR_Counts)[-(grep("row.names", colnames(isomiR_Counts)))]
+#isomiR_Counts<-as.data.frame(isomiR_Counts)
+#Entropy <- isomiR_Counts$Entropy
+#save(isomiR_Counts, file =here("IsomiR_data/isomiR_Counts.rda"))
+Pheno<- read.table(here("Pheno_repro_full_1_16_18_ns_kept.txt"), header = T)
+#Counts <-isomiR_Counts[3:101]
+#Counts <-Counts[-grep("fq.", colnames(Counts))]
+
+#colnames(Counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(Counts))
+#colnames(Counts)<-gsub("NEXT_", "NEXTflex_", colnames(Counts))
+
+#save(Counts, file =here("IsomiR_data/Counts.rda"))
+#save(Entropy, file = here("IsomiR_data/Entropy.rda"))
+
+Pheno<-vapply(strsplit(names(Counts),"_"), `[`, 1, FUN.VALUE=character(1))
+load(here("IsomiR_data/Entropy.rda"))
+load(here("IsomiR_data/Counts.rda"))
+Pheno_simple <- read.table("Pheno_simple.txt", header = TRUE)
+
+#remove 2nd batch of 1000
+Counts_clean <- Counts[-grep("2", Pheno_simple$Batch),]# can't do on my laptop
+
+```
+
+###TMM Normalization
+
+Normalization by kit for each starting amount - to allow tests to compare kits
+
+```{r, eval= TRUE, echo =FALSE}
+library(edgeR)
+
+norm_isomiR <-list()
+d<-DGEList(counts = Counts, group = Pheno_simple$Kit)
+miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
+norm_isomiR[[i]] <-data.frame(TMM$pseudo.counts)
+}
+
+for(i in unique(Pheno_simple$Kit)){
+d<-DGEList(counts = Counts[grep(i, colnames(Counts))], group = Pheno_simple$Kit[which(Pheno_simple$Kit==i)])
+miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
+norm_isomiR[[i]] <-data.frame(TMM$pseudo.counts)
+}
+
+NEXTflex <- Counts[grep(i, colnames())]
+
+#str(norm_isomiR)
+
+```
+
+Now split normalized data by kit for each amount
+```{r}
+
+split_norm_Kit <- list() 
+for(i in names(norm_miR)) {
+  for(kit in unique(Pheno_Amt[[i]][3]$Kit))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
+  split_norm_Kit[[i]][[kit]] <-data.frame(norm_isomiR[[i]][which(Pheno_Amt[[i]][3] == kit)]) # take only the values that correspond to that kit for that amount
+}
+#str(split_norm_Amt)
+```
+
+results in nice format
