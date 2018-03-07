@@ -95,6 +95,8 @@ dim(norm_miR_1000)
 
 ###For Marc
 ```{r}
+library(ggplot2)
+library(reshape2)
 ranks_number <-sapply(miR_1000_raw, rank, ties.method = "random") # where 1 is the lowest - no ties -randomly chooses
 ranks_number <-data.frame(ranks_number)
 ranks_number$miRNA<- rownames(miR_1000_raw)
