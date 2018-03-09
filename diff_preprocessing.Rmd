@@ -1,0 +1,117 @@
+---
+title: "compare preprocessing steps"
+author: "Carrie Wright"
+date: "3/9/2018"
+output: html_document
+---
+##**Accur Data - see SRV2**
+restricted trimming only but with size 16 limit instead of 18 to accomodate all synth sequences.
+
+two data types: - Ns removed and Ns kept versions... also Salmon... could do more with that.
+
+##**Repro Data**
+
+Produced data in 4 ways:
+
+1) restricted trimming/allignment about length to reduce the inclusion of reads less than 18 base pairs
+
+2) liberal trimming/allignment for length
+
+For each of these we also did 2 ways for the Deduped data:
+
+1) Keep reads with UMIs that have Ns
+
+2) Remove reads with UMIs that have Ns
+
+Here is the trimming code for restrictive method:
+
+**NEXTflex**
+
+            cutadapt -a TGGAATTCTCGGGTGCCAAGG -o Filenameout FilenameIn
+            cutadapt -u 4 -o Filenameout FilenameIn
+            cutadpat -m 18 -u -4 -o Filenameout FilenameIn
+            
+**NEXTflex_Deduped**
+
+            cutadapt -a TGGAATTCTCGGGTGCCAAGG -o Filenameout FilenameIn
+            cutadapt -u 4 -o Filenameout FilenameIn
+            cutadpat -m 18 -u -4 -o Filenameout FilenameIn
+            
+**bowtie allignment for deduping**
+    
+      -n 0 
+            
+**Clontech**
+
+            cutadpat -m 18 -u 3 -a AAAAAAAAAA-o Filenameout FilenameIn   
+
+**Illumina**
+
+            cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG -o Filenameout FilenameIn
+**NEB**     
+
+            cutadapt -m 18 -a AGATCGGAAGAGCACACGTCT -o Filenameout FilenameIn
+ 
+
+
+Here is the trimming code for the liberal method: - need to redo trimming for CLONTECH, NEB, and ILLUMINA!!!!!!!!!!! - was done with 16 not 10
+
+**NEXTflex**
+
+            cutadapt -a TGGAATTCTCGGGTGCCAAGG -o Filenameout FilenameIn
+            cutadapt -u 4 -o Filenameout FilenameIn
+            cutadpat -m 10 -u -4 -o Filenameout FilenameIn
+            
+**NEXTflex_Deduped**
+
+            cutadapt -a TGGAATTCTCGGGTGCCAAGG -o Filenameout FilenameIn
+            cutadapt -u 4 -o Filenameout FilenameIn
+            cutadpat -m 10 -u -4 -o Filenameout FilenameIn
+
+**bowtie alignment for deduping**
+
+            -n 0    is not included!
+**Clontech**
+
+            cutadpat -m 10 -u 3 -a AAAAAAAAAA-o Filenameout FilenameIn   
+
+**Illumina**
+
+            cutadapt -m 10 -a TGGAATTCTCGGGTGCCAAGG -o Filenameout FilenameIn
+**NEB**     
+
+            cutadapt -m 10 -a AGATCGGAAGAGCACACGTCT -o Filenameout FilenameIn
+ 
+
+        
+ 107000244 Clontech_trimmed.1.fq
+ 22434996 Illumina_trimmed.1.fq
+ 64938992 NEB_trimmed.1.fq
+            
+            
+miRge for restrictive trimming method Ns removed     
+```{bash, eval = FALSE}
+perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles 
+
+NEED to move the files to these names when they are finished
+
+mm0_acc_Clontech_acc_trimmed.1_R1.fq,mm0_acc_Clontech_acc_trimmed.2_R1.fq,mm0_acc_Clontech_acc_trimmed.3_R1.fq,mm0_acc_Illumina_trimmed.1_R1.fq,mm0_acc_Illumina_trimmed.2_R1.fq,mm0_acc_Illumina_trimmed.3_R1.fq,mm0_acc_NEB_trimmed.1_R1.fq,mm0_acc_NEB_trimmed.2_R1.fq,mm0_acc_NEB_trimmed.3_R1.fq,mm0_acc_NEXT_trimmed.1_R1.fq,mm0_acc_NEXT_trimmed.2_R1.fq,mm0_acc_NEXT_trimmed.3_R1.fq,directional_deduped_acc_Ns_rem_1_UMItools.bam,directional_deduped_acc_Ns_rem_2_UMItools.bam,directional_deduped_acc_Ns_rem_3_UMItools.bam,
+
+mm0_Clontech_trimmed.1_R1.fq,mm0_Clontech_trimmed.2_R1.fq,mm0_Clontech_trimmed.3_R1.fq,mm0_Clontech_trimmed.4_R1.fq,mm0_Clontech_trimmed.5_R1.fq,mm0_Clontech_trimmed.6_R1.fq,mm0_Clontech_trimmed.7_R1.fq,mm0_Clontech_trimmed.8_R1.fq,mm0_Clontech_trimmed.9_R1.fq,mm0_Clontech_trimmed.10_R1.fq,mm0_Clontech_trimmed.11_R1.fq,mm0_Clontech_trimmed.12_R1.fq,mm0_Clontech_trimmed.13_R1.fq,mm0_Clontech_trimmed.14_R1.fq,mm0_Clontech_trimmed.15_R1.fq,mm0_Clontech_trimmed.16_R1.fq,mm0_Clontech_trimmed.17_R1.fq,mm0_Clontech_trimmed.18_R1.fq,mm0_Illumina_trimmed.1_R1.fq,mm0_Illumina_trimmed.2_R1.fq,mm0_Illumina_trimmed.3_R1.fq,mm0_Illumina_trimmed.4_R1.fq,mm0_Illumina_trimmed.5_R1.fq,mm0_Illumina_trimmed.6_R1.fq,mm0_Illumina_trimmed.7_R1.fq,mm0_Illumina_trimmed.8_R1.fq,mm0_Illumina_trimmed.9_R1.fq,mm0_NEB_trimmed.1_R1.fq,mm0_NEB_trimmed.2_R1.fq,mm0_NEB_trimmed.3_R1.fq,mm0_NEB_trimmed.4_R1.fq,mm0_NEB_trimmed.5_R1.fq,mm0_NEB_trimmed.6_R1.fq,mm0_NEB_trimmed.7_R1.fq,mm0_NEB_trimmed.8_R1.fq,mm0_NEB_trimmed.9_R1.fq,mm0_NEB_trimmed.10_R1.fq,mm0_NEB_trimmed.11_R1.fq,mm0_NEB_trimmed.12_R1.fq,mm0_NEXT_trimmed.1_R1.fq,mm0_NEXT_trimmed.2_R1.fq,mm0_NEXT_trimmed.3_R1.fq,mm0_NEXT_trimmed.4_R1.fq,mm0_NEXT_trimmed.5_R1.fq,mm0_NEXT_trimmed.6_R1.fq,mm0_NEXT_trimmed.7_R1.fq,mm0_NEXT_trimmed.8_R1.fq,mm0_NEXT_trimmed.9_R1.fq,mm0_NEXT_trimmed.10_R1.fq,mm0_NEXT_trimmed.11_R1.fq,mm0_NEXT_trimmed.12_R1.fq,mm0_NEXT_trimmed.13_R1.fq,mm0_NEXT_trimmed.14_R1.fq,mm0_NEXT_trimmed.15_R1.fq,mm0_NEXT_trimmed.16_R1.fq,mm0_NEXT_trimmed.17_R1.fq,mm0_NEXT_trimmed.18_R1.fq,directional_dedupped_Ns_rem_1_rest_trimming.fq,directional_dedupped_Ns_rem_2_rest_trimming.fq,directional_dedupped_Ns_rem_3_rest_trimming.fq,directional_dedupped_Ns_rem_4_rest_trimming.fq,directional_dedupped_Ns_rem_5_rest_trimming.fq,directional_dedupped_Ns_rem_6_rest_trimming.fq,directional_dedupped_Ns_rem_7_rest_trimming.fq,directional_dedupped_Ns_rem_8_rest_trimming.fq,directional_dedupped_Ns_rem_9_rest_trimming.fq,directional_dedupped_Ns_rem_10_rest_trimming.fq,directional_dedupped_Ns_rem_11_rest_trimming.fq,directional_dedupped_Ns_rem_12_rest_trimming.fq,directional_dedupped_Ns_rem_13_rest_trimming.fq,directional_dedupped_Ns_rem_14_rest_trimming.fq,directional_dedupped_Ns_rem_15_rest_trimming.fq,directional_dedupped_Ns_rem_16_rest_trimming.fq,directional_dedupped_Ns_rem_17_rest_trimming.fq,directional_dedupped_Ns_rem_18_rest_trimming.fq
+
+```
+
+miRge for restrictive trimming method Ns Kept - Use the dated  deduped repro data- may need to remake the acc deduped data 
+
+```{bash, eval = FALSE}
+perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles 
+
+NEED to move the files to these names when they are finished
+
+mm0_acc_Clontech_acc_trimmed.1_R1.fq,mm0_acc_Clontech_acc_trimmed.2_R1.fq,mm0_acc_Clontech_acc_trimmed.3_R1.fq,mm0_acc_Illumina_trimmed.1_R1.fq,mm0_acc_Illumina_trimmed.2_R1.fq,mm0_acc_Illumina_trimmed.3_R1.fq,mm0_acc_NEB_trimmed.1_R1.fq,mm0_acc_NEB_trimmed.2_R1.fq,mm0_acc_NEB_trimmed.3_R1.fq,mm0_acc_NEXT_trimmed.1_R1.fq,mm0_acc_NEXT_trimmed.2_R1.fq,mm0_acc_NEXT_trimmed.3_R1.fq,directional_deduped_acc_Ns_rem_1_UMItools.bam,directional_deduped_acc_Ns_rem_2_UMItools.bam,directional_deduped_acc_Ns_rem_3_UMItools.bam,
+
+mm0_Clontech_trimmed.1_R1.fq,mm0_Clontech_trimmed.2_R1.fq,mm0_Clontech_trimmed.3_R1.fq,mm0_Clontech_trimmed.4_R1.fq,mm0_Clontech_trimmed.5_R1.fq,mm0_Clontech_trimmed.6_R1.fq,mm0_Clontech_trimmed.7_R1.fq,mm0_Clontech_trimmed.8_R1.fq,mm0_Clontech_trimmed.9_R1.fq,mm0_Clontech_trimmed.10_R1.fq,mm0_Clontech_trimmed.11_R1.fq,mm0_Clontech_trimmed.12_R1.fq,mm0_Clontech_trimmed.13_R1.fq,mm0_Clontech_trimmed.14_R1.fq,mm0_Clontech_trimmed.15_R1.fq,mm0_Clontech_trimmed.16_R1.fq,mm0_Clontech_trimmed.17_R1.fq,mm0_Clontech_trimmed.18_R1.fq,mm0_Illumina_trimmed.1_R1.fq,mm0_Illumina_trimmed.2_R1.fq,mm0_Illumina_trimmed.3_R1.fq,mm0_Illumina_trimmed.4_R1.fq,mm0_Illumina_trimmed.5_R1.fq,mm0_Illumina_trimmed.6_R1.fq,mm0_Illumina_trimmed.7_R1.fq,mm0_Illumina_trimmed.8_R1.fq,mm0_Illumina_trimmed.9_R1.fq,mm0_NEB_trimmed.1_R1.fq,mm0_NEB_trimmed.2_R1.fq,mm0_NEB_trimmed.3_R1.fq,mm0_NEB_trimmed.4_R1.fq,mm0_NEB_trimmed.5_R1.fq,mm0_NEB_trimmed.6_R1.fq,mm0_NEB_trimmed.7_R1.fq,mm0_NEB_trimmed.8_R1.fq,mm0_NEB_trimmed.9_R1.fq,mm0_NEB_trimmed.10_R1.fq,mm0_NEB_trimmed.11_R1.fq,mm0_NEB_trimmed.12_R1.fq,mm0_NEXT_trimmed.1_R1.fq,mm0_NEXT_trimmed.2_R1.fq,mm0_NEXT_trimmed.3_R1.fq,mm0_NEXT_trimmed.4_R1.fq,mm0_NEXT_trimmed.5_R1.fq,mm0_NEXT_trimmed.6_R1.fq,mm0_NEXT_trimmed.7_R1.fq,mm0_NEXT_trimmed.8_R1.fq,mm0_NEXT_trimmed.9_R1.fq,mm0_NEXT_trimmed.10_R1.fq,mm0_NEXT_trimmed.11_R1.fq,mm0_NEXT_trimmed.12_R1.fq,mm0_NEXT_trimmed.13_R1.fq,mm0_NEXT_trimmed.14_R1.fq,mm0_NEXT_trimmed.15_R1.fq,mm0_NEXT_trimmed.16_R1.fq,mm0_NEXT_trimmed.17_R1.fq,mm0_NEXT_trimmed.18_R1.fq,directional_dedupped_Ns_rem_1_rest_trimming.fq,directional_dedupped_Ns_rem_2_rest_trimming.fq,directional_dedupped_Ns_rem_3_rest_trimming.fq,directional_dedupped_Ns_rem_4_rest_trimming.fq,directional_dedupped_Ns_rem_5_rest_trimming.fq,directional_dedupped_Ns_rem_6_rest_trimming.fq,directional_dedupped_Ns_rem_7_rest_trimming.fq,directional_dedupped_Ns_rem_8_rest_trimming.fq,directional_dedupped_Ns_rem_9_rest_trimming.fq,directional_dedupped_Ns_rem_10_rest_trimming.fq,directional_dedupped_Ns_rem_11_rest_trimming.fq,directional_dedupped_Ns_rem_12_rest_trimming.fq,directional_dedupped_Ns_rem_13_rest_trimming.fq,directional_dedupped_Ns_rem_14_rest_trimming.fq,directional_dedupped_Ns_rem_15_rest_trimming.fq,directional_dedupped_Ns_rem_16_rest_trimming.fq,directional_dedupped_Ns_rem_17_rest_trimming.fq,directional_dedupped_Ns_rem_18_rest_trimming.fq
+
+```
+
+
