@@ -83,11 +83,9 @@ awk4='{getline p<f} (NR%4==1){$1=$1" "$2;$2=p}1'
 miRge command on SRV2
 ```{bash, eval = FALSE}
 #located here: carrie@srv02:~/miRge/miRge-master/isomiR_study_2_20_18
-perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles Clontech_trimmed.1.fq,Clontech_trimmed.2.fq,Clontech_trimmed.3.fq,Clontech_trimmed.4.fq,Clontech_trimmed.5.fq,Clontech_trimmed.6.fq,Clontech_trimmed.7.fq,Clontech_trimmed.8.fq,Clontech_trimmed.9.fq,Clontech_trimmed.10.fq,Clontech_trimmed.11.fq,Clontech_trimmed.12.fq,Clontech_trimmed.13.fq,Clontech_trimmed.14.fq,Clontech_trimmed.15.fq,Clontech_trimmed.16.fq,Clontech_trimmed.17.fq,Clontech_trimmed.18.fq,Clontech_trimmed.1_acc.fq,Clontech_trimmed.2_acc.fq,Clontech_trimmed.3_acc.fq,Illumina_trimmed.1.fq,Illumina_trimmed.2.fq,Illumina_trimmed.3.fq,Illumina_trimmed.4.fq,Illumina_trimmed.5.fq,Illumina_trimmed.6.fq,Illumina_trimmed.7.fq,Illumina_trimmed.8.fq,Illumina_trimmed.9.fq,Illumina_trimmed.1_acc.fq,Illumina_trimmed.2_acc.fq,Illumina_trimmed.3_acc.fq,NEB_trimmed.1.fq,NEB_trimmed.2.fq,NEB_trimmed.3.fq,NEB_trimmed.4.fq,NEB_trimmed.5.fq,NEB_trimmed.6.fq,NEB_trimmed.7.fq,NEB_trimmed.8.fq,NEB_trimmed.9.fq,NEB_trimmed.10.fq,NEB_trimmed.11.fq,NEB_trimmed.12.fq,NEB_trimmed.1_acc.fq,NEB_trimmed.2_acc.fq,NEB_trimmed.3_acc.fq,NEXT_trimmed.1.fq,NEXT_trimmed.1.fq,NEXT_trimmed.2.fq,NEXT_trimmed.3.fq,NEXT_trimmed.4.fq,NEXT_trimmed.5.fq,NEXT_trimmed.6.fq,NEXT_trimmed.7.fq,NEXT_trimmed.8.fq,NEXT_trimmed.9.fq,NEXT_trimmed.10.fq,NEXT_trimmed.11.fq,NEXT_trimmed.12.fq,NEXT_trimmed.13.fq,NEXT_trimmed.14.fq,NEXT_trimmed.15.fq,NEXT_trimmed.16.fq,NEXT_trimmed.17.fq,NEXT_trimmed.18.fq,NEXT_trimmed.1_acc.fq,NEXT_trimmed.2_acc.fq,NEXT_trimmed.3_acc.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_2_TEST.fq,directional_dedupped_Ns_kept_3_TEST.fq,directional_dedupped_Ns_kept_4_TEST.fq,directional_dedupped_Ns_kept_5_TEST.fq,directional_dedupped_Ns_kept_6_TEST.fq,directional_dedupped_Ns_kept_7_TEST.fq,directional_dedupped_Ns_kept_8_TEST.fq,directional_dedupped_Ns_kept_9_TEST.fq,directional_dedupped_Ns_kept_10_TEST.fq,directional_dedupped_Ns_kept_11_TEST.fq,directional_dedupped_Ns_kept_12_TEST.fq,directional_dedupped_Ns_kept_13_TEST.fq,directional_dedupped_Ns_kept_14_TEST.fq,directional_dedupped_Ns_kept_15_TEST.fq,directional_dedupped_Ns_kept_16_TEST.fq,directional_dedupped_Ns_kept_17_TEST.fq,directional_dedupped_Ns_kept_18_TEST.fq,directional_dedupped_Ns_kept_1_acc_TEST.fq,directional_dedupped_Ns_kept_2_acc_TEST.fq,directional_dedupped_Ns_kept_3_acc_TEST.fq
-
-
-#redoing
 perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles Clontech_trimmed.1.fq,Clontech_trimmed.2.fq,Clontech_trimmed.3.fq,Clontech_trimmed.4.fq,Clontech_trimmed.5.fq,Clontech_trimmed.6.fq,Clontech_trimmed.7.fq,Clontech_trimmed.8.fq,Clontech_trimmed.9.fq,Clontech_trimmed.10.fq,Clontech_trimmed.11.fq,Clontech_trimmed.12.fq,Clontech_trimmed.13.fq,Clontech_trimmed.14.fq,Clontech_trimmed.15.fq,Clontech_trimmed.16.fq,Clontech_trimmed.17.fq,Clontech_trimmed.18.fq,Clontech_trimmed.1_acc.fq,Clontech_trimmed.2_acc.fq,Clontech_trimmed.3_acc.fq,Illumina_trimmed.1.fq,Illumina_trimmed.2.fq,Illumina_trimmed.3.fq,Illumina_trimmed.4.fq,Illumina_trimmed.5.fq,Illumina_trimmed.6.fq,Illumina_trimmed.7.fq,Illumina_trimmed.8.fq,Illumina_trimmed.9.fq,Illumina_trimmed.1_acc.fq,Illumina_trimmed.2_acc.fq,Illumina_trimmed.3_acc.fq,NEB_trimmed.1.fq,NEB_trimmed.2.fq,NEB_trimmed.3.fq,NEB_trimmed.4.fq,NEB_trimmed.5.fq,NEB_trimmed.6.fq,NEB_trimmed.7.fq,NEB_trimmed.8.fq,NEB_trimmed.9.fq,NEB_trimmed.10.fq,NEB_trimmed.11.fq,NEB_trimmed.12.fq,NEB_trimmed.1_acc.fq,NEB_trimmed.2_acc.fq,NEB_trimmed.3_acc.fq,NEXT_trimmed.1.fq,NEXT_trimmed.2.fq,NEXT_trimmed.3.fq,NEXT_trimmed.4.fq,NEXT_trimmed.5.fq,NEXT_trimmed.6.fq,NEXT_trimmed.7.fq,NEXT_trimmed.8.fq,NEXT_trimmed.9.fq,NEXT_trimmed.10.fq,NEXT_trimmed.11.fq,NEXT_trimmed.12.fq,NEXT_trimmed.13.fq,NEXT_trimmed.14.fq,NEXT_trimmed.15.fq,NEXT_trimmed.16.fq,NEXT_trimmed.17.fq,NEXT_trimmed.18.fq,NEXT_trimmed.1_acc.fq,NEXT_trimmed.2_acc.fq,NEXT_trimmed.3_acc.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_2_TEST.fq,directional_dedupped_Ns_kept_3_TEST.fq,directional_dedupped_Ns_kept_4_TEST.fq,directional_dedupped_Ns_kept_5_TEST.fq,directional_dedupped_Ns_kept_6_TEST.fq,directional_dedupped_Ns_kept_7_TEST.fq,directional_dedupped_Ns_kept_8_TEST.fq,directional_dedupped_Ns_kept_9_TEST.fq,directional_dedupped_Ns_kept_10_TEST.fq,directional_dedupped_Ns_kept_11_TEST.fq,directional_dedupped_Ns_kept_12_TEST.fq,directional_dedupped_Ns_kept_13_TEST.fq,directional_dedupped_Ns_kept_14_TEST.fq,directional_dedupped_Ns_kept_15_TEST.fq,directional_dedupped_Ns_kept_16_TEST.fq,directional_dedupped_Ns_kept_17_TEST.fq,directional_dedupped_Ns_kept_18_TEST.fq,directional_dedupped_Ns_kept_1_acc_TEST.fq,directional_dedupped_Ns_kept_2_acc_TEST.fq,directional_dedupped_Ns_kept_3_acc_TEST.fq
+
+
 ```
 
 
@@ -119,6 +117,169 @@ here()#should be Kit_comparison_project
 
 Need to convert from RPM to raw counts
 
+
+```{r}
+library(here)
+Pheno<- read.table(here("../Pheno_repro_full_1_16_18_ns_kept"), header = TRUE)
+#miR_counts<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/miR.Counts.csv"), header = TRUE, sep = ",")
+#iso_RPM<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/isomirs.csv"), header = TRUE, sep = ",")
+iso_RPM<-read.table(here("IsomiR_data_new_incomplete/isomirs.csv"), header = TRUE, sep = ",", row.names=NULL)
+#fixing the columns
+iso_data<-iso_RPM[1:(length(colnames(iso_RPM))-1)]
+colnames(iso_data)<-colnames(iso_RPM)[2:(length(colnames(iso_RPM)))]
+iso_RPM2 <- iso_data[,4:length(colnames(iso_data))-1]
+iso_RPM2 <- iso_RPM2[-3179382,]
+iso_RPM2_anno<-iso_data[1:2]
+
+library(XML)
+report_url<-here("IsomiR_data_new_incomplete/report.html")
+#report_url<-here("IsomiR_data/report.html")
+urltxt <- readLines(report_url)
+report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
+report <- report [-length(report)]
+report <-as.data.frame(report)
+report <-report[1:9]
+report <-report[seq(from =1, to = nrow(report), by = 5),]
+total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
+total_miRNA<-vapply(strsplit(as.character(report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads),"/"),`[`, 1, FUN.VALUE=character(1))
+total_miRNA<-gsub("[[:blank:]]", "", total_miRNA)
+total_miRNA<-as.numeric(as.character(total_miRNA))
+###convert to raw counts... use miR_counts to get total miRNA mapped number - so the miRcounts I believe includes all sequences that allign - isomir and canonical
+#Total<-(miR_counts[1,])[-1] #remove miRNA column
+Total<-(total_miRNA) #remove miRNA column
+
+rep.row<-function(x,n){
+   matrix(rep(x,each=n),nrow=n)
+}
+dim(iso_RPM2)
+Totalmatrix<-rep.row((Total/1000000), 3179382)#width of isoRPM2
+
+iso_Raw<- (iso_RPM2)*(as.numeric(Totalmatrix))
+iso_anno <-iso_RPM2_anno
+
+iso_Raw <-as.data.frame(sapply(iso_Raw, as.integer))
+
+Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
+###split the data by starting Amount
+split_startingAmt <- list() 
+for(i in Pheno$startingAmt) { 
+  split_startingAmt[[i]] <- data.frame(iso_Raw[which(Pheno$startingAmt==i)])
+}
+###split the pheno by starting Amount
+Pheno_Amt <- list() 
+for(i in Pheno$startingAmt) { 
+  Pheno_Amt[[i]] <- data.frame(Pheno[which(Pheno$startingAmt==i),])
+}
+
+norm_miR <-list()
+for(i in unique(Pheno$startingAmt)){
+d<-DGEList(counts = split_startingAmt[[i]], group = Pheno$Kit[which(Pheno$startingAmt==i)])
+miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
+norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
+}
+
+
+split_norm_Amt <- list() 
+for(i in names(norm_miR)) {
+  for(kit in unique(Pheno_Amt[[i]][3]$Kit))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
+  split_norm_Amt[[i]][[kit]] <-data.frame(norm_miR[[i]][which(Pheno_Amt[[i]][3] == kit)]) # take only the values that correspond to that kit for that amount
+}
+
+
+library(genefilter)
+
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 100 normalized reads in all samples of the set... 
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+
+thresh <-list()
+for(amt in names(split_norm_Amt)){
+thresh[[amt]]<-lapply(split_norm_Amt[[amt]], genefilt_fun)}
+
+test <-split_norm_Amt$starting_amt_1000$Clontech[thresh$starting_amt_1000$Clontech,]
+
+split_amt_thresh <-list()
+for(amt in names(split_norm_Amt)){
+for(kit in names(split_norm_Amt[[amt]])){
+ split_amt_thresh[[amt]][[kit]]<- split_norm_Amt[[amt]][[kit]][thresh[[amt]][[kit]],]}
+}
+
+library(VennDiagram)
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 5
+cols = gg_color_hue(n)
+cols <-c(cols[1], cols[3:5])
+
+vp_100 <- venn.diagram(miRNA_det_100, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_250 <- venn.diagram(miRNA_det_250, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_500 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_1000 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_1500 <- venn.diagram(miRNA_det_1500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_2000 <- venn.diagram(miRNA_det_2000, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+
+#detected miRNAs
+
+head(iso_anno[rownames(split_amt_thresh$starting_amt_100$Clontech),])
+get_miRNAs <- function(x) {rownames(as.data.frame(x))}
+miRNA_det_100<-lapply(split_amt_thresh$starting_amt_100,get_miRNAs)
+lengths<-lapply(miRNA_det_100, length)
+lengths<- paste0(lengths, "\n")
+names(miRNA_det_100) <-paste0(names(miRNA_det_100), "\n")
+names(miRNA_det_100) <-paste0(names(miRNA_det_100), lengths)
+
+miRNA_det_250<-lapply(split_amt_thresh$starting_amt_250,get_miRNAs)
+lengths<-lapply(miRNA_det_250, length)
+names(miRNA_det_250) <-paste0(names(miRNA_det_250), "\n")
+names(miRNA_det_250) <-paste0(names(miRNA_det_250), lengths)
+
+miRNA_det_500<-lapply(split_amt_thresh$starting_amt_500,get_miRNAs)
+lengths<-lapply(miRNA_det_500, length)
+names(miRNA_det_500) <-paste0(names(miRNA_det_500), "\n")
+names(miRNA_det_500) <-paste0(names(miRNA_det_500), lengths)
+
+miRNA_det_1000<-lapply(split_amt_thresh$starting_amt_1000,get_miRNAs)
+lengths<-lapply(miRNA_det_1000, length)
+names(miRNA_det_1000) <-paste0(names(miRNA_det_1000), "\n")
+names(miRNA_det_1000) <-paste0(names(miRNA_det_1000), lengths)
+
+miRNA_det_1500<-lapply(split_amt_thresh$starting_amt_1500,get_miRNAs)
+lengths<-lapply(miRNA_det_1500, length)
+names(miRNA_det_1500) <-paste0(names(miRNA_det_1500), "\n")
+names(miRNA_det_1500) <-paste0(names(miRNA_det_1500), lengths)
+
+miRNA_det_2000<-lapply(split_amt_thresh$starting_amt_2000,get_miRNAs)
+lengths<-lapply(miRNA_det_2000, length)
+names(miRNA_det_2000) <-paste0(names(miRNA_det_2000), "\n")
+names(miRNA_det_2000) <-paste0(names(miRNA_det_2000), lengths)
+
+library(VennDiagram)
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 5
+cols = gg_color_hue(n)
+cols <-c(cols[1], cols[3:5])
+
+vp_100 <- venn.diagram(miRNA_det_100, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_250 <- venn.diagram(miRNA_det_250, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_500 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_1000 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_1500 <- venn.diagram(miRNA_det_1500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_2000 <- venn.diagram(miRNA_det_2000, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+
+```
+
+
+```
+
+
 ```{r, eval  = FALSE}
 
 ###Will output two additional files, isomirs.csv and isomirs.samples.csv. The first file has the entropy of each isomir as compared with their canonical miRNAs - % of time noncanonical - higher number means less canonical more isomirs. The second file contains the entropy of each miRNA across all isomirs and determines the % of miRNA reads that are canonical. This is done by dividing the sum of all non-edited, but length variable miRNA reads against the sum of these reads plus all isomiR (RNA-edited) reads. This can be used to flag miRNAs that are predominately ####non-canonical isomiRs and may represent sequencing errors. For example, if a miRNA is only 5% canonical, that would be worrisome and suggest a possible misidentification.
@@ -136,7 +297,7 @@ iso_RPM <-iso_RPM[-grep("fq.", colnames(iso_RPM))]# to remove extra files.....
 isosamples<- read.table(here("isomiR_data_extended/isomirs.samples.csv"), header = T, sep = ",", row.names=NULL)
 isosamples <-isosamples[-grep("RPM.", colnames(isosamples))]# to remove extra files.....
 
-miR_counts <- read.table(here("isomiR_data_extended/miR.Counts.csv"),header = T, sep = ",")
+miR_counts <- read.table(here("isomiR_data/miR.Counts.csv"),header = T, sep = ",")
 miR_counts <-miR_counts[-grep("fq.", colnames(miR_counts))]# to remove extra files.....
 
 #fixing the columns
@@ -169,7 +330,7 @@ Totalmatrix<-rep.row((Total/1000000), 4430447)#width of isoRPM2
 iso_Raw<- (iso_RPM2)*(as.numeric(Totalmatrix))
 #save(iso_Raw, file = here("isomiR_data_extended/iso_Raw.rda"))
 iso_anno <-iso_RPM2_anno
-save(iso_anno, file = here("isomiR_data_extended/iso_anno.rda"))
+#save(iso_anno, file = here("isomiR_data_extended/iso_anno.rda"))
 
 ##########
 
@@ -281,12 +442,12 @@ ffun <- filterfun(poverafun)
 genefilt_fun<- function(x){genefilter(x, ffun)}
 
 thresh <-list()
-for(amt in names(split_norm_Amt))
-thresh[[amt]]<-lapply(split_norm_Amt[[amt]], genefilt_fun)
+for(amt in names(split_norm_Amt)){
+thresh[[amt]]<-lapply(split_norm_Amt[[amt]], genefilt_fun)}
 
 Can_thresh <-list()
-for(amt in names(Can_split_norm_Amt))
-Can_thresh[[amt]]<-lapply(Can_split_norm_Amt[[amt]], genefilt_fun)
+for(amt in names(Can_split_norm_Amt)){
+Can_thresh[[amt]]<-lapply(Can_split_norm_Amt[[amt]], genefilt_fun)}
 
 
 test <-split_norm_Amt$starting_amt_1000$Clontech[thresh$starting_amt_1000$Clontech,]
@@ -426,7 +587,7 @@ boxplot(split_total_miRNA)
 report stats
 ```{r}
 library(XML)
-report_url<-here("isomiR_data/report.html")
+report_url<-here("IsomiR_data_new_incomplete/report.html")
 urltxt <- readLines(report_url)
 report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
 report <- report [-length(report)]
