@@ -180,6 +180,7 @@ for(i in Pheno$startingAmt) {
   Pheno_Amt[[i]] <- data.frame(Pheno[which(Pheno$startingAmt==i),])
 }
 
+library(edgeR)
 norm_miR <-list()
 for(i in unique(Pheno$startingAmt)){
 d<-DGEList(counts = split_startingAmt[[i]], group = Pheno$Kit[which(Pheno$startingAmt==i)])
