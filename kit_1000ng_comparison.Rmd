@@ -7,11 +7,15 @@ output: html_document
 
 ```{r, eval=TRUE, echo=FALSE}
 library(edgeR)
-Pheno<- read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/Pheno_repro_full_1_16_18_ns_kept", header = T)
+library(here)
+
+#Pheno<- read.table(here("../Pheno_repro_full_1_16_18_ns_kept"), header = T)
+Pheno<- read.table(here("Brain_liberal_trimmed_Ns_kept_Data/Pheno.csv"), header = T, sep = ",")
 Pheno1000 <- Pheno[which(Pheno$startingAmt =="1000"),]
 
 #miR_counts<-read.table("/home/carrie/miRge/miRge-master/Keeping_Ns_Repro_Analysis/miR.Counts.csv", header = TRUE, sep = ",") #original location
-miR_counts<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/ReproData/miR.Counts.csv", header = TRUE, sep = ",")
+#miR_counts<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/ReproData/miR.Counts.csv", header = TRUE, sep = ",")
+miR_counts<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/miR.Counts.csv"), header = TRUE, sep = ",")
 
 rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
 miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
