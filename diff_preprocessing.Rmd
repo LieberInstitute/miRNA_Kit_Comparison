@@ -4,6 +4,28 @@ author: "Carrie Wright"
 date: "3/9/2018"
 output: html_document
 ---
+
+Now I am trying cut with size lim of 16 and with liberal alignment to see if we can use just this for the analyses... I will try removing reads with Ns - if this doesn't provide enough isomirs than I will try without removing reads with Ns
+
+I am currently doing the trimming for both accuracy and repro sets  into trimmed_fastq_int
+
+I will use the same alignment code as the liberal but with 16 instead of 10 for the deduped trimming...
+
+
+```{bash, eval = FALSE}
+carrie@srv02:~/miRge/miRge-master$ perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles Clontech_trimmed.1_acc.fq,Clontech_trimmed.2_acc.fq,Clontech_trimmed.3_acc.fq,Illumina_trimmed.1_acc.fq,Illumina_trimmed.2_acc.fq,Illumina_trimmed.3_acc.fq,NEB_trimmed.1_acc.fq,NEB_trimmed.2_acc.fq,NEB_trimmed.3_acc.fq,NEXT_trimmed.1_acc.fq,NEXT_trimmed.2_acc.fq,NEXT_trimmed.3_acc.fq,directional_deduped_int_trim_Ns_rem_1_acc.fq,directional_deduped_int_trim_Ns_rem_2_acc.fq,directional_deduped_int_trim_Ns_rem_3_acc.fq,Clontech_trimmed.1.fq,Clontech_trimmed.2.fq,Clontech_trimmed.3.fq,Clontech_trimmed.4.fq,Clontech_trimmed.5.fq,Clontech_trimmed.6.fq,Clontech_trimmed.7.fq,Clontech_trimmed.8.fq,Clontech_trimmed.9.fq,Clontech_trimmed.10.fq,Clontech_trimmed.11.fq,Clontech_trimmed.12.fq,Clontech_trimmed.13.fq,Clontech_trimmed.14.fq,Clontech_trimmed.15.fq,Clontech_trimmed.16.fq,Clontech_trimmed.17.fq,Clontech_trimmed.18.fq,Illumina_trimmed.1.fq,Illumina_trimmed.2.fq,Illumina_trimmed.3.fq,Illumina_trimmed.4.fq,Illumina_trimmed.5.fq,Illumina_trimmed.6.fq,Illumina_trimmed.7.fq,Illumina_trimmed.8.fq,Illumina_trimmed.9.fq,NEB_trimmed.1.fq,NEB_trimmed.2.fq,NEB_trimmed.3.fq,NEB_trimmed.4.fq,NEB_trimmed.5.fq,NEB_trimmed.6.fq,NEB_trimmed.7.fq,NEB_trimmed.8.fq,NEB_trimmed.9.fq,NEB_trimmed.10.fq,NEB_trimmed.11.fq,NEB_trimmed.12.fq,NEXT_trimmed.1.fq,NEXT_trimmed.2.fq,NEXT_trimmed.3.fq,NEXT_trimmed.4.fq,NEXT_trimmed.5.fq,NEXT_trimmed.6.fq,NEXT_trimmed.7.fq,NEXT_trimmed.8.fq,NEXT_trimmed.9.fq,NEXT_trimmed.10.fq,NEXT_trimmed.11.fq,NEXT_trimmed.12.fq,NEXT_trimmed.13.fq,NEXT_trimmed.14.fq,NEXT_trimmed.15.fq,NEXT_trimmed.16.fq,NEXT_trimmed.17.fq,NEXT_trimmed.18.fq,directional_deduped_int_trim_Ns_rem_1.fq,directional_deduped_int_trim_Ns_rem_2.fq,directional_deduped_int_trim_Ns_rem_3.fq,directional_deduped_int_trim_Ns_rem_4.fq,directional_deduped_int_trim_Ns_rem_5.fq,directional_deduped_int_trim_Ns_rem_6.fq,directional_deduped_int_trim_Ns_rem_7.fq,directional_deduped_int_trim_Ns_rem_8.fq,directional_deduped_int_trim_Ns_rem_9.fq,directional_deduped_int_trim_Ns_rem_10.fq,directional_deduped_int_trim_Ns_rem_11.fq,directional_deduped_int_trim_Ns_rem_12.fq,directional_deduped_int_trim_Ns_rem_13.fq,directional_deduped_int_trim_Ns_rem_14.fq,directional_deduped_int_trim_Ns_rem_15.fq,directional_deduped_int_trim_Ns_rem_16.fq,directional_deduped_int_trim_Ns_rem_17.fq,directional_deduped_int_trim_Ns_rem_18.fq
+```
+
+
+
+
+
+
+
+
+
+
+
 ##**Accur Data - see SRV2**
 restricted trimming only but with size 16 limit instead of 18 to accomodate all synth sequences.
 
@@ -13,15 +35,44 @@ two data types: - Ns removed and Ns kept versions... also Salmon... could do mor
 
 Produced data in 4 ways:
 
-1) restricted trimming/allignment about length to reduce the inclusion of reads less than 18 base pairs
+1) restricted trimming/alignment about length to reduce the inclusion of reads less than 18 base pairs
 
-2) liberal trimming/allignment for length
+2) liberal trimming/alignment for length - all liberal trimming is finished
 
 For each of these we also did 2 ways for the Deduped data:
 
 1) Keep reads with UMIs that have Ns
+  - accur data
+  - repro data
 
 2) Remove reads with UMIs that have Ns
+  -accur data
+  -repro data
+
+
+so in other words:
+1) liberal trimming - keep Ns
+This is finished and complete:
+carrie@srv04:/media/DATA/carrie/miRge/miRge-master/accuracyAndRepro_liberalTrimmed_dedupedAndNon_NsKept_results/toHuman/miRge.1520646805
+(orginally intendend as the isomiR data)
+
+2) liberal trimming - remove Ns - really curious how many isomirs there will be with this...may end up being what we go with
+this will have specificially named files - almost done with the accur files
+
+######
+3) restricted trimming - keep Ns - this is what we had done before - so this should be somewhere - but we were thinking of doing again just in case.
+
+4) restricted trimming - remove Ns
+This does not contain the accur batch data, but is otherwise complete:
+carrie@srv02:/home/carrie/miRge/miRge-master/miRge.1520647007$
+
+
+3 and 4 alow us to compare the miRNA data - the results may improve with removing Ns
+
+1 and 2 allow us to see if removing Ns changes the isomiR data
+
+May be able to just go with liberal trimming for all results. - so I want to compare the results from this... the results look pretty strange - not sure I like this... I think its fairer - to clontech for example if because the percent of mirNA mapping reads are so different to have more restricted trimming.
+
 
 Here is the trimming code for restrictive method:
 
@@ -83,20 +134,61 @@ Here is the trimming code for the liberal method: - need to redo trimming for CL
             cutadapt -m 10 -a AGATCGGAAGAGCACACGTCT -o Filenameout FilenameIn
  
 
-        
+with -m 16:
  107000244 Clontech_trimmed.1.fq
  22434996 Illumina_trimmed.1.fq
  64938992 NEB_trimmed.1.fq
+ 
+with -m 10:
+ 126875532 Clontech_trimmed.1.fq
+ 24610936 Illumina_trimmed.1.fq
+ 71938300 NEB_trimmed.1.fq
+
+
+repro trimming liberal is finished  for clontech Ill NEB - NEXTflex and deduped are fine and ready too all at 10
+accur trimming liberal is not finished for clontech Ill NEB - NEXTflex and deduped are fine and ready too all at 10
+
+restricted trimming:
+1) repro - Nextflex and deduped are good for Ns kept (use UMI dated data)
+2) repro - Nextflex and deduped are good for Ns removed
+other files are good for these as well all at 18 previously they are in repro/samples_lanesCombined/trimmed_fastq/
+3) accur - Nextflex and deduped are good for Ns kept - this should be what it was before
+4) accur - Nextflex and deduped are just finished
+other files are good for these as well becuase all at 19 previously they are all in accuracy/samples_lanesCombined/trimmed_fastq/
+
+liberal trimming
+1) repro data 
+- other files are good got trimmed today
+Ns kept are good: /media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq_liberal/UMI_duplicates_rem
+Ns rem are good - made recently /media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq_liberal/UMI_duplicates_rem
+
+2) accur data
+- other files done
+Ns kept are good: /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq_liberal/UMI_duplicates_rem
+Ns rem are not yet run?
+
+
+
+
+
+Ns rem and Ns kept status:
+Ns kept repro is done
+Ns kept accur is not done!!!!!!!!!!!!!! unless it is on SRV2... but I think that is synth only... looks line lim 16 not 10
+
+Ns rem repro is done
+Ns rem accur is?
             
-            
-miRge for restrictive trimming method Ns removed     
+miRge for restrictive trimming method Ns removed  - making the Ns removed accur data   
 ```{bash, eval = FALSE}
 perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles 
 
 NEED to move the files to these names when they are finished
 
+NEED to run these files:
 mm0_acc_Clontech_acc_trimmed.1_R1.fq,mm0_acc_Clontech_acc_trimmed.2_R1.fq,mm0_acc_Clontech_acc_trimmed.3_R1.fq,mm0_acc_Illumina_trimmed.1_R1.fq,mm0_acc_Illumina_trimmed.2_R1.fq,mm0_acc_Illumina_trimmed.3_R1.fq,mm0_acc_NEB_trimmed.1_R1.fq,mm0_acc_NEB_trimmed.2_R1.fq,mm0_acc_NEB_trimmed.3_R1.fq,mm0_acc_NEXT_trimmed.1_R1.fq,mm0_acc_NEXT_trimmed.2_R1.fq,mm0_acc_NEXT_trimmed.3_R1.fq,directional_deduped_acc_Ns_rem_1_UMItools.bam,directional_deduped_acc_Ns_rem_2_UMItools.bam,directional_deduped_acc_Ns_rem_3_UMItools.bam,
 
+
+Only ran these samples...
 mm0_Clontech_trimmed.1_R1.fq,mm0_Clontech_trimmed.2_R1.fq,mm0_Clontech_trimmed.3_R1.fq,mm0_Clontech_trimmed.4_R1.fq,mm0_Clontech_trimmed.5_R1.fq,mm0_Clontech_trimmed.6_R1.fq,mm0_Clontech_trimmed.7_R1.fq,mm0_Clontech_trimmed.8_R1.fq,mm0_Clontech_trimmed.9_R1.fq,mm0_Clontech_trimmed.10_R1.fq,mm0_Clontech_trimmed.11_R1.fq,mm0_Clontech_trimmed.12_R1.fq,mm0_Clontech_trimmed.13_R1.fq,mm0_Clontech_trimmed.14_R1.fq,mm0_Clontech_trimmed.15_R1.fq,mm0_Clontech_trimmed.16_R1.fq,mm0_Clontech_trimmed.17_R1.fq,mm0_Clontech_trimmed.18_R1.fq,mm0_Illumina_trimmed.1_R1.fq,mm0_Illumina_trimmed.2_R1.fq,mm0_Illumina_trimmed.3_R1.fq,mm0_Illumina_trimmed.4_R1.fq,mm0_Illumina_trimmed.5_R1.fq,mm0_Illumina_trimmed.6_R1.fq,mm0_Illumina_trimmed.7_R1.fq,mm0_Illumina_trimmed.8_R1.fq,mm0_Illumina_trimmed.9_R1.fq,mm0_NEB_trimmed.1_R1.fq,mm0_NEB_trimmed.2_R1.fq,mm0_NEB_trimmed.3_R1.fq,mm0_NEB_trimmed.4_R1.fq,mm0_NEB_trimmed.5_R1.fq,mm0_NEB_trimmed.6_R1.fq,mm0_NEB_trimmed.7_R1.fq,mm0_NEB_trimmed.8_R1.fq,mm0_NEB_trimmed.9_R1.fq,mm0_NEB_trimmed.10_R1.fq,mm0_NEB_trimmed.11_R1.fq,mm0_NEB_trimmed.12_R1.fq,mm0_NEXT_trimmed.1_R1.fq,mm0_NEXT_trimmed.2_R1.fq,mm0_NEXT_trimmed.3_R1.fq,mm0_NEXT_trimmed.4_R1.fq,mm0_NEXT_trimmed.5_R1.fq,mm0_NEXT_trimmed.6_R1.fq,mm0_NEXT_trimmed.7_R1.fq,mm0_NEXT_trimmed.8_R1.fq,mm0_NEXT_trimmed.9_R1.fq,mm0_NEXT_trimmed.10_R1.fq,mm0_NEXT_trimmed.11_R1.fq,mm0_NEXT_trimmed.12_R1.fq,mm0_NEXT_trimmed.13_R1.fq,mm0_NEXT_trimmed.14_R1.fq,mm0_NEXT_trimmed.15_R1.fq,mm0_NEXT_trimmed.16_R1.fq,mm0_NEXT_trimmed.17_R1.fq,mm0_NEXT_trimmed.18_R1.fq,directional_dedupped_Ns_rem_1_rest_trimming.fq,directional_dedupped_Ns_rem_2_rest_trimming.fq,directional_dedupped_Ns_rem_3_rest_trimming.fq,directional_dedupped_Ns_rem_4_rest_trimming.fq,directional_dedupped_Ns_rem_5_rest_trimming.fq,directional_dedupped_Ns_rem_6_rest_trimming.fq,directional_dedupped_Ns_rem_7_rest_trimming.fq,directional_dedupped_Ns_rem_8_rest_trimming.fq,directional_dedupped_Ns_rem_9_rest_trimming.fq,directional_dedupped_Ns_rem_10_rest_trimming.fq,directional_dedupped_Ns_rem_11_rest_trimming.fq,directional_dedupped_Ns_rem_12_rest_trimming.fq,directional_dedupped_Ns_rem_13_rest_trimming.fq,directional_dedupped_Ns_rem_14_rest_trimming.fq,directional_dedupped_Ns_rem_15_rest_trimming.fq,directional_dedupped_Ns_rem_16_rest_trimming.fq,directional_dedupped_Ns_rem_17_rest_trimming.fq,directional_dedupped_Ns_rem_18_rest_trimming.fq
 
 ```
@@ -106,12 +198,20 @@ miRge for restrictive trimming method Ns Kept - Use the dated  deduped repro dat
 ```{bash, eval = FALSE}
 perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles 
 
-NEED to move the files to these names when they are finished
+These files already exist...: but neeed the Ns kept
 
-mm0_acc_Clontech_acc_trimmed.1_R1.fq,mm0_acc_Clontech_acc_trimmed.2_R1.fq,mm0_acc_Clontech_acc_trimmed.3_R1.fq,mm0_acc_Illumina_trimmed.1_R1.fq,mm0_acc_Illumina_trimmed.2_R1.fq,mm0_acc_Illumina_trimmed.3_R1.fq,mm0_acc_NEB_trimmed.1_R1.fq,mm0_acc_NEB_trimmed.2_R1.fq,mm0_acc_NEB_trimmed.3_R1.fq,mm0_acc_NEXT_trimmed.1_R1.fq,mm0_acc_NEXT_trimmed.2_R1.fq,mm0_acc_NEXT_trimmed.3_R1.fq,directional_deduped_acc_Ns_rem_1_UMItools.bam,directional_deduped_acc_Ns_rem_2_UMItools.bam,directional_deduped_acc_Ns_rem_3_UMItools.bam,
-
-mm0_Clontech_trimmed.1_R1.fq,mm0_Clontech_trimmed.2_R1.fq,mm0_Clontech_trimmed.3_R1.fq,mm0_Clontech_trimmed.4_R1.fq,mm0_Clontech_trimmed.5_R1.fq,mm0_Clontech_trimmed.6_R1.fq,mm0_Clontech_trimmed.7_R1.fq,mm0_Clontech_trimmed.8_R1.fq,mm0_Clontech_trimmed.9_R1.fq,mm0_Clontech_trimmed.10_R1.fq,mm0_Clontech_trimmed.11_R1.fq,mm0_Clontech_trimmed.12_R1.fq,mm0_Clontech_trimmed.13_R1.fq,mm0_Clontech_trimmed.14_R1.fq,mm0_Clontech_trimmed.15_R1.fq,mm0_Clontech_trimmed.16_R1.fq,mm0_Clontech_trimmed.17_R1.fq,mm0_Clontech_trimmed.18_R1.fq,mm0_Illumina_trimmed.1_R1.fq,mm0_Illumina_trimmed.2_R1.fq,mm0_Illumina_trimmed.3_R1.fq,mm0_Illumina_trimmed.4_R1.fq,mm0_Illumina_trimmed.5_R1.fq,mm0_Illumina_trimmed.6_R1.fq,mm0_Illumina_trimmed.7_R1.fq,mm0_Illumina_trimmed.8_R1.fq,mm0_Illumina_trimmed.9_R1.fq,mm0_NEB_trimmed.1_R1.fq,mm0_NEB_trimmed.2_R1.fq,mm0_NEB_trimmed.3_R1.fq,mm0_NEB_trimmed.4_R1.fq,mm0_NEB_trimmed.5_R1.fq,mm0_NEB_trimmed.6_R1.fq,mm0_NEB_trimmed.7_R1.fq,mm0_NEB_trimmed.8_R1.fq,mm0_NEB_trimmed.9_R1.fq,mm0_NEB_trimmed.10_R1.fq,mm0_NEB_trimmed.11_R1.fq,mm0_NEB_trimmed.12_R1.fq,mm0_NEXT_trimmed.1_R1.fq,mm0_NEXT_trimmed.2_R1.fq,mm0_NEXT_trimmed.3_R1.fq,mm0_NEXT_trimmed.4_R1.fq,mm0_NEXT_trimmed.5_R1.fq,mm0_NEXT_trimmed.6_R1.fq,mm0_NEXT_trimmed.7_R1.fq,mm0_NEXT_trimmed.8_R1.fq,mm0_NEXT_trimmed.9_R1.fq,mm0_NEXT_trimmed.10_R1.fq,mm0_NEXT_trimmed.11_R1.fq,mm0_NEXT_trimmed.12_R1.fq,mm0_NEXT_trimmed.13_R1.fq,mm0_NEXT_trimmed.14_R1.fq,mm0_NEXT_trimmed.15_R1.fq,mm0_NEXT_trimmed.16_R1.fq,mm0_NEXT_trimmed.17_R1.fq,mm0_NEXT_trimmed.18_R1.fq,directional_dedupped_Ns_rem_1_rest_trimming.fq,directional_dedupped_Ns_rem_2_rest_trimming.fq,directional_dedupped_Ns_rem_3_rest_trimming.fq,directional_dedupped_Ns_rem_4_rest_trimming.fq,directional_dedupped_Ns_rem_5_rest_trimming.fq,directional_dedupped_Ns_rem_6_rest_trimming.fq,directional_dedupped_Ns_rem_7_rest_trimming.fq,directional_dedupped_Ns_rem_8_rest_trimming.fq,directional_dedupped_Ns_rem_9_rest_trimming.fq,directional_dedupped_Ns_rem_10_rest_trimming.fq,directional_dedupped_Ns_rem_11_rest_trimming.fq,directional_dedupped_Ns_rem_12_rest_trimming.fq,directional_dedupped_Ns_rem_13_rest_trimming.fq,directional_dedupped_Ns_rem_14_rest_trimming.fq,directional_dedupped_Ns_rem_15_rest_trimming.fq,directional_dedupped_Ns_rem_16_rest_trimming.fq,directional_dedupped_Ns_rem_17_rest_trimming.fq,directional_dedupped_Ns_rem_18_rest_trimming.fq
 
 ```
 
+miRge for liberal trimming method Ns Kept - Use the dated  deduped repro data- may need to remake the acc deduped data 
+
+running the trimming for clontech, illumina, neb accur data and repro data
+```{bash, eval = FALSE}
+perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles Clontech_trimmed.1.fq,Clontech_trimmed.2.fq,Clontech_trimmed.3.fq,Clontech_trimmed.4.fq,Clontech_trimmed.5.fq,Clontech_trimmed.6.fq,Clontech_trimmed.7.fq,Clontech_trimmed.8.fq,Clontech_trimmed.9.fq,Clontech_trimmed.10.fq,Clontech_trimmed.11.fq,Clontech_trimmed.12.fq,Clontech_trimmed.13.fq,Clontech_trimmed.14.fq,Clontech_trimmed.15.fq,Clontech_trimmed.16.fq,Clontech_trimmed.17.fq,Clontech_trimmed.18.fq,Clontech_trimmed.1_acc.fq,Clontech_trimmed.2_acc.fq,Clontech_trimmed.3_acc.fq,Illumina_trimmed.1.fq,Illumina_trimmed.2.fq,Illumina_trimmed.3.fq,Illumina_trimmed.4.fq,Illumina_trimmed.5.fq,Illumina_trimmed.6.fq,Illumina_trimmed.7.fq,Illumina_trimmed.8.fq,Illumina_trimmed.9.fq,Illumina_trimmed.1_acc.fq,Illumina_trimmed.2_acc.fq,Illumina_trimmed.3_acc.fq,NEB_trimmed.1.fq,NEB_trimmed.2.fq,NEB_trimmed.3.fq,NEB_trimmed.4.fq,NEB_trimmed.5.fq,NEB_trimmed.6.fq,NEB_trimmed.7.fq,NEB_trimmed.8.fq,NEB_trimmed.9.fq,NEB_trimmed.10.fq,NEB_trimmed.11.fq,NEB_trimmed.12.fq,NEB_trimmed.1_acc.fq,NEB_trimmed.2_acc.fq,NEB_trimmed.3_acc.fq,NEXT_trimmed.1.fq,NEXT_trimmed.2.fq,NEXT_trimmed.3.fq,NEXT_trimmed.4.fq,NEXT_trimmed.5.fq,NEXT_trimmed.6.fq,NEXT_trimmed.7.fq,NEXT_trimmed.8.fq,NEXT_trimmed.9.fq,NEXT_trimmed.10.fq,NEXT_trimmed.11.fq,NEXT_trimmed.12.fq,NEXT_trimmed.13.fq,NEXT_trimmed.14.fq,NEXT_trimmed.15.fq,NEXT_trimmed.16.fq,NEXT_trimmed.17.fq,NEXT_trimmed.18.fq,NEXT_trimmed.1_acc.fq,NEXT_trimmed.2_acc.fq,NEXT_trimmed.3_acc.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_2_TEST.fq,directional_dedupped_Ns_kept_3_TEST.fq,directional_dedupped_Ns_kept_4_TEST.fq,directional_dedupped_Ns_kept_5_TEST.fq,directional_dedupped_Ns_kept_6_TEST.fq,directional_dedupped_Ns_kept_7_TEST.fq,directional_dedupped_Ns_kept_8_TEST.fq,directional_dedupped_Ns_kept_9_TEST.fq,directional_dedupped_Ns_kept_10_TEST.fq,directional_dedupped_Ns_kept_11_TEST.fq,directional_dedupped_Ns_kept_12_TEST.fq,directional_dedupped_Ns_kept_13_TEST.fq,directional_dedupped_Ns_kept_14_TEST.fq,directional_dedupped_Ns_kept_15_TEST.fq,directional_dedupped_Ns_kept_16_TEST.fq,directional_dedupped_Ns_kept_17_TEST.fq,directional_dedupped_Ns_kept_18_TEST.fq,directional_dedupped_Ns_kept_1_acc_TEST.fq,directional_dedupped_Ns_kept_2_acc_TEST.fq,directional_dedupped_Ns_kept_3_acc_TEST.fq
+```
+
+miRge for liberal trimming method Ns rem - everything ready except for last files of accur deduping 
+```{r}
+perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles 
+```
 
