@@ -121,14 +121,13 @@ Need to convert from RPM to raw counts
 ```{r}
 library(here)
 Pheno<- read.table(here("../Pheno_repro_full_1_16_18_ns_kept"), header = TRUE)
-#miR_counts<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/miR.Counts.csv"), header = TRUE, sep = ",")
+miR_counts<-read.table(here("IsomiR_data_new_incomplete/miR.Counts.csv"), header = TRUE, sep = ",")
 #iso_RPM<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/isomirs.csv"), header = TRUE, sep = ",")
 iso_RPM<-read.table(here("IsomiR_data_new_incomplete/isomirs.csv"), header = TRUE, sep = ",", row.names=NULL)
 #fixing the columns
 iso_data<-iso_RPM[1:(length(colnames(iso_RPM))-1)]
 colnames(iso_data)<-colnames(iso_RPM)[2:(length(colnames(iso_RPM)))]
 iso_RPM2 <- iso_data[,4:length(colnames(iso_data))-1]
-iso_RPM2 <- iso_RPM2[-3179382,]
 iso_RPM2_anno<-iso_data[1:2]
 
 library(XML)
@@ -141,9 +140,10 @@ report <-as.data.frame(report)
 report <-report[1:9]
 report <-report[seq(from =1, to = nrow(report), by = 5),]
 total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
-total_miRNA<-vapply(strsplit(as.character(report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads),"/"),`[`, 1, FUN.VALUE=character(1))
+total_miRNA<-vapply(strsplit(as.character(report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads),"/"),`[`, 2, FUN.VALUE=character(1))#need to use the filtered number of miRNA reads
 total_miRNA<-gsub("[[:blank:]]", "", total_miRNA)
 total_miRNA<-as.numeric(as.character(total_miRNA))
+total_miRNA2 <-miR_counts[1,][-1]
 ###convert to raw counts... use miR_counts to get total miRNA mapped number - so the miRcounts I believe includes all sequences that allign - isomir and canonical
 #Total<-(miR_counts[1,])[-1] #remove miRNA column
 Total<-(total_miRNA) #remove miRNA column
@@ -151,13 +151,13 @@ Total<-(total_miRNA) #remove miRNA column
 rep.row<-function(x,n){
    matrix(rep(x,each=n),nrow=n)
 }
-dim(iso_RPM2)
-Totalmatrix<-rep.row((Total/1000000), 3179382)#width of isoRPM2
+dimensions<-dim(iso_RPM2)
+Totalmatrix<-rep.row((Total/1000000), dimensions[1])#width of isoRPM2
 
 iso_Raw<- (iso_RPM2)*(as.numeric(Totalmatrix))
 iso_anno <-iso_RPM2_anno
 
-iso_Raw <-as.data.frame(sapply(iso_Raw, as.integer))
+#iso_Raw <-as.data.frame(sapply(iso_Raw, as.integer))
 
 Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
 ###split the data by starting Amount
@@ -205,22 +205,6 @@ for(kit in names(split_norm_Amt[[amt]])){
  split_amt_thresh[[amt]][[kit]]<- split_norm_Amt[[amt]][[kit]][thresh[[amt]][[kit]],]}
 }
 
-library(VennDiagram)
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-}
-
-n = 5
-cols = gg_color_hue(n)
-cols <-c(cols[1], cols[3:5])
-
-vp_100 <- venn.diagram(miRNA_det_100, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
-vp_250 <- venn.diagram(miRNA_det_250, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
-vp_500 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
-vp_1000 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
-vp_1500 <- venn.diagram(miRNA_det_1500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
-vp_2000 <- venn.diagram(miRNA_det_2000, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
 
 #detected miRNAs
 
