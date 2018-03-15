@@ -254,14 +254,19 @@ cols <-c(cols[1], cols[3:5])
 vp_100 <- venn.diagram(miRNA_det_100, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
 vp_250 <- venn.diagram(miRNA_det_250, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
 vp_500 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
-vp_1000 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+
+cols = gg_color_hue(n)
+vp_1000 <- venn.diagram(miRNA_det_1000, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.25, .25, .35))
+
+cols = gg_color_hue(n)
+cols <-c(cols[1:2], cols[4:5])
 vp_1500 <- venn.diagram(miRNA_det_1500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
 vp_2000 <- venn.diagram(miRNA_det_2000, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
 
 ```
+grid.draw(vp_1000);
 
 
-```
 
 
 ```{r, eval  = FALSE}
@@ -587,14 +592,19 @@ for(i in Pheno$TriplicateGroup) {
 split_total<-data.frame(split_total)
 boxplot(split_total)
 
-
+split_total_miRNA<- list() 
+for(i in Pheno$TriplicateGroup) { 
+ split_total_miRNA[[i]] <- mean(total_miRNA[which(Pheno$TriplicateGroup==i)])
+}
+split_total_miRNA<-data.frame(split_total_miRNA)
+                        
 boxplot(log2(split_total))
 boxplot(log2(split_total_miRNA))
 
 total_reads_final<-t(split_total)
 total_miRNA_final<-t(split_total_miRNA)
 totals <-data.frame(reads =total_reads_final, miRNAreads = total_miRNA_final)
-####somehow figure out how to get lengths of isomiRS so we can see if they correlate with raw read count or miRNA total count
+####somehow figure out how to get lengths of isomiRS so we can see if they correlate with raw read count or miRNA total count 
 get_lengths <-function(x){length(rownames(x))}
 lapply(split_amt_thresh$starting_amt_starting_amt_starting_amt_100, get_lengths)
 split_iso<- list() 
