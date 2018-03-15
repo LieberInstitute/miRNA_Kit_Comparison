@@ -1,0 +1,1162 @@
+---
+title: "kit_threshold_one_kit_at_a_time"
+author: "Carrie Wright"
+date: "1/16/2018"
+output: html_document
+---
+
+```{r, eval=TRUE, echo=FALSE}
+library(edgeR)
+library(here)
+
+#Pheno<- read.table(here("../Pheno_repro_full_1_16_18_ns_kept"), header = T)
+Pheno<- read.table(here("Brain_liberal_trimmed_Ns_kept_Data/Pheno.csv"), header = T, sep = ",")
+Pheno1000 <- Pheno[which(Pheno$startingAmt =="1000"),]
+
+#miR_counts<-read.table("/home/carrie/miRge/miRge-master/Keeping_Ns_Repro_Analysis/miR.Counts.csv", header = TRUE, sep = ",") #original location
+#miR_counts<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/ReproData/miR.Counts.csv", header = TRUE, sep = ",")
+miR_counts<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/miR.Counts.csv"), header = TRUE, sep = ",")
+
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+miR_counts<-miR_counts[-1,]#remove total miRNA counts row
+
+colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
+colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
+
+Pheno1000$File<-gsub("NEXTflex_deduped", "Deduped", Pheno1000$File)
+Pheno1000$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno1000$Kit)
+Pheno1000$TriplicateGroup<-gsub("NEXTflex_deduped", "Deduped", Pheno1000$TriplicateGroup)
+miR_1000_raw <- data.frame(miR_counts[which(Pheno$startingAmt == "1000")])
+ 
+identical(as.character(Pheno1000$File), colnames(miR_1000_raw)) ###Check that these match 
+
+miR_RPMs<- as.matrix(cpm(miR_1000_raw)) #from the edgeR package
+load("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/UnionInfo.rda")
+```
+#Thresholding with Threshold-seq
+
+```{r, echo=FALSE, eval =TRUE}
+
+#to load the package:
+#source("/Users/carriewright/Documents/Scripts/R_scripts/Threshold-seq/Threshold-seq.r")
+#source("/home/carrie/R/x86_64-pc-linux-gnu-library/3.3/Threshold-seq/Threshold-seq.r")#on server
+
+#could do this...
+###########thresholdSeq(rowMeans(miR_1000_raw), output ="/home/carrie/Kit_comparison/kit_comparison/miR_1000_thresh_.txt", nperm = 10000) # to determine the threshold based on the mean of each miRNA across the samples
+
+#####actually used this for each sample individually:
+#FindThreshold <-function(data){thresholdSeq(data, output = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/thresholdseq_output_new.txt", nperm = 10000)}
+#sapply(miR_1000_raw, FindThreshold)
+#Threshold$names <- colnames(miR_1000_raw)
+
+###checking the order
+#FindThreshold <-function(data){thresholdSeq(data, output = "/Users/carriewright/Desktop/thresholdseq_output_new.txt", nperm = 10000)}
+#thresholdSeq(miR_1000_raw$mm0_acc_Clontech_acc_trimmed.1_R1.fq,  output = "/Users/carriewright/Desktop/thresholdseq_output_Clontech1.txt", nperm = 10000)
+#thresholdSeq(miR_1000_raw$mm0_NEB_trimmed.10_R1.fq,  output = "/Users/carriewright/Desktop/thresholdseq_output_NEB10.txt", nperm = 10000)
+#clontechthresh<-read.table("//Users/carriewright/Desktop/thresholdseq_output_Clontech1.txt")
+#NEBthresh<-read.table("//Users/carriewright/Desktop/thresholdseq_output_NEB10.txt")
+#order looks correct
+
+Threshold<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/thresholdseq_output_new.txt")#threshold on computer
+Threshold$names <- colnames(miR_1000_raw)
+
+mean(Threshold$V4) # mean is 597.6333 so I think we can use a threshold of 598 or we should threshold each sample and then use the intersection
+
+#could also do conditional normalization but need length and GC content infor for each miRNA.. that one uses RPM values
+#library(jaffelab)
+#jaffelab::expression_cutoff(miR_RPM)
+```
+
+###TMM Normalization
+
+```{r, eval= TRUE, echo =FALSE}
+#library(tweeDEseq)
+#miR_1000_TMM<-data.frame(normalizeCounts(miR_1000_raw)
+#dim(norm_miR_1000)
+#or
+library(edgeR)
+group <-Pheno1000$Kit
+d<-DGEList(counts = miR_1000_raw, group = group)
+miR_1000_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_1000_TMM_edgeR_factors)
+norm_miR_1000 <-data.frame(TMM$pseudo.counts)
+dim(norm_miR_1000)
+```
+
+
+
+
+###DESeq2
+```{r, eval=FALSE,warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+dds<-DESeqDataSetFromMatrix(countData = miR_1000_raw, colData = Pheno1000, design = ~ Kit)
+dds <- estimateSizeFactors(dds)
+norm_miR_1000<-data.frame(counts(dds, normalized = TRUE))
+dim(norm_miR_1000)
+```
+
+###For Marc
+```{r}
+library(ggplot2)
+library(reshape2)
+ranks_number <-sapply(miR_1000_raw, rank, ties.method = "random") # where 1 is the lowest - no ties -randomly chooses
+ranks_number <-data.frame(ranks_number)
+ranks_number$miRNA<- rownames(miR_1000_raw)
+ranks_number_raw <-ranks_number
+
+ranks_number <-sapply(norm_miR_1000, rank, ties.method = "random") # where 1 is the lowest - no ties -randomly chooses
+ranks_number <-data.frame(ranks_number)
+ranks_number$miRNA<- rownames(norm_miR_1000)
+ranks_number_TMM <-ranks_number
+
+RPMs <-data.frame(miR_RPMs)
+ranks_number <-sapply(data.frame(RPMs), rank, ties.method = "random") # where 1 is the lowest - no ties -randomly chooses
+ranks_number <-data.frame(ranks_number)
+ranks_number$miRNA<- rownames(miR_RPMs)
+ranks_number_RPM <-ranks_number
+
+mir_9_raw_ranks <-ranks_number_raw[grep("hsa-miR-9-5p", ranks_number_raw$miRNA),]
+mir_9_TMM_ranks <-ranks_number_TMM[grep("hsa-miR-9-5p", ranks_number_TMM$miRNA),]
+mir_9_RPM_ranks <-ranks_number_RPM[grep("hsa-miR-9-5p", ranks_number_RPM$miRNA),]
+
+
+mir_9_raw_ranks_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_raw_ranks_avg[[i]] <- rowMeans(mir_9_raw_ranks[grep(i, colnames(mir_9_raw_ranks))]) 
+}
+mir_9_TMM_ranks_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_TMM_ranks_avg[[i]] <- rowMeans(mir_9_TMM_ranks[grep(i, colnames(mir_9_TMM_ranks))]) 
+}
+mir_9_RPM_ranks_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_RPM_ranks_avg[[i]] <- rowMeans(mir_9_RPM_ranks[grep(i, colnames(mir_9_RPM_ranks))]) 
+}
+mir_9_raw <-miR_1000_raw[grep("hsa-miR-9-5p", rownames(miR_1000_raw)),]
+mir_9_TMM <-norm_miR_1000[grep("hsa-miR-9-5p", rownames(norm_miR_1000)),]
+mir_9_RPM <-RPMs[grep("hsa-miR-9-5p", rownames(miR_RPMs)),]
+
+
+mir_9_raw_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_raw_avg[[i]] <- rowMeans(mir_9_raw[grep(i, colnames(mir_9_raw))]) 
+}
+mir_9_TMM_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_TMM_avg[[i]] <- rowMeans(mir_9_TMM[grep(i, colnames(mir_9_TMM))]) 
+}
+mir_9_RPM_avg <- list()
+for (i in Pheno1000$Kit){
+  mir_9_RPM_avg[[i]] <- rowMeans(mir_9_RPM[grep(i, colnames(mir_9_RPM))]) 
+}
+
+ggplot(melt(mir_9_raw_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,25)
+ggplot(melt(mir_9_RPM_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,25)
+ggplot(melt(mir_9_TMM_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,25)
+
+ggplot(melt(mir_9_raw_ranks_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,12)
+ggplot(melt(mir_9_RPM_ranks_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,12)
+ggplot(melt(mir_9_TMM_ranks_avg), aes(x = L1, y =log2(value), col = L1)) + geom_boxplot()+ylim(0,12)
+
+melt(mir_9_raw_avg)
+melt(mir_9_RPM_avg)
+melt(mir_9_TMM_avg)
+
+ggplot(melt(mir_9_raw_avg), aes(x = L1, y =(value), col = L1)) + geom_boxplot()+ylim(0,2000000)+ ggtitle(label = "RAW")
+ggplot(melt(mir_9_RPM_avg), aes(x = L1, y =(value), col = L1)) + geom_boxplot()+ylim(0,2000000)+ ggtitle(label = "RPM")
+ggplot(melt(mir_9_TMM_avg), aes(x = L1, y =(value), col = L1)) + geom_boxplot()+ylim(0,2000000)+ ggtitle(label = "TMM")
+
+melt(mir_9_raw_ranks_avg)#rank is not improved by normalization - miR-9 is the top for NEB, secod top for NEXTflex and Deduped and 10 down for Illumina nd 15 down for Clontech
+melt(mir_9_RPM_ranks_avg)
+melt(mir_9_TMM_ranks_avg)
+
+```
+
+
+
+```{r}
+###split the data by kit
+split_kit <- list() 
+for(i in Pheno1000$Kit) { 
+  split_kit[[i]] <- data.frame(norm_miR_1000[which(Pheno1000$Kit==i)])
+} 
+
+###split the data by kit and batch
+split_batch <- list() 
+for(i in Pheno1000$TriplicateGroup) { 
+  split_batch[[i]] <- data.frame(norm_miR_1000[which(Pheno1000$TriplicateGroup==i)])
+}
+```
+
+```{r}
+library(genefilter)
+poverafun <- genefilter::pOverA(p = 1, A = 1)#at least one raw read in all samples #379
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+
+```
+
+
+```{r}
+###genefilter
+library(genefilter)
+#poverafun <- genefilter::pOverA(p = .5, A = 529)# at least 529 reads for 50% of samples
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 100 normalized reads in all samples of the set... 
+#poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 raw reads in all samples #292
+#poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 raw reads in all samples #125
+
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+thresh<-lapply(split_kit, genefilt_fun)
+
+split_kit_thresh <-list()
+split_kit_thresh$Clontech<-split_kit$Clontech[thresh$Clontech,]
+split_kit_thresh$Illumina<-split_kit$Illumina[thresh$Illumina,]
+split_kit_thresh$NEB<-split_kit$NEB[thresh$NEB,]
+split_kit_thresh$NEXTflex<-split_kit$NEXTflex[thresh$NEXTflex,]
+split_kit_thresh$Deduped<-split_kit$Deduped[thresh$Deduped,]
+
+
+
+thresh<-lapply(split_batch, genefilt_fun)
+
+
+split_batch_thresh <-list()
+split_batch_thresh$Clontech1000_Batch1<-split_batch$Clontech1000_Batch1[thresh$Clontech1000_Batch1,]
+split_batch_thresh$Clontech1000_Batch2<-split_batch$Clontech1000_Batch2[thresh$Clontech1000_Batch2,]
+split_batch_thresh$Illumina1000_Batch1<-split_batch$Illumina1000_Batch1[thresh$Illumina1000_Batch1,]
+split_batch_thresh$Illumina1000_Batch2<-split_batch$Illumina1000_Batch2[thresh$Illumina1000_Batch2,]
+split_batch_thresh$NEB1000_Batch1<-split_batch$NEB1000_Batch1[thresh$NEB1000_Batch1,]
+split_batch_thresh$NEB1000_Batch2<-split_batch$NEB1000_Batch2[thresh$NEB1000_Batch2,]
+split_batch_thresh$NEXTflex1000_Batch1<-split_batch$NEXTflex1000_Batch1[thresh$NEXTflex1000_Batch1,]
+split_batch_thresh$NEXTflex1000_Batch2<-split_batch$NEXTflex1000_Batch2[thresh$NEXTflex1000_Batch2,]
+
+split_batch_thresh$Deduped1000_Batch1<-split_batch$Deduped1000_Batch1[thresh$Deduped1000_Batch1,]
+split_batch_thresh$Deduped1000_Batch2<-split_batch$Deduped1000_Batch2[thresh$Deduped1000_Batch2,]
+
+
+split_batch_thresh_batch1 <- split_batch_thresh[grep("Batch1", names(split_batch_thresh))]
+split_batch_thresh_batch2 <- split_batch_thresh[grep("Batch2", names(split_batch_thresh))]
+```
+
+#detection rate
+```{r}
+detected_amounts<-list()
+detect_fun <- function(data, kits) {
+  for (i in kits){
+    data_totest <<- data[grep(i, names(data)) ]
+    detected_amounts[[i]]<<-length(rownames(as.data.frame(data_totest)))
+  }
+}
+
+detect_fun(data = split_kit_thresh, kits = names(split_kit))
+detected_amounts_kit <- detected_amounts
+detected_amounts_kit
+
+detect_fun(data = split_batch_thresh_batch1, kits = names(split_batch_thresh_batch1))
+detected_amounts_batch1 <- detected_amounts
+detected_amounts_batch1
+
+detect_fun(data = split_batch_thresh_batch2, kits = names(split_batch_thresh_batch2))
+detected_amounts_batch2 <- detected_amounts
+detected_amounts_batch2
+```
+
+###genefilter
+```{r, eval=TRUE, echo = FALSE}
+library(genefilter)
+#poverafun <- genefilter::pOverA(p = .5, A = 529)# at least 529 reads for 50% of samples
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least one raw read in all samples #379
+#poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 raw reads in all samples #292
+#poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 raw reads in all samples #125
+
+ffun <- filterfun(poverafun)
+index <- genefilter(miR_1000_raw, ffun)
+thresh_miR_1000 <- norm_miR_1000[index,]
+dim(thresh_miR_1000)
+```
+
+
+
+###Choose DATA
+```{r}
+Counts<-thresh_miR_1000
+Pheno<-Pheno1000
+kits<-as.character(unique(Pheno$Kit))
+```
+
+
+
+```{r}
+###The Function
+library(limma)
+library(edgeR)
+
+single <- function(kit) {
+  dat<-split_kit_thresh[grep(kit, names(split_kit_thresh))]
+  dat<-data.frame(dat)
+  #dat <- Counts[, grep(kit, (colnames(Counts)))]
+  #dat<- dat[which(rownames(dat) %in% Names_10[[kit]][1:length(Names_10[[kit]])]),] #just need to select the right list based on order
+  p <- Pheno1000[grep(kit, (Pheno1000[, 1])), ]
+  design <- model.matrix(~p$Batch)
+  data_s <<- log2(dat + 1)
+  f <- lmFit(data_s, design)
+  f <- eBayes(f)
+}
+```
+
+```{r}
+fits <-lapply(kits, single)
+names(fits) <-kits
+#head(fits)
+```
+
+Evaluate Batch P values
+```{R, eval = TRUE}
+##########pvalues etc.#####
+pval_single <-list()
+pval_single<-lapply(fits, function(f) { f$p.value[, 2] })
+pval_df_single <-lapply(pval_single, data.frame)
+qval_single <- sapply(pval_single, p.adjust, method = 'fdr')
+qval_df_single <-lapply(qval_single, data.frame)
+# pval_df_single <- as.data.frame(do.call(cbind, lapply(fits, function(f) { f$p.value[, 2] })))
+# colnames(pval_df_single) <- c("Clontech", "Illumina", "NEB", "NEXTflex", "NEXTflex_deduped")
+# colnames(pval_df_single)<- kits
+# 
+#adjust<- function(x) {p.adjust(x, method = "fdr")}
+
+#qval_df_single <- sapply(pval_df_single, adjust)
+#qval_df_single <- as.data.frame(sapply(pval_df_single[[]], p.adjust, method = 'fdr'))
+raw_table<-sapply(qval_df_single, function(x) { table(x > 0.05 )}) # TRUE = not sig accross batch is true
+raw_table
+percent_table_noBatcheffect<-(raw_table[which(rownames(raw_table) == "TRUE"),] / colSums(raw_table))*100
+percent_table_Batcheffect<-(raw_table[which(rownames(raw_table) == "FALSE"),] / colSums(raw_table))*100
+#round(sapply(qval_df_single, function(x) { table(x > 0.05 )}) / nrow(qval_df_single) * 100, 2)
+
+```
+
+
+```{r, eval = FALSE}
+t.test(qval_df_single$Clontech, qval_df_single$NEB)
+t.test(qval_df_single$Clontech, qval_df_single$NEXTflex)
+```
+
+
+```{r, echo = FALSE, message = FALSE, eval = TRUE}
+library(dplyr)
+
+  test_names <- data.frame(combn(kits, m= 2))
+
+get_test_results<- function(data,test_names, pairedvalue) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+    #Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+    #Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+    #colnames(Kit1)<-c("error")
+    #colnames(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x, tested_kits) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+}
+```
+
+```{r}
+### in this case... a lower t is worse... because we are using the raw qvals for batch effect significance
+```
+
+```{r, eval = FALSE}
+#get_test_names(qval_df_single, eval = FALSE)
+get_test_results(data = qval_df_single, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+```
+
+Accross Batch Error Plot
+```{r, eval=TRUE}
+library(ggplot2)
+library(reshape2)
+
+#qvals <- lapply(qval_df_single[[1]], -log10)
+
+```
+
+```{r}
+#sig_Table_single<-round(sapply(qval_df_single, function(x) { table(x < 0.05 )}) / nrow(qval_df_single) * 100, 2)
+raw_table
+percent_table <- rbind(percent_table_noBatcheffect, percent_table_Batcheffect)
+rownames(percent_table)<-c("No Batch Effect", "Sig Batch Effect")
+percent_table
+DF1_single <- melt(percent_table)
+
+ggplot(DF1_single, aes(x = Var2, y = value, fill = Var1)) +
+  geom_bar(stat = "identity") +scale_fill_manual(values=c("green3", "black"))+
+  guides(fill=guide_legend(title=""))+
+  ggtitle(label = "Percentage of miRNAs with significant batch effect")+ 
+  ylab("Percentage of miRNAs")+
+  xlab("Kit")+
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 20, face = "bold", hjust = 0.5), 
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10), 
+        axis.title.y = element_text(size =15),
+        legend.text=element_text(size=20))
+```
+
+# this works...but should probably take intersection first before doing stats and then creating a plot from it... but I don't know what is better...
+Accross Batch Error Plot
+```{r, eval=TRUE}
+library(ggplot2)
+library(reshape2)
+
+
+Names_thresh<-intersect(intersect(intersect(intersect(rownames(split_kit_thresh[[1]]), rownames(split_kit_thresh[[2]])), rownames(split_kit_thresh[[3]])), rownames(split_kit_thresh[[4]])), rownames(split_kit_thresh[[5]]))
+
+finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
+
+qvals <- lapply(qval_df_single, finding_rows)  
+qvals <- data.frame(qvals)
+colnames(qvals) <-c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped")
+qvals_raw <-qvals
+
+get_test_results(data = qvals, test_names = test_names, pairedvalue = TRUE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+qvals <- -log10(qvals)
+
+
+
+make_plot <- function(qvals, coef = FALSE) {
+
+    plot1001<-ggplot(data = qvals, aes(x = variable, y = value, color= variable))+geom_jitter(alpha =0.7) +geom_boxplot(outlier.shape = NA, varwidth = TRUE)+
+      ggtitle(label = "Inconsistency Across Batch")+ 
+      labs(y = ifelse(coef, "Coef for batch effect \n on indv. miRNAs", "-log10(q) for batch effect \n on indv. miRNAs"))+
+      theme(axis.title.x = element_text(size =0), 
+            plot.title = element_text(size = 30, face = "bold", hjust = 0.5), 
+            axis.text.x = element_text(size = 10),
+            axis.text.y = element_text(size = 20), 
+            axis.title.y = element_text(size =15),
+            legend.position= "none") 
+    plot1001
+    
+    
+    
+    #+scale_fill_manual(values=kit_colors)+ scale_color_manual(values=rep("black", 5)) #+geom_jitter(aes(fill = variable, alpha =.3))+scale_fill_manual(values=kit_colors)+ scale_color_manual(values=rep("black", 5))
+    
+    #plot1001  +scale_fill_manual(values=kit_colors)+ scale_color_manual(values=rep("black", 5)) + geom_point() + scale_color_manual(values=kit_colors) + geom_jitter()
+}
+
+make_plot(qvals =melt((qvals)))
+
+
+
+```
+###Dendrogram to see how data clusters after normalization of counts
+```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
+library(rafalib)
+library(dendextend)
+library(reshape2)
+
+thresh_miR_1000 <-  finding_rows(norm_miR_1000)
+
+thresh_miR_1000<-data.frame(thresh_miR_1000) # change to thresh if you want thresholded data
+miR_data <- log2(thresh_miR_1000+1)
+
+yGene <-as.matrix(miR_data)
+miRNAc <- hclust(dist(t(yGene)))
+pdD<-Pheno1000
+pdD$Kit<-as.factor(pdD$Kit)
+pdD$TriplicateGroup<-as.factor(pdD$TriplicateGroup)
+par(mar=c(10,2,3,0))
+colors<-as.numeric(pdD$Kit)
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 5
+cols = gg_color_hue(n)
+repeat_colors <-function(x){rep(x,6)}
+cols2 <- lapply(cols, repeat_colors)
+cols2<-unlist(cols2)
+cols2 <-cols2[order(miRNAc$order)]
+
+myplclust(miRNAc, labels=pdD$TriplicateGroup,lab.col=(cols2), main = "Counts cluster by library prep kit")
+
+```
+
+
+###are high error miRNAs the same across kits?
+```{r}
+library(dplyr)
+rankmiRNA<-function(x){rownames(qvals)[order(x, decreasing = TRUE) , drop = FALSE]}
+ranks<-data.frame(lapply(qvals, rankmiRNA)) #this is ordered from highest error to least error - so that we can grab the top worst sequences for each kit
+
+#let-7c-3p has the least error for NEB
+ranks_number <-sapply(qvals, rank, ties.method = "random") # where 1 is the lowest - no ties -randomly chooses
+ranks_number <-data.frame(ranks_number)
+ranks_number$miRNA<- rownames(qvals)
+head(qvals)
+head(ranks_number)
+head(ranks)
+
+
+higherror <-ranks[1:30,] # grab the top 30 worst miRNA IDs for each kit
+higherror_miRNAs<-unique(c(t(higherror))) #take only the unique ids from this list- which is 58
+length(higherror_miRNAs)# thus 57 out of the 150 overlapped across kits 40% are shared
+
+ranks_number_high <- ranks_number[which(ranks_number$miRNA %in% higherror_miRNAs),]
+#ranks_number<-ranks_number[order(ranks_number$NEB, decreasing = TRUE),]
+
+
+ranks_number_melted <-melt(ranks_number_high)
+
+make_rank_plot<-function(ranks_number_melted) {
+ranks_number_melted$variable <- factor(ranks_number_melted$variable, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+  plot1002<<-ggplot(data = ranks_number_melted, aes(x = miRNA, y = value, color= variable)) +geom_point(aes(color = variable))
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 5, angle = 90),
+        axis.text.y = element_text(size = 2), 
+        axis.title.y = element_text(size =18))
+        #axis.ticks.y =  element_text(size =2))
+  plot1002 + coord_flip()+labs(y = "Rank of miRNA error", title = "Average within batch error across kits")
+}
+
+make_rank_plot(ranks_number = ranks_number_melted)
+
+
+qvals[grep("hsa-miR-9-5p", rownames(qvals)),]
+qvals[grep("hsa-miR-137", rownames(qvals)),]
+
+lapply(qvals, range)
+
+#hsa-miR-9-5p has high error - it is highly expressed... is that why?
+```
+
+
+Check relationship of error and expression
+```{r}
+library(gsubfn)
+exp_avgs <- lapply(split_kit_thresh, rowMeans)
+exp_avgs <-lapply(exp_avgs, data.frame)
+expression_df <- data.frame(lapply(exp_avgs, finding_rows))
+colnames(expression_df) <-names(exp_avgs)
+identical(rownames(expression_df), rownames(qvals_raw))
+expression_df<-log2(expression_df)
+
+alltogether<-cbind(qvals_raw, expression_df)
+names_kits <-colnames(alltogether)
+colnames(alltogether)<-paste0(names(alltogether),c(rep("_rank", 5), rep("_exp", 5)))
+
+alltogether <-alltogether[,c(1,6,2,7,3,8,4,9,5,10)]
+alltogether$miRNA <- rownames(alltogether)
+alldata <-melt(alltogether)
+#alldata$kit <- alldata$variable
+#alldata$kit <- gsub("_....", "", alldata$kit)
+#alldata$measure <- alldata$variable
+#alldata$measure <- gsub("Clontech", "", alldata$measure)
+alldata$Kit <-sapply(strsplit(as.character(alldata$variable) ,"_"), `[`, 1)
+alldata$measure <-sapply(strsplit(as.character(alldata$variable) ,"_"), `[`, 2)
+alldata_rank <- alldata[which(alldata$measure == "rank"),]
+alldata_exp <-alldata[which(alldata$measure == "exp"),]
+alldata<-cbind(alldata_rank, alldata_exp)
+
+colnames(alldata)[3] <-c("rank")
+colnames(alldata)[which(colnames(alldata) == "value")]<-c("expression")
+#alldata2<-melt(alldata)
+#t_alltogether <- as.data.frame(t(alltogether))
+#t_alltogether$kit<-names_kits
+#t_alltogether$measure <-sapply(strsplit(rownames(t_alltogether),"_"), `[`, 2)
+#alldata <- melt(t_alltogether)
+
+#plot(ranks_number$Deduped, log2(expression_df$Deduped), main = "Correlation of Error and Expression for Clontech", xlab = "Rank of Error", ylab = "log2 Mean Expression")
+####
+
+get_cor_results<- function(data1, data2,test_names) {
+corresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in test_names){
+    exp_data <<-data1[which(names(data1) %in% i)]
+    rank_data <<-data2[which(names(data2) %in% i)]
+    tested_names1[[i]]<-names(data1)[names(data1) %in% i]
+    tested_names2[[i]]<-names(data2)[names(data2) %in% i]
+    corresults[[i]]<<-cor.test(x=exp_data[,1], y=rank_data[,1])
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+
+get_corStats<- function(x, tested_kits) {
+  c(cor = format(x$estimate, digits = 2),
+    t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format((.05/length(tested_kits)), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(tested_kits)), "yes", "no"))
+}
+
+test_names <- data.frame(names(split_kit_thresh))
+get_cor_results(data1 = expression_df, data2 = qvals_raw, test_names = test_names$names.split_kit_thresh.)
+
+cor_withinerror_avgexp<-data.frame(lapply(corresults, get_corStats, tested_kits = tested_kits))
+colnames(cor_withinerror_avgexp)<-tested_kits
+
+cor_withinerror_avgexp
+#melt(alltogether)
+###
+
+make_exp_plot<-function(alldata) {
+alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+  plot1002<<-ggplot(data = alldata, aes(x = expression, y =rank , color= Kit)) +geom_point(aes(color = Kit))+
+  theme(axis.title.x = element_text(size =20), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 25),
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_text(size =20))
+        
+  plot1002 +labs(x = "log2 Average Expression", y = "qval of miRNA error", title = "Average batch error across kits") + stat_smooth(method = "loess") 
+}
+
+make_exp_plot(alldata = alldata)
+
+```
+
+Using rank
+```{r}
+library(gsubfn)
+exp_avgs <- lapply(split_kit_thresh, rowMeans)
+exp_avgs <-lapply(exp_avgs, data.frame)
+expression_df <- data.frame(lapply(exp_avgs, finding_rows))
+colnames(expression_df) <-names(exp_avgs)
+identical(rownames(expression_df), ranks_number$miRNA)
+expression_df<-log2(expression_df)
+rownames(ranks_number) <-ranks_number$miRNA
+ranks_number <- ranks_number[,-6]
+#colnames(ranks_number)<-paste0(colnames(ranks_number), "_rank")
+#colnames(expression_df)<-paste0(colnames(expression_df), "_exp")
+alltogether<-cbind(ranks_number, expression_df)
+names_kits <-colnames(alltogether)
+colnames(alltogether)<-paste0(names(alltogether),c(rep("_rank", 5), rep("_exp", 5)))
+
+alltogether <-alltogether[,c(1,6,2,7,3,8,4,9,5,10)]
+alltogether$miRNA <- rownames(alltogether)
+alldata <-melt(alltogether)
+#alldata$kit <- alldata$variable
+#alldata$kit <- gsub("_....", "", alldata$kit)
+#alldata$measure <- alldata$variable
+#alldata$measure <- gsub("Clontech", "", alldata$measure)
+alldata$Kit <-sapply(strsplit(as.character(alldata$variable) ,"_"), `[`, 1)
+alldata$measure <-sapply(strsplit(as.character(alldata$variable) ,"_"), `[`, 2)
+alldata_rank <- alldata[which(alldata$measure == "rank"),]
+alldata_exp <-alldata[which(alldata$measure == "exp"),]
+alldata<-cbind(alldata_rank, alldata_exp)
+
+colnames(alldata)[3] <-c("rank")
+colnames(alldata)[which(colnames(alldata) == "value")]<-c("expression")
+#alldata2<-melt(alldata)
+#t_alltogether <- as.data.frame(t(alltogether))
+#t_alltogether$kit<-names_kits
+#t_alltogether$measure <-sapply(strsplit(rownames(t_alltogether),"_"), `[`, 2)
+#alldata <- melt(t_alltogether)
+
+#plot(ranks_number$Deduped, log2(expression_df$Deduped), main = "Correlation of Error and Expression for Clontech", xlab = "Rank of Error", ylab = "log2 Mean Expression")
+####
+
+get_cor_results<- function(data1, data2,test_names) {
+corresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in test_names){
+    exp_data <<-data1[which(names(data1) %in% i)]
+    rank_data <<-data2[which(names(data2) %in% i)]
+    tested_names1[[i]]<-names(data1)[names(data1) %in% i]
+    tested_names2[[i]]<-names(data2)[names(data2) %in% i]
+    corresults[[i]]<<-cor.test(x=exp_data[,1], y=rank_data[,1])
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+
+get_corStats<- function(x, tested_kits) {
+  c(cor = format(x$estimate, digits = 2),
+    t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format((.05/length(tested_kits)), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(tested_kits)), "yes", "no"))
+}
+
+test_names <- data.frame(names(split_kit_thresh))
+get_cor_results(data1 = expression_df, data2 = ranks_number, test_names = test_names$names.split_kit_thresh.)
+
+cor_withinerror_avgexp<-data.frame(lapply(corresults, get_corStats, tested_kits = tested_kits))
+colnames(cor_withinerror_avgexp)<-tested_kits
+
+cor_withinerror_avgexp
+#melt(alltogether)
+###
+
+make_exp_plot<-function(alldata) {
+alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+  plot1002<<-ggplot(data = alldata, aes(x = rank, y = expression, color= Kit)) +geom_point(aes(color = Kit))+
+  theme(axis.title.x = element_text(size =20), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 25),
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_text(size =20))
+        
+  plot1002 +labs(x = "Rank of miRNA error", y = "log2 Average Expression", title = "Average batch error across kits") + stat_smooth(method = "loess") 
+}
+
+make_exp_plot(alldata = alldata)
+
+```
+```{r}
+#GC content and length association with error and expression...
+library(plotly)
+head(UnionInfo)
+UnionInfo <-UnionInfo[order(rownames(UnionInfo)),]
+colnames(UnionInfo)[1] <-"GC_Content"
+UnionInfo_longer<-do.call("rbind", replicate(5, UnionInfo, simplify = FALSE))
+alldata <-cbind(alldata, UnionInfo_longer)
+
+alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+  plot1002<<-ggplot(data = alldata, aes(x = GC_Content, y = expression, color= Kit)) +geom_point(aes(color = Kit))+
+  theme(axis.title.x = element_text(size =20), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 25),
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_text(size =20))
+        
+  plot1002 +labs(x = "GC_Content", y = "log2 Average Expression", title = "Average batch error across kits") + stat_smooth(method = loess) 
+
+
+  alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+  plot1002<<-ggplot(data = alldata, aes(x = GC_Content, y = rank, color= Kit)) +geom_point(aes(color = Kit))+
+  theme(axis.title.x = element_text(size =20), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 25),
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_text(size =20))
+        
+  plot1002<-plot1002 +labs(x = "GC_Content", y = "rank of batch error", title = "Average batch error across kits") + stat_smooth(method = lm) 
+  plot1002 + facet_grid(Kit ~ .)
+
+ggplotly()
+
+
+
+### try to make an expression by expression of different kits together --like before
+expression_DF <- expression_df
+expression_DF$miRNA <- rownames(expression_df)
+expr<- melt(expression_DF)
+  plot1002<<-ggplot(data = expr, aes(x = miRNA, y = value, color= variable)) +geom_point(aes(color = variable))+
+  theme(axis.title.x = element_text(size =20), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 25),
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_text(size =20))
+        
+  plot1002<-plot1002 +labs(x = "miRNA", y = "expression", title = " across kits") + stat_smooth(method = lm) 
+  plot1002 + facet_grid(. ~ variable)
+#http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
+  
+cormatrix<-round(cor(expression_df),2)
+cormatrix<-melt(cormatrix)
+
+ggplot(data = cormatrix, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = .75, limit = c(.5,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+ theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1))
+```
+
+#######################################################################################################
+
+###Evaluate Within Batch Error Function#
+```{r, echo=TRUE, message=FALSE, warning=FALSE, eval = TRUE}
+
+library(reshape2)
+library(limma)
+library(edgeR)
+library(dplyr)
+
+
+test_names <- data.frame(combn(Pheno1000$TriplicateGroup, m= 2))
+  
+get_error<- function(data) {
+  errorData <<-list()
+  errordata <<-data.frame()
+  #error_for_graph <<-list()
+  for(i in names(data)){
+  data_kit <<-data.frame(data[grep(i,names(data))])
+  errordata <-data_kit - rowMeans(data_kit)
+  errordata <-abs(errordata)
+  #error_for_graph<<-melt(errordata)
+  errordata <-log2(errordata +1)
+  errorData[[i]]<<-errordata
+  }
+}
+
+```
+
+Higher t is worse = higher error
+
+###Within Error Batch 1 
+```{r}
+get_error(data = split_batch_thresh_batch1)
+
+mean_errors_1 <- lapply(errorData, rowMeans)
+
+
+test_names <- data.frame(combn(names(split_batch_thresh_batch1), m= 2))
+
+errorData_test <-lapply(mean_errors_1, data.frame)
+errorData_test <- lapply(errorData_test, finding_rows)  
+errorData_test <- data.frame(errorData_test)
+colnames(errorData_test) <-names(split_batch_thresh_batch1)
+
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
+#get_test_results(data = mean_errors_1, test_names = test_names)
+
+ttestStats_within_1<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_1)<-tested_kits
+ttestStats_within_1
+
+```
+
+###Within Error Plots Batch 1###########
+```{r, echo=FALSE, warning=FALSE, eval=TRUE}
+library(ggplot2)
+
+melted_errordata_1 <- melt(errorData_test)
+Within_error_df <- melted_errordata_1
+Within_error_df$variable<-gsub("1000_Batch1", "", Within_error_df$variable)
+
+make_plot <- function(Within_error_df) {
+    Within_error_df$variable <- factor(Within_error_df$variable, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+  plot1000<<-ggplot(data = melt(Within_error_df), aes(x = variable, y = value, color= variable)) +geom_jitter(aes(color = variable, alpha =.7)) +
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10), 
+        axis.title.y = element_text(size =18))
+}
+make_plot(Within_error_df = Within_error_df)
+
+# if you want the original plot colors :
+#plot1000 +scale_color_manual(values=kit_colors) + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits in first batch") + ylim(0,10000)
+
+# if you want boxplot : +geom_boxplot(aes(fill = L1, alpha =.7), outlier.shape = NA)
+
+plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits in first batch") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
+```
+
+###Within Error Batch 2
+```{r}
+get_error(data = split_batch_thresh_batch2)
+
+mean_errors_2 <- lapply(errorData, rowMeans)
+melted_errordata_2 <- melt(errorData)
+
+
+test_names <- data.frame(combn(names(split_batch_thresh_batch2), m= 2))
+
+errorData_test <-lapply(mean_errors_2, data.frame)
+errorData_test <- lapply(errorData_test, finding_rows)  
+errorData_test <- data.frame(errorData_test)
+colnames(errorData_test) <-names(split_batch_thresh_batch2)
+
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
+#get_test_results(data = mean_errors_2, test_names = test_names)
+
+ttestStats_within_2<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_2)<-tested_kits
+ttestStats_within_2
+
+
+```
+
+###Within Error Plots Batch 2###########
+```{r, echo=FALSE, warning=FALSE, eval=TRUE}
+library(ggplot2)
+
+
+melted_errordata_2 <- melt(errorData_test)
+Within_error_df <- melted_errordata_2
+Within_error_df$variable<-gsub("1000_Batch2", "", Within_error_df$variable)
+
+# make_plot(Within_error_df = Within_error_df)
+# plot1000 +scale_fill_manual(values=kit_colors) + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits in second batch") + ylim(0,10000)
+
+make_plot(Within_error_df = Within_error_df)
+plot1000 + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits in second batch") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
+```
+```{r}
+ttestStats_within_1
+#this time larger t is worse performance - larger error
+```
+
+```{r}
+ttestStats_within_2
+#this time larger t is worse performance - larger error
+```
+
+
+
+
+######################
+##Mean within error of both batches
+
+```{r, eval = TRUE}
+
+  mean_errors_avg <- list()
+
+get_means <-function(kits) {
+  for(i in kits){
+  intersection <- rownames(as.data.frame(mean_errors_1[grep(i,  names(mean_errors_1))]))[which(rownames(as.data.frame(mean_errors_1[grep(i, names(mean_errors_1))])) %in% rownames(as.data.frame(mean_errors_2[grep(i, names(mean_errors_2))])))]
+   batch1<-as.data.frame(mean_errors_1[grep(i, names(mean_errors_1))])[which(rownames(as.data.frame(mean_errors_1[grep(i, names(mean_errors_1))])) %in% intersection), , drop = FALSE]
+   batch2<-as.data.frame(mean_errors_2[grep(i,     names(mean_errors_2))])[which(rownames(as.data.frame(mean_errors_2[grep(i, names(mean_errors_2))])) %in% intersection), , drop = FALSE]
+  kit_together<-cbind(batch1, batch2)
+  mean_errors_avg[[i]]<<-rowMeans(kit_together)
+  }
+}
+
+
+kits <-names(split_kit)
+results<-lapply(kits, get_means) 
+
+
+test_names <- data.frame(combn(names(split_kit), m= 2))
+
+errorData_test <-lapply(mean_errors_avg, data.frame)
+errorData_test <- lapply(errorData_test, finding_rows)  
+errorData_test <- data.frame(errorData_test)
+colnames(errorData_test) <-names(split_kit_thresh)
+
+get_test_results(data = errorData_test, test_names = test_names, pairedvalue = TRUE)
+
+ttestStats_within_avg<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_within_avg)<-tested_kits
+
+ttestStats_within_avg
+
+```
+
+##mean within error plot
+```{r, echo=FALSE, warning=FALSE, eval=TRUE, message=FALSE}
+library(ggplot2)
+
+melted_errordata_avg <- melt(errorData_test)
+Within_error_df <- melted_errordata_avg
+  
+make_plot(Within_error_df = Within_error_df)
+
+plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Average within batch error across kits")  + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
+```
+
+
+
+###are high error miRNAs the same across kits?
+```{r}
+library(dplyr)
+rankmiRNA<-function(x){rownames(errorData_test)[order(x, decreasing = TRUE) , drop = FALSE]}
+ranks<-data.frame(lapply(errorData_test, rankmiRNA)) #this is ordered from highest error to least error - so that we can grab the top worst sequences for each kit
+
+#let-7c-3p has the least error for NEB
+
+ranks_number <-sapply(errorData_test, rank) # where 1 is the lowest
+ranks_number <-data.frame(ranks_number)
+ranks_number$miRNA<- rownames(errorData_test)
+head(errorData_test)
+head(ranks_number)
+head(ranks)
+
+
+higherror <-ranks[1:30,] # grab the top 30 worst miRNA IDs for each kit
+higherror_miRNAs<-unique(c(t(higherror))) #take only the unique ids from this list- which is 58
+length(higherror_miRNAs)# thus 57 out of the 150 overlapped across kits 40% are shared
+
+ranks_number_high <- ranks_number[which(ranks_number$miRNA %in% higherror_miRNAs),]
+#ranks_number<-ranks_number[order(ranks_number$NEB, decreasing = TRUE),]
+
+
+ranks_number_melted <-melt(ranks_number_high)
+
+make_rank_plot<-function(ranks_number_melted) {
+ranks_number_melted$variable <- factor(ranks_number_melted$variable, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+  plot1002<<-ggplot(data = ranks_number_melted, aes(x = miRNA, y = value, color= variable)) +geom_point(aes(color = variable))
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 5, angle = 90),
+        axis.text.y = element_text(size = 2), 
+        axis.title.y = element_text(size =18))
+        #axis.ticks.y =  element_text(size =2))
+  plot1002 + coord_flip()+labs(y = "Rank of miRNA error", title = "Average within batch error across kits")
+}
+
+make_rank_plot(ranks_number = ranks_number_melted)
+
+
+errorData_test[grep("hsa-miR-9-5p", rownames(errorData_test)),]
+lapply(errorData_test, range)
+
+#hsa-miR-9-5p has high error - it is highly expressed... is that why?
+```
+
+Check relationship of error and expression
+```{r}
+library(gsubfn)
+library(ggrepel)
+exp_avgs <- lapply(split_kit_thresh, rowMeans)
+exp_avgs <-lapply(exp_avgs, data.frame)
+expression_df <- data.frame(lapply(exp_avgs, finding_rows))
+colnames(expression_df) <-names(exp_avgs)
+identical(rownames(expression_df), ranks_number$miRNA)
+expression_df<-log2(expression_df)
+rownames(ranks_number) <-ranks_number$miRNA
+ranks_number <- ranks_number[,-6]
+#colnames(ranks_number)<-paste0(colnames(ranks_number), "_rank")
+#colnames(expression_df)<-paste0(colnames(expression_df), "_exp")
+alltogether<-cbind(ranks_number, expression_df)
+names_kits <-colnames(alltogether)
+colnames(alltogether)<-paste0(names(alltogether),c(rep("_rank", 5), rep("_exp", 5)))
+
+alltogether <-alltogether[,c(1,6,2,7,3,8,4,9,5,10)]
+alltogether$miRNA <- rownames(alltogether)
+alldata <-melt(alltogether)
+#alldata$kit <- alldata$variable
+#alldata$kit <- gsub("_....", "", alldata$kit)
+#alldata$measure <- alldata$variable
+#alldata$measure <- gsub("Clontech", "", alldata$measure)
+alldata$Kit <-sapply(strsplit(as.character(alldata$variable) ,"_"), `[`, 1)
+alldata$measure <-sapply(strsplit(as.character(alldata$variable) ,"_"), `[`, 2)
+alldata_rank <- alldata[which(alldata$measure == "rank"),]
+alldata_exp <-alldata[which(alldata$measure == "exp"),]
+alldata<-cbind(alldata_rank, alldata_exp)
+
+colnames(alldata)[3] <-c("rank")
+colnames(alldata)[which(colnames(alldata) == "value")]<-c("expression")
+#alldata2<-melt(alldata)
+#t_alltogether <- as.data.frame(t(alltogether))
+#t_alltogether$kit<-names_kits
+#t_alltogether$measure <-sapply(strsplit(rownames(t_alltogether),"_"), `[`, 2)
+#alldata <- melt(t_alltogether)
+
+#plot(ranks_number$Deduped, log2(expression_df$Deduped), main = "Correlation of Error and Expression for Clontech", xlab = "Rank of Error", ylab = "log2 Mean Expression")
+####
+
+get_cor_results<- function(data1, data2,test_names) {
+corresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in test_names){
+    exp_data <<-data1[which(names(data1) %in% i)]
+    rank_data <<-data2[which(names(data2) %in% i)]
+    tested_names1[[i]]<-names(data1)[names(data1) %in% i]
+    tested_names2[[i]]<-names(data2)[names(data2) %in% i]
+    corresults[[i]]<<-cor.test(x=exp_data[,1], y=rank_data[,1])
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+
+get_corStats<- function(x, tested_kits) {
+  c(cor = format(x$estimate, digits = 2),
+    t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format((.05/length(tested_kits)), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(tested_kits)), "yes", "no"))
+}
+
+test_names <- data.frame(names(split_kit_thresh))
+get_cor_results(data1 = expression_df, data2 = ranks_number, test_names = test_names$names.split_kit_thresh.)
+
+cor_withinerror_avgexp<-data.frame(lapply(corresults, get_corStats, tested_kits = tested_kits))
+colnames(cor_withinerror_avgexp)<-tested_kits
+
+cor_withinerror_avgexp
+#melt(alltogether)
+###
+
+#https://stackoverflow.com/questions/17241182/how-to-make-geom-text-plot-within-the-canvass-bounds
+#https://stats.stackexchange.com/questions/16057/how-do-i-avoid-overlapping-labels-in-an-r-plot
+make_exp_plot<-function(alldata) {
+alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+ alldata$miRNA<-ifelse(alldata$rank>370 | alldata$rank<2 ,as.character(alldata$miRNA),'')
+  plot1002<<-ggplot(data = alldata, aes(x = rank, y = expression, color= Kit))+ geom_point(aes(color = Kit))+
+  theme(axis.title.x = element_text(size =20), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 25),
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_text(size =20))
+        
+  plot1002 +labs(x = "Rank of miRNA error", y = "log Average Expression", title = "Average within batch error across kits") + stat_smooth(method=lm)+geom_label_repel(data = alldata,aes(rank, expression, fill = Kit, label = miRNA),fontface = 'bold', color = 'white',label.padding = .35, box.padding = 0.35, point.padding = 0.5,segment.color = 'grey50') 
+    
+}
+
+make_exp_plot(alldata = alldata)
+
+
+#  +scale_x_continuous(expand = c(.3, .3)) fontface = 'bold', color = 'white',
+    #box.padding = 0.35, point.padding = 0.5,
+    #segment.color = 'grey50')
+```
+
+##GC content
+```{r}
+head(alldata)
+head(UnionInfo)
+alldata$GC_content <- rep(UnionInfo$GC_Content,5)
+alldata$length <- rep(UnionInfo$length,5)
+
+ggplot(alldata, aes(x = GC_content, y = rank, color = Kit)) +geom_point()+stat_smooth(method =loess)
+ggplot(alldata, aes(x = GC_content, y = expression, color = Kit)) +geom_point()+stat_smooth(method =loess)
+
+ggplot(alldata, aes(x = length, y = rank, color = Kit)) +geom_point()+stat_smooth(method =lm)
+sm <- summary(lm(expression~GC_content, alldata))
+
+mse <- function(sm) 
+    mean(sm$residuals^2)
+
+# I think joo Hoen meant to fit all of the data for expression vs gc content for example and then calculate the mse for each kit? so we can compare
+
+#but the plots don't look that different from one kit to another....
+```
+
+###correlationplot
+```{r}
+head(alltogether)
+head(alldata)
+head(expression_df)
+library(GGally)
+set.seed(42)
+ggpairs(expression_df)
+# estimated density in diagonal
+```
+
