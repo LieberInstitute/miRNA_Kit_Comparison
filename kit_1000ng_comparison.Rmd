@@ -9,13 +9,14 @@ output: html_document
 library(edgeR)
 library(here)
 
-#Pheno<- read.table(here("../Pheno_repro_full_1_16_18_ns_kept"), header = T)
-Pheno<- read.table(here("Brain_liberal_trimmed_Ns_kept_Data/Pheno.csv"), header = T, sep = ",")
+Pheno<- read.table(here("../Pheno_repro_full_1_16_18_ns_kept"), header = T)
+#Pheno<- read.table(here("Brain_liberal_trimmed_Ns_kept_Data/Pheno.csv"), header = T, sep = ",")
 Pheno1000 <- Pheno[which(Pheno$startingAmt =="1000"),]
 
 #miR_counts<-read.table("/home/carrie/miRge/miRge-master/Keeping_Ns_Repro_Analysis/miR.Counts.csv", header = TRUE, sep = ",") #original location
 #miR_counts<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/ReproData/miR.Counts.csv", header = TRUE, sep = ",")
-miR_counts<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/miR.Counts.csv"), header = TRUE, sep = ",")
+#miR_counts<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/miR.Counts.csv"), header = TRUE, sep = ",")
+miR_counts<-read.table(here("IsomiR_16lim_data/miR.Counts.csv"), header = TRUE, sep = ",")
 
 rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
 miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
@@ -30,6 +31,7 @@ Pheno1000$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno1000$Kit)
 Pheno1000$TriplicateGroup<-gsub("NEXTflex_deduped", "Deduped", Pheno1000$TriplicateGroup)
 miR_1000_raw <- data.frame(miR_counts[which(Pheno$startingAmt == "1000")])
  
+Pheno1000$File <- colnames(miR_1000_raw)
 identical(as.character(Pheno1000$File), colnames(miR_1000_raw)) ###Check that these match 
 
 miR_RPMs<- as.matrix(cpm(miR_1000_raw)) #from the edgeR package
@@ -643,7 +645,7 @@ make_exp_plot(alldata = alldata)
 ```
 
 Using rank
-```{r}
+```{r, eval =FALSE}
 library(gsubfn)
 exp_avgs <- lapply(split_kit_thresh, rowMeans)
 exp_avgs <-lapply(exp_avgs, data.frame)
@@ -732,7 +734,7 @@ alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTfl
 make_exp_plot(alldata = alldata)
 
 ```
-```{r}
+```{r, eval =FALSE}
 #GC content and length association with error and expression...
 library(plotly)
 head(UnionInfo)
@@ -982,7 +984,7 @@ plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the 
 
 
 ###are high error miRNAs the same across kits?
-```{r}
+```{r, eval =FALSE}
 library(dplyr)
 rankmiRNA<-function(x){rownames(errorData_test)[order(x, decreasing = TRUE) , drop = FALSE]}
 ranks<-data.frame(lapply(errorData_test, rankmiRNA)) #this is ordered from highest error to least error - so that we can grab the top worst sequences for each kit
@@ -1029,7 +1031,7 @@ lapply(errorData_test, range)
 ```
 
 Check relationship of error and expression
-```{r}
+```{r, eval =FALSE}
 library(gsubfn)
 library(ggrepel)
 exp_avgs <- lapply(split_kit_thresh, rowMeans)
@@ -1129,7 +1131,7 @@ make_exp_plot(alldata = alldata)
 ```
 
 ##GC content
-```{r}
+```{r, eval =FALSE}
 head(alldata)
 head(UnionInfo)
 alldata$GC_content <- rep(UnionInfo$GC_Content,5)
@@ -1150,7 +1152,7 @@ mse <- function(sm)
 ```
 
 ###correlationplot
-```{r}
+```{r, eval = FALSE}
 head(alltogether)
 head(alldata)
 head(expression_df)

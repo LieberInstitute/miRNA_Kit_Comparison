@@ -101,8 +101,6 @@ carrie@srv02:~/miRge/miRge-master$ perl miRge.pl --species human --diff-isomirs 
 ```
 
 
-################Analysis starts here#########################
-
 ```{r}
 library(here)
 here()#should be Kit_comparison_project
@@ -138,10 +136,10 @@ miR_counts<-read.table(here("IsomiR_16lim_data/miR.Counts.csv"), header = TRUE, 
 #iso_RPM<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/isomirs.csv"), header = TRUE, sep = ",")
 iso_RPM <-isomiR_Counts
 #fixing the columns
-iso_data<-iso_RPM[1:(length(colnames(iso_RPM))-1)]
-colnames(iso_data)<-colnames(iso_RPM)[2:(length(colnames(iso_RPM)))]
-iso_RPM2 <- iso_data[,4:length(colnames(iso_data))-1]
-iso_RPM2_anno<-iso_data[1:2]
+iso_anno <-iso_RPM[1:2]
+entropy <- iso_RPM$Entropy
+iso_RPM2<-iso_RPM[3:(length(colnames(iso_RPM))-2)]
+
 
 library(XML)
 report_url<-here("IsomiR_16lim_data/report.html")
@@ -168,7 +166,7 @@ dimensions<-dim(iso_RPM2)
 Totalmatrix<-rep.row((Total/1000000), dimensions[1])#width of isoRPM2
 
 iso_Raw<- (iso_RPM2)*(as.numeric(Totalmatrix))
-iso_anno <-iso_RPM2_anno
+#iso_anno <-iso_RPM2_anno
 
 #iso_Raw <-as.data.frame(sapply(iso_Raw, as.integer))
 
@@ -196,6 +194,8 @@ norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
 #save(norm_miR, miR_counts, Pheno, file = here("IsomiR_16lim_data/iso_data.rda"))
 ```
 
+
+#################################################################START HERE####################
 #summarized data
 ```{r}
 library(here)
@@ -203,6 +203,9 @@ load(here("IsomiR_16lim_data/iso_data.rda"))
 norm_miRDF <-data.frame(norm_miR)
 total_isomiRs_above10 <- colSums(norm_miRDF>10)
 total_isomiR_reads <- colSums(norm_miRDF)
+total_isomiR_reads <-data.frame(total_isomiR_reads)
+total_isomiRs_above10<-data.frame(total_isomiRs_above10)
+total_isomiR<-cbind(total_isomiR_reads, total_isomiRs_above10)
 total_miRNA <-miR_counts[1,][-1]
 
 report_url<-here("IsomiR_16lim_data/report.html")
@@ -215,8 +218,12 @@ report <-report[seq(from =1, to = nrow(report), by = 5),]
 total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
 
 
-summarized_Data <- data.frame(total_isomiRs_above10, total_isomiR_reads, total_miRNA=t(as.vector(total_miRNA)), report$NULL.Total.Input.Reads)
-cor.test(x=summarized_Data$total_isomiRs_above10, y=summarized_Data$report.NULL.Total.Input.Reads)
+summarized_Data <- data.frame(total_miRNA=t(as.vector(total_miRNA)), report$NULL.Total.Input.Reads)
+colnames(summarized_Data)[1] <- c("total_miRNA_reads")
+summarized_Data$percentmiRNA <- (as.numeric(summarized_Data$total_miRNA_reads)/as.numeric(as.character(summarized_Data$report.NULL.Total.Input.Reads)))*100
+
+
+
 ```
 
 
