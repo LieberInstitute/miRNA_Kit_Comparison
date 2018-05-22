@@ -13,9 +13,12 @@ library("Biostrings")
 ```
 Code to clean fasta file to only include unique sequnces and create a new one:
 ```{r, eval =FALSE}
+library(here)
 #using an excel given to us from Miltenyi we created fasta files for each species, then we merged, then we did this
 library("Biostrings")
 #s = readDNAStringSet("/home/carrie/synthetic_miRNA/synthetic_allspecies.fa")#on SRV2
+s = readDNAStringSet(here("synthetic_allspecies.fa"))
+
 s = readDNAStringSet("/Users//carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/synthetic_allspecies.fa")
 s<- unique(s)
 newnames <-(gsub(" ", "", names(s)))
@@ -201,7 +204,9 @@ Clontech_trimmed.4_acc.fq,Illumina_trimmed.4_acc.fq,NEB_trimmed.4_acc.fq,trimmed
 
 Folding_data
 ```{r}
-folding <-readLines("/Users/carriewright/Documents/miRNA seq Projects/fastas_and_foldinginfo/synth_fold_output.txt") #read in the file from RNA fold
+library(here)
+#folding <-readLines("/Users/carriewright/Documents/miRNA seq Projects/fastas_and_foldinginfo/synth_fold_output.txt") #read in the file from RNA fold
+folding <-readLines(here("synth_fold_output.txt")) #read in the file from RNA fold
 folding_G <- folding[seq(3, length(folding), 3)] #grab only every thrid line
 folding_Gs <-vapply(strsplit(folding_G," "), `[`, 3, FUN.VALUE=character(1))
 folding_Gs <-gsub(")", "", folding_Gs)
@@ -214,7 +219,8 @@ Load the synthetic data
 ```{r}
 library(Biostrings)
 library(here)
-seqs = readDNAStringSet("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/synth_seqs_named.fa")
+#seqs = readDNAStringSet("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/synth_seqs_named.fa")
+seqs = readDNAStringSet(here("synth_seqs_named.fa"))
 #seqs = readDNAStringSet("/home/carrie/miRge/miRge-master/miRge.seqLibs/synthetic_sequences/synth_mirna.fa")##on SRV2
 GCcont<-letterFrequency(seqs, letters = c("CG"), as.prob = TRUE)
 #GCcont <-data.frame(GCcont = GCcont)
