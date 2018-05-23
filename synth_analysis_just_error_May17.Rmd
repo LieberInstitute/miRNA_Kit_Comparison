@@ -375,6 +375,7 @@ anova(fit)
 
 #### Main Plot###########
 ```{r}
+library(jaffelab)
 error_synth$miRNA <-rownames(error_synth)
 synth<- melt(error_synth)
 synth$miRNA <-jaffelab::ss(synth$miRNA, "-" ,slot =2)
