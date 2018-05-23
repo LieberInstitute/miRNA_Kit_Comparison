@@ -1,0 +1,2886 @@
+>synth_miRNA-1-EBV-MIR-BART10
+UACAUAACCAUGGAGUUGGCUGU
+.......(((......))).... ( -2.30)
+>synth_miRNA-2-EBV-MIR-BART11
+ACGCACACCAGGCUGACUGCC
+..........(((.....))) ( -3.30)
+>synth_miRNA-3-EBV-MIR-BART11-5P
+UCAGACAGUUUGGUGCGCUAGUUG
+...((((((.......))).))). ( -0.50)
+>synth_miRNA-4-EBV-MIR-BART12
+UCCUGUGGUGUUUGGUGUGGUU
+...................... (  0.00)
+>synth_miRNA-5-EBV-MIR-BART13
+UGUAACUUGCCAGGGACGGCUGA
+........(((......)))... ( -4.00)
+>synth_miRNA-6-EBV-MIR-BART1-RLCV-MIR-RL1-6
+UAGCACCGCUAUCCACUAUGUC
+((((...))))........... ( -1.50)
+>synth_miRNA-7-EBV-MIR-BART14
+UAAAUGCUGCAGUAGUAGGGAU
+......((((....)))).... ( -2.90)
+>synth_miRNA-8-EBV-MIR-BART14-5P
+UACCCUACGCUGCCGAUUUACA
+...................... (  0.00)
+>synth_miRNA-9-EBV-MIR-BART15
+GUCAGUGGUUUUGUUUCCUUGA
+.((((.((........)))))) ( -2.50)
+>synth_miRNA-10-EBV-MIR-BART1-5P
+UCUUAGUGGAAGUGACGUGCUGUG
+(((....))).............. ( -0.10)
+>synth_miRNA-11-EBV-MIR-BART16
+UUAGAUAGAGUGGGUGUGUGCUCU
+......((((((......)))))) ( -4.20)
+>synth_miRNA-12-EBV-MIR-BART17
+UGUAUGCCUGGUGUCCCCUUAGU
+....................... (  0.00)
+>synth_miRNA-13-EBV-MIR-BART17-5P
+UAAGAGGACGCAGGCAUACAAG
+...................... (  0.00)
+>synth_miRNA-14-EBV-MIR-BART18
+UAUCGGAAGUUUGGGCUUCGUC
+.....(((((....)))))... ( -4.10)
+>synth_miRNA-15-EBV-MIR-BART18-5P
+UCAAGUUCGCACUUCCUAUACA
+...................... (  0.00)
+>synth_miRNA-16-EBV-MIR-BART19
+UUUUGUUUGCUUGGGAAUGCU
+........((........)). ( -1.20)
+>synth_miRNA-17-EBV-MIR-BART19-5P
+ACAUUCCCCGCAAACAUGACAUG
+....................... (  0.00)
+>synth_miRNA-18-EBV-MIR-BART20
+CAUGAAGGCACAGCCUGUUACC
+.....((((...))))...... ( -4.00)
+>synth_miRNA-19-EBV-MIR-BART20-5P-RLCV-MIR-RL1-16-5P_2
+UAGCAGGCAUGUCUUCAUUCC
+.....((.(((....))).)) ( -1.50)
+>synth_miRNA-20-EBV-MIR-BART2
+AAGGAGCGAUUUGGAGAAAAUAAA
+........................ (  0.00)
+>synth_miRNA-21-EBV-MIR-BART2-5P
+UAUUUUCUGCAUUCGCCCUUGC
+........(((........))) ( -1.20)
+>synth_miRNA-22-EBV-MIR-BART3
+CGCACCACUAGUCACCAGGUGU
+.(((((...........))))) ( -4.80)
+>synth_miRNA-23-EBV-MIR-BART3-5P
+ACCUAGUGUUAGUGUUGUGCU
+..................... (  0.00)
+>synth_miRNA-24-EBV-MIR-BART4
+GACCUGAUGCUGCUGGUGUGCU
+.(((..........)))..... ( -1.80)
+>synth_miRNA-25-EBV-MIR-BART5
+CAAGGUGAAUAUAGCUGCCCAUCG
+...((((........))))..... ( -1.50)
+>synth_miRNA-26-EBV-MIR-BART6
+CGGGGAUCGGACUAGCCUUAGA
+.(((...........))).... ( -1.10)
+>synth_miRNA-27-EBV-MIR-BART6-5P
+UAAGGUUGGUCCAAUCCAUAGG
+......(((......))).... ( -1.90)
+>synth_miRNA-28-EBV-MIR-BART7
+CAUCAUAGUCCAGUGUCCAGGG
+.........((........)). ( -0.80)
+>synth_miRNA-29-EBV-MIR-BART8
+GUCACAAUCUAUGGGGUCGUAGA
+.......((((((....)))))) ( -4.30)
+>synth_miRNA-30-EBV-MIR-BART8-5P
+UACGGUUUCCUAGAUUGUACAG
+((((((((...))))))))... ( -2.80)
+>synth_miRNA-31-EBV-MIR-BART9
+UAACACUUCAUGGGUCCCGUAGU
+.........((((...))))... ( -1.00)
+>synth_miRNA-32-EBV-MIR-BHRF1-1
+UAACCUGAUCAGCCCCGGAGUU
+.((((((........))).))) ( -1.80)
+>synth_miRNA-33-EBV-MIR-BHRF1-2*
+AAAUUCUGUUGCAGCAGAUAGC
+....(((((....))))).... ( -4.00)
+>synth_miRNA-34-EBV-MIR-BHRF1-2
+UAUCUUUUGCGGCAGAAAUUGA
+...................... (  0.00)
+>synth_miRNA-35-EBV-MIR-BHRF1-3
+UAACGGGAAGUGUGUAAGCACA
+.........((((....)))). ( -3.60)
+>synth_miRNA-36-HCMV-MIR-UL112
+AAGUGACGGUGAGAUCCAGGCU
+.(((...((......))..))) ( -1.30)
+>synth_miRNA-37-HCMV-MIR-UL148D
+UCGUCCUCCCCUUCUUCACCG
+..................... (  0.00)
+>synth_miRNA-38-HCMV-MIR-UL22A*
+UCACCAGAAUGCUAGUUUGUAG
+.........(((......))). ( -0.50)
+>synth_miRNA-39-HCMV-MIR-UL22A
+UAACUAGCCUUCCCGUGAGA
+.................... (  0.00)
+>synth_miRNA-40-HCMV-MIR-UL36
+UCGUUGAAGACACCUGGAAAGA
+...................... (  0.00)
+>synth_miRNA-41-HCMV-MIR-UL70
+GGGGAUGGGCUGGCGCGCGG
+......(.((....)).).. ( -2.90)
+>synth_miRNA-42-HCMV-MIR-UL70-5P
+UGCGUCUCGGCCUCGUCCAGA
+....(((.(((...))).))) ( -1.60)
+>synth_miRNA-43-HCMV-MIR-US25-1
+AACCGCUCAGUGGCUCGGACC
+..((((...))))........ ( -2.90)
+>synth_miRNA-44-HCMV-MIR-US25-2
+AUCCACUUGGAGAGCUCCCGCGG
+.(((....)))..((....)).. ( -2.50)
+>synth_miRNA-45-HCMV-MIR-US25-2-5P
+AGCGGUCUGUUCAGGUGGAUGA
+....((((........)))).. ( -1.00)
+>synth_miRNA-46-HCMV-MIR-US33
+UCACGGUCCGAGCACAUCCA
+.................... (  0.00)
+>synth_miRNA-47-HCMV-MIR-US33-5P
+GAUUGUGCCCGGACCGUGGGCG
+......(((((.....))))). ( -8.30)
+>synth_miRNA-48-HCMV-MIR-US4
+CGACAUGGACGUGCAGGGGGAU
+...................... (  0.00)
+>synth_miRNA-49-HCMV-MIR-US5-1
+UGACAAGCCUGACGAGAGCGU
+......((((....)).)).. ( -2.30)
+>synth_miRNA-50-HCMV-MIR-US5-2
+UUAUGAUAGGUGUGACGAUGUC
+...................... (  0.00)
+>synth_miRNA-51-HIV1-MIR-H1
+CCAGGGAGGCGUGCCUGGGC
+(((((.(....).))))).. ( -9.00)
+>synth_miRNA-52-HIV1-MIR-N367
+ACUGACCUUUGGAUGGUGCUUCAA
+....(((.......)))....... ( -2.30)
+>synth_miRNA-53-HSV1-MIR-H1
+UGGAAGGACGGGAAGUGGAAG
+..................... (  0.00)
+>synth_miRNA-54-HSV-MIR-LAT
+UGGCGGCCCGGCCCGGGGCC
+....(((((......))))) (-10.60)
+>synth_miRNA-55-KSHV-MIR-K12-1
+AUUACAGGAAACUGGGUGUAAGC
+....(((....)))......... ( -2.70)
+>synth_miRNA-56-KSHV-MIR-K12-10A
+UAGUGUUGUCCCCCCGAGUGGC
+...................... (  0.00)
+>synth_miRNA-57-KSHV-MIR-K12-10B
+UGGUGUUGUCCCCCCGAGUGGC
+.((......))........... ( -0.30)
+>synth_miRNA-58-KSHV-MIR-K12-11
+UUAAUGCUUAGCCUGUGUCCGA
+...................... (  0.00)
+>synth_miRNA-59-KSHV-MIR-K12-12
+ACCAGGCCACCAUUCCUCUCCG
+...(((........)))..... ( -0.50)
+>synth_miRNA-60-KSHV-MIR-K12-2
+AACUGUAGUCCGGGUCGAUCUG
+..(((.....)))......... ( -0.40)
+>synth_miRNA-61-KSHV-MIR-K12-3*
+UCGCGGUCACAGAAUGUGACA
+.....((((((...)))))). ( -6.50)
+>synth_miRNA-62-KSHV-MIR-K12-3
+UCACAUUCUGAGGACGGCAGCGA
+..............((....)). ( -0.10)
+>synth_miRNA-63-KSHV-MIR-K12-4
+UAGAAUACUGAGGCCUAGCUGA
+...........(((...))).. ( -0.10)
+>synth_miRNA-64-KSHV-MIR-K12-4-5P
+AGCUAAACCGCAGUACUCUAGG
+.((......))........... ( -0.90)
+>synth_miRNA-65-KSHV-MIR-K12-5
+UAGGAUGCCUGGAACUUGCCGG
+........((((......)))) ( -3.00)
+>synth_miRNA-66-KSHV-MIR-K12-6
+UGAUGGUUUUCGGGCUGUUGAG
+.(((((((....)))))))... ( -2.40)
+>synth_miRNA-67-KSHV-MIR-K12-6-5P
+CCAGCAGCACCUAAUCCAUCGG
+...................... (  0.00)
+>synth_miRNA-68-KSHV-MIR-K12-7
+UGAUCCCAUGUUGCUGGCGCU
+.....(((......))).... ( -1.00)
+>synth_miRNA-69-KSHV-MIR-K12-8
+UAGGCGCGACUGAGAGAGCACG
+...((.(........).))... ( -1.70)
+>synth_miRNA-70-KSHV-MIR-K12-9*
+ACCCAGCUGCGUAAACCCCGCU
+........(((.......))). ( -2.00)
+>synth_miRNA-71-KSHV-MIR-K12-9
+CUGGGUAUACGCAGCUGCGUAA
+.......(((((....))))). ( -5.50)
+>synth_miRNA-72-MGHV-MIR-M1-1
+UAGAAAUGGCCGUACUUCCUUU
+...................... (  0.00)
+>synth_miRNA-73-MGHV-MIR-M1-2
+CAGACCCCCUCUCCCCCUCUUU
+...................... (  0.00)
+>synth_miRNA-74-MGHV-MIR-M1-3
+GAGGUGAGCAGGAGUUGCGCUU
+.((((((((....))).))))) ( -4.10)
+>synth_miRNA-75-MGHV-MIR-M1-4
+UCGAGGAGCACGUGUUAUUCUA
+..(((.(((....))).))).. ( -1.50)
+>synth_miRNA-76-MGHV-MIR-M1-5
+AGAGUUGAGAUCGGGUCGUCUC
+......(((((......))))) ( -3.00)
+>synth_miRNA-77-MGHV-MIR-M1-6
+UGAAACUGUGUGAGGUGGUUUU
+.((((((.........)))))) ( -1.00)
+>synth_miRNA-78-MGHV-MIR-M1-7
+GAUAUCGCGCCCACCUUUAUU
+..................... (  0.00)
+>synth_miRNA-79-MGHV-MIR-M1-7-5P
+AAAGGUGGAGGUGCGGUAACCU
+........((((......)))) ( -3.60)
+>synth_miRNA-80-MGHV-MIR-M1-8
+AGCACUCACUGGGGGUUUGGUC
+...((((.....))))...... ( -1.60)
+>synth_miRNA-81-MGHV-MIR-M1-9
+UCACAUUUGCCUGGACCUUUUU
+...................... (  0.00)
+>synth_miRNA-82-MIR-652
+AAUGGCGCCACUAGGGUUGUGU
+.(((((.((....))))))).. ( -3.40)
+>synth_miRNA-83-RLCV-MIR-RL1-1
+UAACCUGAUCAGCCCCGGGGUU
+...((((........))))... ( -4.40)
+>synth_miRNA-84-RLCV-MIR-RL1-10
+UAGUGCGCCGGUGACCUGAUAG
+........(((....))).... ( -0.40)
+>synth_miRNA-85-RLCV-MIR-RL1-11
+UGACACUCGAUAGGAUACGGGG
+.....((((........)))). ( -3.20)
+>synth_miRNA-86-RLCV-MIR-RL1-12
+AACGGUGCAUGGACUGGCUAGA
+..((((......))))...... ( -3.40)
+>synth_miRNA-87-RLCV-MIR-RL1-12-5P
+AGACCAGACCAUGCACAGUGGG
+........((((.....)))). ( -3.60)
+>synth_miRNA-88-RLCV-MIR-RL1-13
+GAUCAUAGCCAGUGUCCAGGGA
+........((........)).. ( -0.70)
+>synth_miRNA-89-RLCV-MIR-RL1-14
+UCGCACAUCAGGCUGAACGAC
+(((..((......))..))). ( -0.60)
+>synth_miRNA-90-RLCV-MIR-RL1-14-5P
+UCGGACGGUCUGGUGCGCUUGAU
+.((.((......)).))...... ( -3.50)
+>synth_miRNA-91-RLCV-MIR-RL1-15
+UCCUGUAGAGUAUGGGUGUGGUUU
+.((((((...))))))........ ( -2.60)
+>synth_miRNA-92-RLCV-MIR-RL1-16
+CAUGAAACACAUGGCCUGUUCC
+((((.....))))......... ( -2.00)
+>synth_miRNA-93-RLCV-MIR-RL1-2
+UAUCUUUUGCGGGGGAAUUUCCA
+..........((((....)))). ( -1.70)
+>synth_miRNA-94-RLCV-MIR-RL1-3
+CGCACCUCGCCGUCUCUACUGCU
+........((.((....)).)). ( -0.90)
+>synth_miRNA-95-RLCV-MIR-RL1-4
+CACCACACGAUCCACUAGGUCU
+........((((.....)))). ( -2.00)
+>synth_miRNA-96-RLCV-MIR-RL1-4-5P
+ACCUAGUAAUUGUGCGGUGUU
+(((..(((....))))))... ( -1.10)
+>synth_miRNA-97-RLCV-MIR-RL1-5
+CGCACCACUUUUCACUAGGUGU
+.(((((...........))))) ( -4.80)
+>synth_miRNA-98-RLCV-MIR-RL1-5-5P
+AACCUAGUGCCGGUGAUGUGCU
+.(((.......)))........ ( -1.50)
+>synth_miRNA-99-RLCV-MIR-RL1-7
+CGAGGUAAACAUCGGCUUACUG
+(((........)))........ ( -1.80)
+>synth_miRNA-100-RLCV-MIR-RL1-8
+UAAGGUGAAUAUAGCUGCCCAUUG
+...((((........))))..... ( -1.50)
+>synth_miRNA-101-RLCV-MIR-RL1-9
+UCGAUGCAUGGUCCCCCCUUAGU
+..(((.....))).......... ( -0.30)
+>synth_miRNA-102-SV40-MIR-S1
+GCCUGUUUCAUGCCCUGAGU
+.................... (  0.00)
+>synth_miRNA-103-SV40-MIR-S1-5P
+UGAGGGGCCUGAAAUGAGCCUU
+...((((((......).))))) ( -5.30)
+>synth_miRNA-104-LET-7A
+UGAGGUAGUAGGUUGUAUAGUU
+...................... (  0.00)
+>synth_miRNA-105-LET-7B
+UGAGGUAGUAGGUUGUGUGGUU
+...................... (  0.00)
+>synth_miRNA-106-LET-7C
+UGAGGUAGUAGGUUGUAUGGUU
+...................... (  0.00)
+>synth_miRNA-107-LET-7D*
+CUAUACGACCUGCUGCCUUUCU
+...................... (  0.00)
+>synth_miRNA-108-LET-7D
+AGAGGUAGUAGGUUGCAUAGUU
+...................... (  0.00)
+>synth_miRNA-109-LET-7E
+UGAGGUAGGAGGUUGUAUAGUU
+...................... (  0.00)
+>synth_miRNA-110-LET-7F
+UGAGGUAGUAGAUUGUAUAGUU
+...................... (  0.00)
+>synth_miRNA-111-LET-7G
+UGAGGUAGUAGUUUGUACAGUU
+....(((........))).... ( -0.50)
+>synth_miRNA-112-LET-7I
+UGAGGUAGUAGUUUGUGCUGUU
+.....(((((.....))))).. ( -2.10)
+>synth_miRNA-113-MIR-1
+UGGAAUGUAAAGAAGUAUGUAU
+...................... (  0.00)
+>synth_miRNA-114-MIR-100
+AACCCGUAGAUCCGAACUUGUG
+...................... (  0.00)
+>synth_miRNA-115-MIR-101
+UACAGUACUGUGAUAACUGAA
+..((((.........)))).. ( -1.60)
+>synth_miRNA-116-MIR-103
+AGCAGCAUUGUACAGGGCUAUGA
+...(((..........))).... ( -0.70)
+>synth_miRNA-117-MIR-105
+UCAAAUGCUCAGACUCCUGUGGU
+......((((((....))).))) ( -2.10)
+>synth_miRNA-118-MIR-106A
+AAAAGUGCUUACAGUGCAGGUAG
+....(((((...)))))...... ( -2.40)
+>synth_miRNA-119-MIR-106B
+UAAAGUGCUGACAGUGCAGAU
+....(((((...))))).... ( -2.40)
+>synth_miRNA-120-MIR-107
+AGCAGCAUUGUACAGGGCUAUCA
+...(((..........))).... ( -0.70)
+>synth_miRNA-121-MIR-10A
+UACCCUGUAGAUCCGAAUUUGUG
+....................... (  0.00)
+>synth_miRNA-122-MIR-10B
+UACCCUGUAGAACCGAAUUUGUG
+....................... (  0.00)
+>synth_miRNA-123-MIR-122
+UGGAGUGUGACAAUGGUGUUUG
+........((((....)))).. ( -0.30)
+>synth_miRNA-124-MIR-124
+UAAGGCACGCGGUGAAUGCC
+...((((..(...)..)))) ( -3.10)
+>synth_miRNA-125-MIR-125A
+UCCCUGAGACCCUUUAACCUGUGA
+........................ (  0.00)
+>synth_miRNA-126-MIR-125B
+UCCCUGAGACCCUAACUUGUGA
+...................... (  0.00)
+>synth_miRNA-127-MIR-126
+UCGUACCGUGAGUAAUAAUGCG
+.((((..((.....))..)))) ( -0.70)
+>synth_miRNA-128-MIR-126-5P
+CAUUAUUACUUUUGGUACGCG
+..................... (  0.00)
+>synth_miRNA-129-MIR-127
+UCGGAUCCGUCUGAGCUUGGCU
+(((((....)))))........ ( -3.10)
+>synth_miRNA-130-MIR-128
+UCACAGUGAACCGGUCUCUUU
+..................... (  0.00)
+>synth_miRNA-131-MIR-129
+AAGCCCUUACCCCAAAAAGCAU
+...................... (  0.00)
+>synth_miRNA-132-MIR-129-5P
+CUUUUUGCGGUCUGGGCUUGC
+......((.......)).... ( -1.00)
+>synth_miRNA-133-MIR-130A
+CAGUGCAAUGUUAAAAGGGCAU
+..((((..(......)..)))) ( -3.00)
+>synth_miRNA-134-MIR-130B
+CAGUGCAAUGAUGAAAGGGCAU
+..((((..(......)..)))) ( -3.00)
+>synth_miRNA-135-MIR-132
+UAACAGUCUACAGCCAUGGUCG
+...................... (  0.00)
+>synth_miRNA-136-MIR-133A
+UUUGGUCCCCUUCAACCAGCUG
+.(((((........)))))... ( -3.10)
+>synth_miRNA-137-MIR-133B
+UUUGGUCCCCUUCAACCAGCUA
+.(((((........)))))... ( -3.10)
+>synth_miRNA-138-MIR-134
+UGUGACUGGUUGACCAGAGGGG
+.....((((....))))..... ( -4.10)
+>synth_miRNA-139-MIR-135A
+UAUGGCUUUUUAUUCCUAUGUGA
+....................... (  0.00)
+>synth_miRNA-140-MIR-135B
+UAUGGCUUUUCAUUCCUAUGUGA
+.........((((......)))) ( -1.10)
+>synth_miRNA-141-MIR-136
+ACUCCAUUUGUUUUGAUGAUGGA
+..((((((.........)))))) ( -4.30)
+>synth_miRNA-142-MIR-136
+ACUCCAUUUGUUUUGAUGAUGG
+...(((((.........))))) ( -2.40)
+>synth_miRNA-143-MIR-137
+UUAUUGCUUAAGAAUACGCGUAG
+....................... (  0.00)
+>synth_miRNA-144-MIR-138
+AGCUGGUGUUGUGAAUCAGGCCG
+..(((((.......))))).... ( -4.00)
+>synth_miRNA-145-MIR-139-5P
+UCUACAGUGCACGUGUCUCCAG
+...................... (  0.00)
+>synth_miRNA-146-MIR-140
+UACCACAGGGUAGAACCACGGACA
+((((....))))............ ( -2.90)
+>synth_miRNA-147-MIR-140-5P
+CAGUGGUUUUACCCUAUGGUAG
+.........((((....)))). ( -2.50)
+>synth_miRNA-148-MIR-141
+UAACACUGUCUGGUAAAGAUGG
+.....((((((.....)))))) ( -4.00)
+>synth_miRNA-149-MIR-142
+UGUAGUGUUUCCUACUUUAUGGA
+.((((......))))........ ( -2.40)
+>synth_miRNA-150-MIR-142-5P
+CAUAAAGUAGAAAGCACUACU
+.....(((((......))))) ( -3.20)
+>synth_miRNA-151-MIR-143
+UGAGAUGAAGCACUGUAGCUCU
+........(((......))).. ( -1.80)
+>synth_miRNA-152-MIR-144
+UACAGUAUAGAUGAUGUACU
+...((((((.....)))))) ( -3.30)
+>synth_miRNA-153-MIR-145
+GUCCAGUUUUCCCAGGAAUCCCU
+.............(((....))) ( -1.10)
+>synth_miRNA-154-MIR-146A
+UGAGAACUGAAUUCCAUGGGUU
+....((((.(......).)))) ( -0.70)
+>synth_miRNA-155-MIR-146B-5P
+UGAGAACUGAAUUCCAUAGGCU
+...................... (  0.00)
+>synth_miRNA-156-MIR-147A
+GUGUGUGGAAAUGCUUCUGCUA
+....((((((....)))))).. ( -3.70)
+>synth_miRNA-157-MIR-147B
+GUGUGCGGAAAUGCUUCUGCUA
+....((((((....)))))).. ( -6.30)
+>synth_miRNA-158-MIR-148A
+UCAGUGCACUACAGAACUUUGU
+...................... (  0.00)
+>synth_miRNA-159-MIR-148B
+UCAGUGCAUCACAGAACUUUGU
+((.(((...))).))....... ( -0.70)
+>synth_miRNA-160-MIR-149
+UCUGGCUCCGUGUCUUCACUCCC
+.........(((....))).... ( -1.70)
+>synth_miRNA-161-MIR-150
+UCUCCCAACCCUUGUACCAGUG
+...................... (  0.00)
+>synth_miRNA-162-MIR-151
+CUAGACUGAAGCUCCUUGAGG
+.....((.(((...))).)). ( -2.00)
+>synth_miRNA-163-MIR-151-5P
+UCGAGGAGCUCACAGUCUAGU
+..(((...))).......... ( -0.60)
+>synth_miRNA-164-MIR-152
+UCAGUGCAUGACAGAACUUGG
+..................... (  0.00)
+>synth_miRNA-165-MIR-153
+UUGCAUAGUCACAAAAGUGAUC
+.......(((((....))))). ( -4.20)
+>synth_miRNA-166-MIR-154*
+AAUCAUACACGGUUGACCUAUU
+..(((........)))...... ( -0.30)
+>synth_miRNA-167-MIR-154
+UAGGUUAUCCGUGUUGCCUUCG
+.((((..........))))... ( -2.30)
+>synth_miRNA-168-MIR-155
+UUAAUGCUAAUCGUGAUAGGGGU
+....................... (  0.00)
+>synth_miRNA-169-MIR-15A
+UAGCAGCACAUAAUGGUUUGUG
+......((((........)))) ( -2.30)
+>synth_miRNA-170-MIR-15B
+UAGCAGCACAUCAUGGUUUACA
+...................... (  0.00)
+>synth_miRNA-171-MIR-16
+UAGCAGCACGUAAAUAUUGGCG
+.....((.((.......)))). ( -0.70)
+>synth_miRNA-172-MIR-17*
+ACUGCAGUGAAGGCACUUGU
+...((((((....))).))) ( -2.60)
+>synth_miRNA-173-MIR-17
+CAAAGUGCUUACAGUGCAGGUAG
+....(((((...)))))...... ( -2.40)
+>synth_miRNA-174-MIR-181A*
+ACCAUCGACCGUUGAUUGUACC
+((.(((((...))))).))... ( -1.50)
+>synth_miRNA-175-MIR-181A
+AACAUUCAACGCUGUCGGUGAGU
+...(((((.((....)).))))) ( -2.40)
+>synth_miRNA-176-MIR-181B
+AACAUUCAUUGCUGUCGGUGGGU
+...((((((((....)))))))) ( -3.50)
+>synth_miRNA-177-MIR-181C
+AACAUUCAACCUGUCGGUGAGU
+...(((((.((....))))))) ( -3.80)
+>synth_miRNA-178-MIR-181D
+AACAUUCAUUGUUGUCGGUGGGU
+...((((((((....)))))))) ( -4.60)
+>synth_miRNA-179-MIR-182*
+UGGUUCUAGACUUGCCAACUA
+((((.........)))).... ( -2.70)
+>synth_miRNA-180-MIR-182
+UUUGGCAAUGGUAGAACUCACACU
+........................ (  0.00)
+>synth_miRNA-181-MIR-183
+UAUGGCACUGGUAGAAUUCACU
+...................... (  0.00)
+>synth_miRNA-182-MIR-184
+UGGACGGAGAACUGAUAAGGGU
+....(((....)))........ ( -0.10)
+>synth_miRNA-183-MIR-185
+UGGAGAGAAAGGCAGUUCCUGA
+.((((..........))))... ( -1.30)
+>synth_miRNA-184-MIR-186
+CAAAGAAUUCUCCUUUUGGGCU
+..........(((....))).. ( -1.50)
+>synth_miRNA-185-MIR-187
+UCGUGUCUUGUGUUGCAGCCGG
+.((.((..(((...))))))). ( -0.80)
+>synth_miRNA-186-MIR-188
+CUCCCACAUGCAGGGUUUGCA
+..(((.......)))...... ( -2.80)
+>synth_miRNA-187-MIR-188-5P
+CAUCCCUUGCAUGGUGGAGGG
+...(((((........))))) ( -5.70)
+>synth_miRNA-188-MIR-18A*
+ACUGCCCUAAGUGCUCCUUCU
+(((......)))......... ( -0.60)
+>synth_miRNA-189-MIR-18A
+UAAGGUGCAUCUAGUGCAGAUAG
+.....(((((...)))))..... ( -3.40)
+>synth_miRNA-190-MIR-18B
+UAAGGUGCAUCUAGUGCAGUUAG
+..((.(((((...))))).)).. ( -4.90)
+>synth_miRNA-191-MIR-190
+UGAUAUGUUUGAUAUAUUAGGU
+((((((((...))))))))... ( -2.60)
+>synth_miRNA-192-MIR-190B
+UGAUAUGUUUGAUAUUGGGUU
+.(((((.....)))))..... ( -0.90)
+>synth_miRNA-193-MIR-191*
+GCUGCGCUUGGAUUUCGUCCCC
+.........((((...)))).. ( -2.00)
+>synth_miRNA-194-MIR-191
+CAACGGAAUCCCAAAAGCAGCUG
+....((....))........... ( -0.70)
+>synth_miRNA-195-MIR-192
+CUGACCUAUGAAUUGACAGCC
+..................... (  0.00)
+>synth_miRNA-196-MIR-193A
+AACUGGCCUACAAAGUCCCAGU
+.(((((.((....))..))))) ( -4.20)
+>synth_miRNA-197-MIR-193B
+AACUGGCCCUCAAAGUCCCGCU
+...(((..((...))..))).. ( -0.10)
+>synth_miRNA-198-MIR-194
+UGUAACAGCAACUCCAUGUGGA
+............(((....))) ( -1.20)
+>synth_miRNA-199-MIR-195
+UAGCAGCACAGAAAUAUUGGC
+..................... (  0.00)
+>synth_miRNA-200-MIR-196A
+UAGGUAGUUUCAUGUUGUUGGG
+...................... (  0.00)
+>synth_miRNA-201-MIR-196B
+UAGGUAGUUUCCUGUUGUUGGG
+((((......))))........ ( -2.70)
+>synth_miRNA-202-MIR-197
+UUCACCACCUUCUCCACCCAGC
+...................... (  0.00)
+>synth_miRNA-203-MIR-198
+GGUCCAGAGGGGAGAUAGGUUC
+..(((.....)))......... ( -1.70)
+>synth_miRNA-204-MIR-199A-199B
+ACAGUAGUCUGCACAUUGGUUA
+.(((....)))........... ( -1.30)
+>synth_miRNA-205-MIR-199A-5P
+CCCAGUGUUCAGACUACCUGUUC
+..(((.((.......)))))... ( -1.80)
+>synth_miRNA-206-MIR-199B-5P
+CCCAGUGUUUAGACUAUCUGUUC
+...(((......)))........ ( -0.70)
+>synth_miRNA-207-MIR-19A
+UGUGCAAAUCUAUGCAAAACUGA
+..((((......))))....... ( -2.80)
+>synth_miRNA-208-MIR-19B
+UGUGCAAAUCCAUGCAAAACUGA
+..((((......))))....... ( -2.80)
+>synth_miRNA-209-MIR-200A*
+CAUCUUACCGGACAGUGCUGGA
+.......((((......)))). ( -3.80)
+>synth_miRNA-210-MIR-200A
+UAACACUGUCUGGUAACGAUGU
+..(((.(((......))).))) ( -0.60)
+>synth_miRNA-211-MIR-200B
+UAAUACUGCCUGGUAAUGAUGA
+...((((....))))....... ( -0.60)
+>synth_miRNA-212-MIR-200C
+UAAUACUGCCGGGUAAUGAUGGA
+........(((........))). ( -1.50)
+>synth_miRNA-213-MIR-202*
+UUUCCUAUGCAUAUACUUCUUU
+...................... (  0.00)
+>synth_miRNA-214-MIR-202
+AGAGGUAUAGGGCAUGGGAA
+.................... (  0.00)
+>synth_miRNA-215-MIR-203
+GUGAAAUGUUUAGGACCACUAG
+..........(((.....))). ( -0.70)
+>synth_miRNA-216-MIR-204
+UUCCCUUUGUCAUCCUAUGCCU
+...................... (  0.00)
+>synth_miRNA-217-MIR-205
+UCCUUCAUUCCACCGGAGUCUG
+......(((((...)))))... ( -2.40)
+>synth_miRNA-218-MIR-206
+UGGAAUGUAAGGAAGUGUGUGG
+...................... (  0.00)
+>synth_miRNA-219-MIR-208A
+AUAAGACGAGCAAAAAGCUUGU
+.....((((((.....)))))) ( -6.10)
+>synth_miRNA-220-MIR-208B
+AUAAGACGAACAAAAGGUUUGU
+.....((((((.....)))))) ( -3.60)
+>synth_miRNA-221-MIR-20A
+UAAAGUGCUUAUAGUGCAGGUAG
+....(((((...)))))...... ( -2.40)
+>synth_miRNA-222-MIR-20B
+CAAAGUGCUCAUAGUGCAGGUAG
+....(((((...)))))...... ( -2.40)
+>synth_miRNA-223-MIR-21
+UAGCUUAUCAGACUGAUGUUGA
+.....(((((...))))).... ( -0.80)
+>synth_miRNA-224-MIR-210
+CUGUGCGUGUGACAGCGGCUGA
+((((.......))))....... ( -2.30)
+>synth_miRNA-225-MIR-211
+UUCCCUUUGUCAUCCUUCGCCU
+...................... (  0.00)
+>synth_miRNA-226-MIR-212
+UAACAGUCUCCAGUCACGGCCA
+...................... (  0.00)
+>synth_miRNA-227-MIR-214
+ACAGCAGGCACAGACAGGCAGU
+...((..(......)..))... ( -1.30)
+>synth_miRNA-228-MIR-215
+AUGACCUAUGAAUUGACAGAC
+..................... (  0.00)
+>synth_miRNA-229-MIR-216A
+UAAUCUCAGCUGGCAACUGUGA
+...((.(((.......))).)) ( -1.60)
+>synth_miRNA-230-MIR-216B
+AAAUCUCUGCAGGCAAAUGUGA
+........(((......))).. ( -0.70)
+>synth_miRNA-231-MIR-217
+UACUGCAUCAGGAACUGAUUGGA
+..(((.(((((...)))))))). ( -2.70)
+>synth_miRNA-232-MIR-218
+UUGUGCUUGAUCUAACCAUGU
+..................... (  0.00)
+>synth_miRNA-233-MIR-219
+UGAUUGUCCAAACGCAAUUCU
+.((((((......)))))).. ( -2.60)
+>synth_miRNA-234-MIR-22*
+AGUUCUUCAGUGGCAAGCUUU
+..................... (  0.00)
+>synth_miRNA-235-MIR-22
+AAGCUGCCAGUUGAAGAACUGU
+.......(((((....))))). ( -4.20)
+>synth_miRNA-236-MIR-220A
+CCACACCGUAUCUGACACUUU
+..................... (  0.00)
+>synth_miRNA-237-MIR-220B
+CCACCACCGUGUCUGACACUU
+........((((...)))).. ( -2.00)
+>synth_miRNA-238-MIR-220C
+ACACAGGGCUGUUGUGAAGACU
+.(((((.....)))))...... ( -3.50)
+>synth_miRNA-239-MIR-221
+AGCUACAUUGUCUGCUGGGUUUC
+(((..........)))....... ( -1.30)
+>synth_miRNA-240-MIR-222
+AGCUACAUCUGGCUACUGGGU
+(((((....)))))....... ( -3.40)
+>synth_miRNA-241-MIR-223
+UGUCAGUUUGUCAAAUACCCCA
+...................... (  0.00)
+>synth_miRNA-242-MIR-224
+CAAGUCACUAGUGGUUCCGUU
+..................... (  0.00)
+>synth_miRNA-243-MIR-23A
+AUCACAUUGCCAGGGAUUUCC
+..................... (  0.00)
+>synth_miRNA-244-MIR-23B
+AUCACAUUGCCAGGGAUUACC
+............((.....)) ( -0.30)
+>synth_miRNA-245-MIR-24
+UGGCUCAGUUCAGCAGGAACAG
+.......((((.....)))).. ( -2.70)
+>synth_miRNA-246-MIR-24-1*
+GUGCCUACUGAGCUGAUAUCAGU
+......(((((.......))))) ( -3.70)
+>synth_miRNA-247-MIR-25
+CAUUGCACUUGUCUCGGUCUGA
+...................... (  0.00)
+>synth_miRNA-248-MIR-26A
+UUCAAGUAAUCCAGGAUAGGCU
+...................... (  0.00)
+>synth_miRNA-249-MIR-26B
+UUCAAGUAAUUCAGGAUAGGU
+..................... (  0.00)
+>synth_miRNA-250-MIR-27A
+UUCACAGUGGCUAAGUUCCGC
+......((((.......)))) ( -1.90)
+>synth_miRNA-251-MIR-27B
+UUCACAGUGGCUAAGUUCUGC
+....(((.(((...)))))). ( -0.60)
+>synth_miRNA-252-MIR-28
+CACUAGAUUGUGAGCUCCUGGA
+(((......))).......... ( -2.10)
+>synth_miRNA-253-MIR-28-5P
+AAGGAGCUCACAGUCUAUUGAG
+......((((........)))) ( -1.50)
+>synth_miRNA-254-MIR-296
+GAGGGUUGGGUGGAGGCUCUCC
+(((((((.......))))))). ( -6.80)
+>synth_miRNA-255-MIR-296-5P
+AGGGCCCCCCCUCAAUCCUGU
+((((....))))......... ( -3.40)
+>synth_miRNA-256-MIR-297A
+AUGUAUGUGUGCAUGUGCAUGU
+((((((((....)))))))).. ( -4.10)
+>synth_miRNA-257-MIR-298
+AGCAGAAGCAGGGAGGUUCUCCCA
+.((....)).(((((...))))). ( -8.00)
+>synth_miRNA-258-MIR-299
+UAUGUGGGAUGGUAAACCGCUU
+...((((.........)))).. ( -4.50)
+>synth_miRNA-259-MIR-299-5P
+UGGUUUACCGUCCCACAUACAU
+.((....))............. ( -0.30)
+>synth_miRNA-260-MIR-29A
+UAGCACCAUCUGAAAUCGGUUA
+....(((..........))).. ( -0.60)
+>synth_miRNA-261-MIR-29B
+UAGCACCAUUUGAAAUCAGUGUU
+.(((((............))))) ( -1.40)
+>synth_miRNA-262-MIR-29C*
+UGACCGAUUUCUCCUGGUGUUC
+..((((........)))).... ( -2.60)
+>synth_miRNA-263-MIR-29C
+UAGCACCAUUUGAAAUCGGUUA
+....(((..........))).. ( -0.60)
+>synth_miRNA-264-MIR-300
+UAUACAAGGGCAGACUCUCUCU
+......((((....)))).... ( -1.40)
+>synth_miRNA-265-MIR-301A
+CAGUGCAAUAGUAUUGUCAAAGC
+((((((....))))))....... ( -4.10)
+>synth_miRNA-266-MIR-301B
+CAGUGCAAUGAUAUUGUCAAAGC
+....((..((((...))))..)) ( -1.40)
+>synth_miRNA-267-MIR-302A*
+UAAACGUGGAUGUACUUGCUUU
+.....(((....)))....... ( -0.10)
+>synth_miRNA-268-MIR-302A
+UAAGUGCUUCCAUGUUUUGGUGA
+.........(((.....)))... ( -1.60)
+>synth_miRNA-269-MIR-302B*
+ACUUUAACAUGGAAGUGCUUUCU
+(((((......)))))....... ( -1.90)
+>synth_miRNA-270-MIR-302B
+UAAGUGCUUCCAUGUUUUAGUAG
+....((((..........)))). ( -0.30)
+>synth_miRNA-271-MIR-302C*
+UUUAACAUGGGGGUACCUGCUG
+........(((....))).... ( -2.60)
+>synth_miRNA-272-MIR-302C
+UAAGUGCUUCCAUGUUUCAGUGG
+.........((((......)))) ( -2.40)
+>synth_miRNA-273-MIR-302C
+AAGUGCUUCCAUGUUUCAGUGG
+........((((......)))) ( -2.40)
+>synth_miRNA-274-MIR-302D
+UAAGUGCUUCCAUGUUUGAGUGU
+.....((((........)))).. ( -0.70)
+>synth_miRNA-275-MIR-30A*
+CUUUCAGUCGGAUGUUUGCAGC
+...................... (  0.00)
+>synth_miRNA-276-MIR-30A
+UGUAAACAUCCUCGACUGGAAG
+........(((......))).. ( -2.70)
+>synth_miRNA-277-MIR-30B
+UGUAAACAUCCUACACUCAGCU
+((((.......))))....... ( -0.10)
+>synth_miRNA-278-MIR-30C
+UGUAAACAUCCUACACUCUCAGC
+((((.......))))........ ( -0.10)
+>synth_miRNA-279-MIR-30D
+UGUAAACAUCCCCGACUGGAAG
+........(((......))).. ( -1.40)
+>synth_miRNA-280-MIR-30E*
+CUUUCAGUCGGAUGUUUACAGC
+...................... (  0.00)
+>synth_miRNA-281-MIR-30E
+UGUAAACAUCCUUGACUGGAAG
+........(((......))).. ( -2.70)
+>synth_miRNA-282-MIR-31
+AGGCAAGAUGCUGGCAUAGCUG
+.((((...))))(((...))). ( -2.10)
+>synth_miRNA-283-MIR-31
+AGGCAAGAUGCUGGCAUAGCU
+.........((((...)))). ( -1.80)
+>synth_miRNA-284-MIR-32
+UAUUGCACAUUACUAAGUUGCA
+...(((((........).)))) ( -1.70)
+>synth_miRNA-285-MIR-320
+AAAAGCUGGGUUGAGAGGGCGA
+....(((..........))).. ( -1.50)
+>synth_miRNA-286-MIR-322-MIR-424
+CAGCAGCAAUUCAUGUUUUGAA
+(((.((((.....))))))).. ( -1.10)
+>synth_miRNA-287-MIR-323
+CACAUUACACGGUCGACCUCU
+..........((....))... ( -0.20)
+>synth_miRNA-288-MIR-323-5P
+AGGUGGUCCGUGGCGCGUUCGC
+..(((........)))...... ( -2.20)
+>synth_miRNA-289-MIR-324
+ACUGCCCCAGGUGCUGCUGGU
+......((((......)))). ( -5.30)
+>synth_miRNA-290-MIR-324-5P
+CGCAUCCCCUAGGGCAUUGGUGU
+.(((((((....))....))))) ( -3.30)
+>synth_miRNA-291-MIR-325
+UUUAUUGAGGACCUCCUAUCAA
+.......(((....)))..... ( -1.90)
+>synth_miRNA-292-MIR-325-5P
+CCUAGUAGGUGUCCAGUAAGUGU
+(((...))).............. ( -0.10)
+>synth_miRNA-293-MIR-326
+CCUCUGGGCCCUUCCUCCAGU
+...(((((.......))))). ( -3.90)
+>synth_miRNA-294-MIR-328
+CUGGCCCUCUCUGCCCUUCCGU
+..(((.......)))....... ( -2.30)
+>synth_miRNA-295-MIR-329
+AACACACCUGGUUAACCUCUUU
+...................... (  0.00)
+>synth_miRNA-296-MIR-330
+GCAAAGCACACGGCCUGCAGAGA
+(((..((.....)).)))..... ( -3.30)
+>synth_miRNA-297-MIR-330-5P
+UCUCUGGGCCUGUGUCUUAGGC
+.......(((((.....))))) ( -5.10)
+>synth_miRNA-298-MIR-331
+GCCCCUGGGCCUAUCCUAGAA
+....(((((.....))))).. ( -4.80)
+>synth_miRNA-299-MIR-331-5P
+CUAGGUAUGGUCCCAGGGAUCC
+........(((((...))))). ( -4.00)
+>synth_miRNA-300-MIR-335
+UCAAGAGCAAUAACGAAAAAUGU
+....................... (  0.00)
+>synth_miRNA-301-MIR-337
+CUCCUAUAUGAUGCCUUUCUUC
+...................... (  0.00)
+>synth_miRNA-302-MIR-337
+UUCAGCUCCUAUAUGAUGCCU
+....((((......)).)).. ( -0.50)
+>synth_miRNA-303-MIR-337-5P
+GAACGGCUUCAUACAGGAGUU
+....((((((.....)))))) ( -3.50)
+>synth_miRNA-304-MIR-338
+UCCAGCAUCAGUGAUUUUGUUGA
+..(((((..........))))). ( -3.50)
+>synth_miRNA-305-MIR-338
+UCCAGCAUCAGUGAUUUUGUUG
+..(((((..........))))) ( -2.30)
+>synth_miRNA-306-MIR-339
+UGAGCGCCUCGACGACAGAGCCG
+....((.(((.......))).)) ( -2.90)
+>synth_miRNA-307-MIR-339-5P
+UCCCUGUCCUCCAGGAGCUCACG
+..((((.....))))........ ( -4.30)
+>synth_miRNA-308-MIR-33A
+GUGCAUUGUAGUUGCAUUGCA
+.((((.(((....))).)))) ( -5.40)
+>synth_miRNA-309-MIR-33B
+GUGCAUUGCUGUUGCAUUGC
+..(((.(((....))).))) ( -6.30)
+>synth_miRNA-310-MIR-340
+UCCGUCUCAGUUACUUUAUAGCC
+....................... (  0.00)
+>synth_miRNA-311-MIR-340-5P
+UUAUAAAGCAAUGAGACUGAUU
+...................... (  0.00)
+>synth_miRNA-312-MIR-342
+UCUCACACAGAAAUCGCACCCGU
+....................... (  0.00)
+>synth_miRNA-313-MIR-345-5P
+GCUGACUCCUAGUCCAGGGCUC
+(((((((...))))...))).. ( -3.80)
+>synth_miRNA-314-MIR-346
+UGUCUGCCCGCAUGCCUGCCUCU
+.........(((....))).... ( -1.30)
+>synth_miRNA-315-MIR-34A
+UGGCAGUGUCUUAGCUGGUUGU
+...((((......))))..... ( -3.60)
+>synth_miRNA-316-MIR-34B
+AGGCAGUGUCAUUAGCUGAUUGU
+...((((.......))))..... ( -2.90)
+>synth_miRNA-317-MIR-34C-5P
+AGGCAGUGUAGUUAGCUGAUUGC
+..(((((.(((....)))))))) ( -3.60)
+>synth_miRNA-318-MIR-361-5P
+UUAUCAGAAUCUCCAGGGGUAC
+........((((....)))).. ( -0.10)
+>synth_miRNA-319-MIR-362
+AACACACCUAUUCAAGGAUUCA
+......(((.....)))..... ( -1.30)
+>synth_miRNA-320-MIR-362-5P
+AAUCCUUGGAACCUAGGUGUGAGU
+...(((........)))....... ( -1.50)
+>synth_miRNA-321-MIR-363*
+CGGGUGGAUCACGAUGCAAUUU
+.(.((.(....).)).)..... ( -1.20)
+>synth_miRNA-322-MIR-363
+AAUUGCACGGUAUCCAUCUGUA
+......((((.......)))). ( -1.60)
+>synth_miRNA-323-MIR-365
+UAAUGCCCCUAAAAAUCCUUAU
+...................... (  0.00)
+>synth_miRNA-324-MIR-367
+AAUUGCACUUUAGCAAUGGUGA
+.(((((......)))))..... ( -4.20)
+>synth_miRNA-325-MIR-369
+AAUAAUACAUGGUUGAUCUUU
+..................... (  0.00)
+>synth_miRNA-326-MIR-369-5P
+AGAUCGACCGUGUUAUAUUCGC
+...................... (  0.00)
+>synth_miRNA-327-MIR-370
+GCCUGCUGGGGUGGAACCUGGU
+....((((((......)))))) ( -6.50)
+>synth_miRNA-328-MIR-371
+AAGUGCCGCCAUCUUUUGAGUGU
+......(((((.....)).))). ( -2.00)
+>synth_miRNA-329-MIR-371-5P
+ACUCAAACUGUGGGGGCACU
+.........(((....))). ( -2.10)
+>synth_miRNA-330-MIR-372
+AAAGUGCUGCGACAUUUGAGCGU
+.....(((.(((...)))))).. ( -2.40)
+>synth_miRNA-331-MIR-373*
+ACUCAAAAUGGGGGCGCUUUCC
+.((((...)))).......... ( -1.40)
+>synth_miRNA-332-MIR-373
+GAAGUGCUUCGAUUUUGGGGUGU
+.....((((((....)))))).. ( -3.20)
+>synth_miRNA-333-MIR-374A
+UUAUAAUACAACCUGAUAAGUG
+...................... (  0.00)
+>synth_miRNA-334-MIR-374B
+AUAUAAUACAACCUGCUAAGUG
+...................... (  0.00)
+>synth_miRNA-335-MIR-375
+UUUGUUCGUUCGGCUCGCGUGA
+...................... (  0.00)
+>synth_miRNA-336-MIR-376A*
+GGUAGAUUCUCCUUCUAUGAG
+.(((((.......)))))... ( -2.70)
+>synth_miRNA-337-MIR-376A
+AUCAUAGAGGAAAAUCCACGU
+........(((...))).... ( -1.30)
+>synth_miRNA-338-MIR-376B
+AUCAUAGAGGAAAAUCCAUGUU
+........(((...)))..... ( -1.30)
+>synth_miRNA-339-MIR-376C
+AACAUAGAGGAAAUUCCACGU
+........(((...))).... ( -1.30)
+>synth_miRNA-340-MIR-377
+AUCACACAAAGGCAACUUUUGU
+.....(((((((...))))))) ( -3.20)
+>synth_miRNA-341-MIR-378*
+CUCCUGACUCCAGGUCCUGUGU
+..((((....))))........ ( -4.10)
+>synth_miRNA-342-MIR-378
+ACUGGACUUGGAGUCAGAAGG
+.(((.(((...)))))).... ( -2.30)
+>synth_miRNA-343-MIR-379
+UGGUAGACUAUGGAACGUAGG
+.......(((((...))))). ( -2.40)
+>synth_miRNA-344-MIR-380
+UAUGUAAUAUGGUCCACAUCUU
+...................... (  0.00)
+>synth_miRNA-345-MIR-380-5P
+AUGGUUGACCAUAGAACAUGCG
+((((....)))).......... ( -2.20)
+>synth_miRNA-346-MIR-381
+UAUACAAGGGCAAGCUCUCUGU
+...(((((((....)))).))) ( -2.30)
+>synth_miRNA-347-MIR-382
+GAAGUUGUUCGUGGUGGAUUCG
+(((....)))............ ( -0.50)
+>synth_miRNA-348-MIR-383
+AGAUCAGAAGGUGAUUGUGGCU
+.(((((.....)))))...... ( -2.30)
+>synth_miRNA-349-MIR-384
+AUUCCUAGAAAUUGUUCAUAAU
+...................... (  0.00)
+>synth_miRNA-350-MIR-384-5P
+UUUAAACAAUUCCUAGACAAUAU
+....................... (  0.00)
+>synth_miRNA-351-MIR-409
+GAAUGUUGCUCGGUGAACCCCU
+...........((......)). ( -0.30)
+>synth_miRNA-352-MIR-409-5P
+AGGUUACCCGAGCAACUUUGCAU
+.((....))..(((....))).. ( -2.00)
+>synth_miRNA-353-MIR-410
+AAUAUAACACAGAUGGCCUGU
+........((((.....)))) ( -2.00)
+>synth_miRNA-354-MIR-411*
+UAUGUAACACGGUCCACUAACC
+..........(((......))) ( -0.60)
+>synth_miRNA-355-MIR-411*
+AACACGGUCCACUAACCCUCAGU
+.....(((......)))...... ( -1.40)
+>synth_miRNA-356-MIR-411
+UAGUAGACCGUAUAGCGUACG
+........(((((...))))) ( -1.70)
+>synth_miRNA-357-MIR-412
+UUCACCUGGUCCACUAGCCG
+.......(((......))). ( -2.10)
+>synth_miRNA-358-MIR-421
+AUCAACAGACAUUAAUUGGGCGC
+....................... (  0.00)
+>synth_miRNA-359-MIR-421-5P
+GGCCUCAUUAAAUGUUUGUUG
+..................... (  0.00)
+>synth_miRNA-360-MIR-422A
+ACUGGACUUAGGGUCAGAAGGC
+.(((..(....)..)))..... ( -2.60)
+>synth_miRNA-361-MIR-423
+AGCUCGGUCUGAGGCCCCUCAGU
+........(((((....))))). ( -5.30)
+>synth_miRNA-362-MIR-423-5P
+UGAGGGGCAGAGAGCGAGACUUU
+.(((..((.....))....))). ( -1.40)
+>synth_miRNA-363-MIR-425*
+AUCGGGAAUGUCGUGUCCGCC
+....(((........)))... ( -2.10)
+>synth_miRNA-364-MIR-425
+AAUGACACGAUCACUCCCGUUGA
+......(((........)))... ( -0.70)
+>synth_miRNA-365-MIR-429
+UAAUACUGUCUGGUAAAACCGU
+..........((((...)))). ( -1.30)
+>synth_miRNA-366-MIR-431
+UGUCUUGCAGGCCGUCAUGCA
+.....((((........)))) ( -3.00)
+>synth_miRNA-367-MIR-432*
+CUGGAUGGCUCCUCCAUGUCU
+.((((.......))))..... ( -2.40)
+>synth_miRNA-368-MIR-432
+UCUUGGAGUAGGUCAUUGGGUGG
+....................... (  0.00)
+>synth_miRNA-369-MIR-433
+AUCAUGAUGGGCUCCUCGGUGU
+..(((...((...))...))). ( -1.00)
+>synth_miRNA-370-MIR-448
+UUGCAUAUGUAGGAUGUCCCAU
+...........((.....)).. ( -0.60)
+>synth_miRNA-371-MIR-449A
+UGGCAGUGUAUUGUUAGCUGGU
+...((((.........)))).. ( -2.60)
+>synth_miRNA-372-MIR-449B
+AGGCAGUGUAUUGUUAGCUGGC
+.(.((((.........)))).) ( -3.70)
+>synth_miRNA-373-MIR-450A
+UUUUGCGAUGUGUUCCUAAUAU
+...................... (  0.00)
+>synth_miRNA-374-MIR-450B-5P
+UUUUGCAAUAUGUUCCUGAAUA
+...................... (  0.00)
+>synth_miRNA-375-MIR-451
+AAACCGUUACCAUUACUGAGUU
+...................... (  0.00)
+>synth_miRNA-376-MIR-452*
+CUCAUCUGCAAAGAAGUAAGUG
+..(((.(((......))).))) ( -1.30)
+>synth_miRNA-377-MIR-452*
+UCAGUCUCAUCUGCAAAGAAG
+.(((......)))........ ( -0.90)
+>synth_miRNA-378-MIR-452
+AACUGUUUGCAGAGGAAACUGA
+....((((.(...).))))... ( -1.20)
+>synth_miRNA-379-MIR-453
+AGGUUGUCCGUGGUGAGUUCGCA
+.((....))((((.....)))). ( -2.90)
+>synth_miRNA-380-MIR-454*
+ACCCUAUCAAUAUUGUCUCUGC
+...................... (  0.00)
+>synth_miRNA-381-MIR-454_1
+UAGUGCAAUAUUGCUUAUAGGGU
+....(((....)))......... ( -1.60)
+>synth_miRNA-382-MIR-455
+GCAGUCCAUGGGCAUAUACAC
+...(((....)))........ ( -0.90)
+>synth_miRNA-383-MIR-455-5P
+UAUGUGCCUUUGGACUACAUCG
+.(((((((...)).).)))).. ( -1.20)
+>synth_miRNA-384-MIR-483
+UCACUCCUCUCCUCCCGUCUU
+..................... (  0.00)
+>synth_miRNA-385-MIR-483-5P
+AAGACGGGAGGAAAGAAGGGAG
+...................... (  0.00)
+>synth_miRNA-386-MIR-484
+UCAGGCUCAGUCCCCUCCCGAU
+..(((........)))...... ( -0.70)
+>synth_miRNA-387-MIR-485
+GUCAUACACGGCUCUCCUCUCU
+(((......))).......... ( -1.30)
+>synth_miRNA-388-MIR-485
+GUCAUACACGGCUCUCCUCU
+(((......)))........ ( -1.30)
+>synth_miRNA-389-MIR-485-5P
+AGAGGCUGGCCGUGAUGAAUUC
+...((....))........... ( -0.20)
+>synth_miRNA-390-MIR-486-5P
+UCCUGUACUGAGCUGCCCCGAG
+...................... (  0.00)
+>synth_miRNA-391-MIR-487A
+AAUCAUACAGGGACAUCCAGUU
+..........((....)).... ( -0.60)
+>synth_miRNA-392-MIR-487B
+AAUCGUACAGGGUCAUCCACUU
+........((((....)).)). ( -1.00)
+>synth_miRNA-393-MIR-488*
+CCCAGAUAAUGGCACUCUCAA
+.(((.....)))......... ( -1.60)
+>synth_miRNA-394-MIR-488
+UUGAAAGGCUAUUUCUUGGUCU
+.....((((((.....)))))) ( -4.50)
+>synth_miRNA-395-MIR-489
+GUGACAUCACAUAUACGGCAGC
+(((....)))............ ( -1.90)
+>synth_miRNA-396-MIR-490
+CAACCUGGAGGACUCCAUGCUG
+.....((((....))))..... ( -3.00)
+>synth_miRNA-397-MIR-490-5P
+CCAUGGAUCUCCAGGUGGGU
+((((((....)))..))).. ( -4.20)
+>synth_miRNA-398-MIR-491
+CUUAUGCAAGAUUCCCUUCUAC
+........(((......))).. ( -0.80)
+>synth_miRNA-399-MIR-491-5P
+AGUGGGGAACCCUUCCAUGAGG
+.((((((.....)))))).... ( -3.60)
+>synth_miRNA-400-MIR-492
+AGGACCUGCGGGACAAGAUUCUU
+.(..((...))..)......... ( -2.00)
+>synth_miRNA-401-MIR-493*
+UUGUACAUGGUAGGCUUUCAUU
+...................... (  0.00)
+>synth_miRNA-402-MIR-493
+UGAAGGUCUACUGUGUGCCAGG
+....((((......).)))... ( -1.70)
+>synth_miRNA-403-MIR-494
+UGAAACAUACACGGGAAACCUC
+............((....)).. ( -1.60)
+>synth_miRNA-404-MIR-495
+AAACAAACAUGGUGCACUUCUU
+...................... (  0.00)
+>synth_miRNA-405-MIR-496_1
+UGAGUAUUACAUGGCCAAUCUCC
+.(((.(((........)))))). ( -0.70)
+>synth_miRNA-406-MIR-496_3
+UGAGUAUUACAUGGCCAAUCUCU
+.(((.(((........)))))). ( -1.10)
+>synth_miRNA-407-MIR-497
+CAGCAGCACACUGUGGUUUGUA
+..((((....))))........ ( -2.20)
+>synth_miRNA-408-MIR-497
+CAGCAGCACACUGUGGUUUGU
+..((((....))))....... ( -2.20)
+>synth_miRNA-409-MIR-498
+UUUCAAGCCAGGGGGCGUUUUUC
+......(((....)))....... ( -3.90)
+>synth_miRNA-410-MIR-499-5P
+UUAAGACUUGCAGUGAUGUUU
+.........(((....))).. ( -0.20)
+>synth_miRNA-411-MIR-500
+AUGCACCUGGGCAAGGAUUCUG
+.....(((.....)))...... ( -2.30)
+>synth_miRNA-412-MIR-500-5P
+UAAUCCUUGCUACCUGGGUGAGA
+.....((((((.....)))))). ( -4.10)
+>synth_miRNA-413-MIR-501
+AAUGCACCCGGGCAAGGAUUCU
+..(((......)))........ ( -1.80)
+>synth_miRNA-414-MIR-501-5P
+AAUCCUUUGUCCCUGGGUGAGA
+.((((.........)))).... ( -2.50)
+>synth_miRNA-415-MIR-502
+AAUGCACCUGGGCAAGGAUUCA
+......(((.....)))..... ( -2.30)
+>synth_miRNA-416-MIR-502-5P
+AUCCUUGCUAUCUGGGUGCUA
+((((.........)))).... ( -2.10)
+>synth_miRNA-417-MIR-503
+UAGCAGCGGGAACAGUUCUGCAG
+.....((((((....)))))).. ( -5.90)
+>synth_miRNA-418-MIR-504
+AGACCCUGGUCUGCACUCUAUC
+((((....)))).......... ( -2.30)
+>synth_miRNA-419-MIR-505
+CGUCAACACUUGCUGGUUUCCU
+...................... (  0.00)
+>synth_miRNA-420-MIR-506
+UAAGGCACCCUUCUGAGUAGA
+.((((...))))......... ( -0.90)
+>synth_miRNA-421-MIR-507
+UUUUGCACCUUUUGGAGUGAA
+.(((((.((....)).))))) ( -3.00)
+>synth_miRNA-422-MIR-508
+UGAUUGUAGCCUUUUGGAGUAGA
+.........((....))...... ( -1.10)
+>synth_miRNA-423-MIR-508-5P
+UACUCCAGAGGGCGUCACUCAUG
+.......(((.......)))... ( -2.50)
+>synth_miRNA-424-MIR-509-3-5P
+UACUGCAGACGUGGCAAUCAUG
+...(((.......)))...... ( -1.40)
+>synth_miRNA-425-MIR-509
+UGAUUGGUACGUCUGUGGGUAG
+.......(((........))). ( -0.70)
+>synth_miRNA-426-MIR-509-5P
+UACUGCAGACAGUGGCAAUCAA
+(((((....)))))........ ( -3.20)
+>synth_miRNA-427-MIR-510
+UACUCAGGAGAGUGGCAAUCAC
+(((((....)))))........ ( -3.90)
+>synth_miRNA-428-MIR-511
+GUGUCUUUUGCUCUGCAGUCA
+.......((((...))))... ( -0.80)
+>synth_miRNA-429-MIR-512
+AAGUGCUGUCAUAGCUGAGGUC
+....((((...))))....... ( -1.80)
+>synth_miRNA-430-MIR-512-5P
+CACUCAGCCUUGAGGGCACUUUC
+......((((...))))...... ( -4.40)
+>synth_miRNA-431-MIR-513A
+UAAAUUUCACCUUUCUGAGAAGG
+.........(((((....))))) ( -2.70)
+>synth_miRNA-432-MIR-513A-5P
+UUCACAGGGAGGUGUCAU
+..(((......))).... ( -1.00)
+>synth_miRNA-433-MIR-514
+AUUGACACUUCUGUGAGUAGA
+.....(((....)))...... ( -1.90)
+>synth_miRNA-434-MIR-515
+GAGUGCCUUCUUUUGGAGCGUU
+....((((((....)))).)). ( -3.40)
+>synth_miRNA-435-MIR-515-5P
+UUCUCCAAAAGAAAGCACUUUCUG
+.........(((((....))))). ( -1.80)
+>synth_miRNA-436-MIR-516A-5P
+UUCUCGAGGAAAGAAGCACUUUC
+........(((((.....))))) ( -1.70)
+>synth_miRNA-437-MIR-516B*
+UGCUUCCUUUCAGAGGGU
+....(((((...))))). ( -2.40)
+>synth_miRNA-438-MIR-516B
+AUCUGGAGGUAAGAAGCACUUU
+.....(((((.....)).))). ( -0.40)
+>synth_miRNA-439-MIR-517*
+CCUCUAGAUGGAAGCACUGUCU
+.....((((((.....)))))) ( -2.80)
+>synth_miRNA-440-MIR-517A-MIR-517B_2
+AUCGUGCAUCCCUUUAGAGUGU
+...................... (  0.00)
+>synth_miRNA-441-MIR-517C
+AUCGUGCAUCCUUUUAGAGUGU
+.....((((.((...)).)))) ( -0.70)
+>synth_miRNA-442-MIR-518A
+GAAAGCGCUUCCCUUUGCUGGA
+...((((........))))... ( -2.20)
+>synth_miRNA-443-MIR-518A-5P-527_1
+CUGCAAAGGGAAGCCCUUUCA
+.((.((((((...)))))))) ( -5.40)
+>synth_miRNA-444-MIR-518B
+CAAAGCGCUCCCCUUUAGAGGU
+....((.(((.......))))) ( -1.30)
+>synth_miRNA-445-MIR-518C*
+UCUCUGGAGGGAAGCACUUUCUG
+.....(((((......))))).. ( -3.80)
+>synth_miRNA-446-MIR-518C
+CAAAGCGCUUCUCUUUAGAGUGU
+....((((((.......)))))) ( -3.80)
+>synth_miRNA-447-MIR-518D
+CAAAGCGCUUCCCUUUGGAGCG
+.....((((((.....)))))) ( -6.00)
+>synth_miRNA-448-MIR-518D-5P-520C-5P-526A
+CUCUAGAGGGAAGCACUUUCUG
+...(((((((.....))))))) ( -3.70)
+>synth_miRNA-449-MIR-518E*-519A*-1-519B-5P-519C-5P-522*-523*
+CUCUAGAGGGAAGCGCUUUCUG
+...(((((((.....))))))) ( -3.90)
+>synth_miRNA-450-MIR-518E
+AAAGCGCUUCCCUUCAGAGUG
+....(((((.......))))) ( -1.70)
+>synth_miRNA-451-MIR-518F
+GAAAGCGCUUCUCUUUAGAGG
+.......(((((....))))) ( -1.80)
+>synth_miRNA-452-MIR-519A
+AAAGUGCAUCCUUUUAGAGUGU
+.....((((.((...)).)))) ( -0.70)
+>synth_miRNA-453-MIR-519B
+AAAGUGCAUCCUUUUAGAGGUU
+.........((((...)))).. ( -1.50)
+>synth_miRNA-454-MIR-519C
+AAAGUGCAUCUUUUUAGAGGAU
+.......((((((...)))))) ( -1.40)
+>synth_miRNA-455-MIR-519D
+CAAAGUGCCUCCCUUUAGAGUG
+........(((......))).. ( -1.10)
+>synth_miRNA-456-MIR-519E*
+UUCUCCAAAAGGGAGCACUUUC
+..((((.....))))....... ( -4.00)
+>synth_miRNA-457-MIR-519E
+AAGUGCCUCCUUUUAGAGUGUU
+....(((((......))).)). ( -2.10)
+>synth_miRNA-458-MIR-520A
+AAAGUGCUUCCCUUUGGACUGU
+..(((.(........).))).. ( -2.90)
+>synth_miRNA-459-MIR-520A-5P
+CUCCAGAGGGAAGUACUUUCU
+....((((((.....)))))) ( -2.90)
+>synth_miRNA-460-MIR-520C-520F-520B_3
+AAAGUGCUUCCUUUUAGAGGGU
+........(((((...))))). ( -2.40)
+>synth_miRNA-461-MIR-520D
+AAAGUGCUUCUCUUUGGUGGGU
+.........(((......))). ( -1.00)
+>synth_miRNA-462-MIR-520D-5P
+CUACAAAGGGAAGCCCUUUC
+....((((((...)))))). ( -5.20)
+>synth_miRNA-463-MIR-520E
+AAAGUGCUUCCUUUUUGAGGGU
+........(((((...))))). ( -2.40)
+>synth_miRNA-464-MIR-520G
+ACAAAGUGCUUCCCUUUAGAGUGU
+.......((((.......)))).. ( -0.40)
+>synth_miRNA-465-MIR-520H
+AAAGUGCUUCCCUUUAGAGUUA
+.....((((.......)))).. ( -0.10)
+>synth_miRNA-466-MIR-521
+AACGCACUUCCCUUUAGAGUGU
+...((((((.......)))))) ( -4.20)
+>synth_miRNA-467-MIR-522
+AAAAUGGUUCCCUUUAGAGUGU
+...................... (  0.00)
+>synth_miRNA-468-MIR-523
+GAACGCGCUUCCCUAUAGAGGGU
+..........((((....)))). ( -4.30)
+>synth_miRNA-469-MIR-524
+GAAGGCGCUUCCCUUUGGAGU
+(((((......)))))..... ( -3.10)
+>synth_miRNA-470-MIR-524-5P
+CUACAAAGGGAAGCACUUUCUC
+.......(((((.....))))) ( -1.90)
+>synth_miRNA-471-MIR-525
+GAAGGCGCUUCCCUUUAGAGCG
+.....(((((.......))))) ( -3.60)
+>synth_miRNA-472-MIR-525-5P
+CUCCAGAGGGAUGCACUUUCU
+....((((((.....)))))) ( -2.90)
+>synth_miRNA-473-MIR-526B*
+GAAAGUGCUUCCUUUUAGAGGC
+......(((((......))))) ( -4.10)
+>synth_miRNA-474-MIR-526B
+CUCUUGAGGGAAGCACUUUCUGU
+.....(((((.....)))))... ( -2.20)
+>synth_miRNA-475-MIR-532
+CCUCCCACACCCAAGGCUUGCA
+...................... (  0.00)
+>synth_miRNA-476-MIR-532-5P
+CAUGCCUUGAGUGUAGGACCGU
+....(((.......)))..... ( -1.60)
+>synth_miRNA-477-MIR-539
+GGAGAAAUUAUCCUUGGUGUGU
+(((.......)))......... ( -2.10)
+>synth_miRNA-478-MIR-541*
+AAAGGAUUCUGCUGUCGGUCCCACU
+...(((((........))))).... ( -3.20)
+>synth_miRNA-479-MIR-542
+UGUGACAGAUUGAUAACUGAAA
+.....(((........)))... ( -0.90)
+>synth_miRNA-480-MIR-542-5P
+UCGGGGAUCAUCAUGUCACGAGA
+(((((.((....)).)).))).. ( -2.40)
+>synth_miRNA-481-MIR-542-5P
+CUCGGGGAUCAUCAUGUCACGA
+.(((((.((....)).)).))) ( -1.70)
+>synth_miRNA-482-MIR-543
+AAACAUUCGCGGUGCACUUCUU
+...................... (  0.00)
+>synth_miRNA-483-MIR-544
+AUUCUGCAUUUUUAGCAAGUUC
+....(((.......)))..... ( -1.50)
+>synth_miRNA-484-MIR-545
+UCAGCAAACAUUUAUUGUGUGC
+...(((.(((.....))).))) ( -3.60)
+>synth_miRNA-485-MIR-548A
+CAAAACUGGCAAUUACUUUUGC
+........((((......)))) ( -2.20)
+>synth_miRNA-486-MIR-548B
+CAAGAACCUCAGUUGCUUUUGU
+.((((((....))).))).... ( -0.20)
+>synth_miRNA-487-MIR-548C
+CAAAAAUCUCAAUUACUUUUGC
+...................... (  0.00)
+>synth_miRNA-488-MIR-548C-5P
+AAAAGUAAUUGCGGUUUUUGCC
+............(((....))) ( -1.40)
+>synth_miRNA-489-MIR-548D
+CAAAAACCACAGUUUCUUUUGC
+...................... (  0.00)
+>synth_miRNA-490-MIR-549
+UGACAACUAUGGAUGAGCUCU
+..................... (  0.00)
+>synth_miRNA-491-MIR-550*
+UGUCUUACUCCCUCAGGCACAU
+(((((.........)))))... ( -1.90)
+>synth_miRNA-492-MIR-550
+AGUGCCUGAGGGAGUAAGAGCCC
+.........(((........))) ( -2.60)
+>synth_miRNA-493-MIR-551A
+GCGACCCACUCUUGGUUUCCA
+..((((.......)))).... ( -1.70)
+>synth_miRNA-494-MIR-551B
+GCGACCCAUACUUGGUUUCAG
+(.((((.......)))).).. ( -2.10)
+>synth_miRNA-495-MIR-552
+AACAGGUGACUGGUUAGACAA
+..(((....)))......... ( -2.70)
+>synth_miRNA-496-MIR-553
+AAAACGGUGAGAUUUUGUUUU
+(((((((.......))))))) ( -1.30)
+>synth_miRNA-497-MIR-554
+GCUAGUCCUGACUCAGCCAGU
+((((((....))).))).... ( -2.70)
+>synth_miRNA-498-MIR-555
+AGGGUAAGCUGAACCUCUGAU
+.((((.......))))..... ( -2.30)
+>synth_miRNA-499-MIR-556-5P
+GAUGAGCUCAUUGUAAUAUGAG
+......(((((......))))) ( -3.40)
+>synth_miRNA-500-MIR-557
+GUUUGCACGGGUGGGCCUUGUCU
+....(((.((.....)).))).. ( -3.20)
+>synth_miRNA-501-MIR-558
+UGAGCUGCUGUACCAAAAU
+................... (  0.00)
+>synth_miRNA-502-MIR-559
+UAAAGUAAAUAUGCACCAAAA
+..................... (  0.00)
+>synth_miRNA-503-MIR-560
+GCGUGCGCCGGCCGGCCGCC
+..(((.(((....)))))). ( -7.10)
+>synth_miRNA-504-MIR-561
+CAAAGUUUAAGAUCCUUGAAGU
+...(.((((((...)))))).) ( -1.30)
+>synth_miRNA-505-MIR-562
+AAAGUAGCUGUACCAUUUGC
+.................... (  0.00)
+>synth_miRNA-506-MIR-563
+AGGUUGACAUACGUUUCCC
+.((..(((....))).)). ( -1.50)
+>synth_miRNA-507-MIR-564
+AGGCACGGUGUCAGCAGGC
+.((((...))))....... ( -1.70)
+>synth_miRNA-508-MIR-565
+GGCUGGCUCGCGAUGUCUGUUU
+.((.(((.......))).)).. ( -2.40)
+>synth_miRNA-509-MIR-566
+GGGCGCCUGUGAUCCCAAC
+(((..(....)..)))... ( -3.00)
+>synth_miRNA-510-MIR-567
+AGUAUGUUCUUCCAGGACAGAAC
+....((((((...)))))).... ( -3.60)
+>synth_miRNA-511-MIR-568
+AUGUAUAAAUGUAUACACAC
+.((((((....))))))... ( -2.80)
+>synth_miRNA-512-MIR-569
+AGUUAAUGAAUCCUGGAAAGU
+..................... (  0.00)
+>synth_miRNA-513-MIR-570
+CGAAAACAGCAAUUACCUUUGC
+........((((......)))) ( -2.40)
+>synth_miRNA-514-MIR-571
+UGAGUUGGCCAUCUGAGUGAG
+..................... (  0.00)
+>synth_miRNA-515-MIR-572
+GUCCGCUCGGCGGUGGCCCA
+........(((....))).. ( -4.60)
+>synth_miRNA-516-MIR-573
+CUGAAGUGAUGUGUAACUGAUCAG
+(((((((........)))..)))) ( -3.10)
+>synth_miRNA-517-MIR-574
+CACGCUCAUGCACACACCCACA
+...((....))........... ( -1.40)
+>synth_miRNA-518-MIR-574-5P
+UGAGUGUGUGUGUGUGAGUGUGU
+....................... (  0.00)
+>synth_miRNA-519-MIR-575
+GAGCCAGUUGGACAGGAGC
+...((....))........ ( -0.50)
+>synth_miRNA-520-MIR-576
+AAGAUGUGGAAAAAUUGGAAUC
+...................... (  0.00)
+>synth_miRNA-521-MIR-576-5P
+AUUCUAAUUUCUCCACGUCUUUG
+....................... (  0.00)
+>synth_miRNA-522-MIR-577
+UAGAUAAAAUAUUGGUACCUG
+..................... (  0.00)
+>synth_miRNA-523-MIR-578
+CUUCUUGUGCUCUAGGAUUGU
+..(((((.....))))).... ( -1.00)
+>synth_miRNA-524-MIR-579
+UUCAUUUGGUAUAAACCGCGAUU
+......((((....))))..... ( -2.00)
+>synth_miRNA-525-MIR-580
+UUGAGAAUGAUGAAUCAUUAGG
+.....(((((....)))))... ( -1.60)
+>synth_miRNA-526-MIR-581
+UCUUGUGUUCUCUAGAUCAGU
+..................... (  0.00)
+>synth_miRNA-527-MIR-582
+UAACUGGUUGAACAACUGAACC
+.....((((.(.....).)))) ( -1.90)
+>synth_miRNA-528-MIR-582-5P
+UUACAGUUGUUCAACCAGUUACU
+....................... (  0.00)
+>synth_miRNA-529-MIR-583
+CAAAGAGGAAGGUCCCAUUAC
+......((......))..... ( -0.90)
+>synth_miRNA-530-MIR-584
+UUAUGGUUUGCCUGGGACUGAG
+....(((((.....)))))... ( -1.80)
+>synth_miRNA-531-MIR-585
+UGGGCGUAUCUGUAUGCUA
+..((((((....)))))). ( -4.70)
+>synth_miRNA-532-MIR-586
+UAUGCAUUGUAUUUUUAGGUCC
+...................... (  0.00)
+>synth_miRNA-533-MIR-587
+UUUCCAUAGGUGAUGAGUCAC
+.........((((....)))) ( -1.20)
+>synth_miRNA-534-MIR-588
+UUGGCCACAAUGGGUUAGAAC
+((((((......))))))... ( -4.20)
+>synth_miRNA-535-MIR-589*
+UCAGAACAAAUGCCGGUUCCCAGA
+...((((........))))..... ( -2.40)
+>synth_miRNA-536-MIR-590
+UAAUUUUAUGUAUAAGCUAGU
+..................... (  0.00)
+>synth_miRNA-537-MIR-590-5P
+GAGCUUAUUCAUAAAAGUGCAG
+(.((((........)))).).. ( -1.20)
+>synth_miRNA-538-MIR-591
+AGACCAUGGGUUCUCAUUGU
+.((((...))))........ ( -1.60)
+>synth_miRNA-539-MIR-592
+UUGUGUCAAUAUGCGAUGAUGU
+....((((........)))).. ( -1.00)
+>synth_miRNA-540-MIR-593*
+AGGCACCAGCCAGGCAUUGCUCAGC
+.(((....))).(((...))).... ( -4.40)
+>synth_miRNA-541-MIR-594
+CCCAUCUGGGGUGGCCUGUGACUUU
+(((....)))............... ( -3.80)
+>synth_miRNA-542-MIR-595
+GAAGUGUGCCGUGGUGUGUCU
+..................... (  0.00)
+>synth_miRNA-543-MIR-596
+AAGCCUGCCCGGCUCCUCGGG
+.......((((......)))) ( -5.30)
+>synth_miRNA-544-MIR-597
+UGUGUCACUCGAUGACCACUGU
+.((((((.....))).)))... ( -2.80)
+>synth_miRNA-545-MIR-598
+UACGUCAUCGUUGUCAUCGUCA
+.(((....)))........... ( -0.60)
+>synth_miRNA-546-MIR-599
+GUUGUGUCAGUUUAUCAAAC
+.................... (  0.00)
+>synth_miRNA-547-MIR-600
+ACUUACAGACAAGAGCCUUGCUC
+............((((...)))) ( -2.70)
+>synth_miRNA-548-MIR-601
+UGGUCUAGGAUUGUUGGAGGAG
+...(((((.....))))).... ( -1.80)
+>synth_miRNA-549-MIR-602
+GACACGGGCGACAGCUGCGGCCC
+.....((((..(....)..)))) ( -6.60)
+>synth_miRNA-550-MIR-603
+CACACACUGCAAUUACUUUUGC
+........((((......)))) ( -2.20)
+>synth_miRNA-551-MIR-604
+AGGCUGCGGAAUUCAGGAC
+...(((.......)))... ( -0.10)
+>synth_miRNA-552-MIR-605
+UAAAUCCCAUGGUGCCUUCUCCU
+..........((........)). ( -0.60)
+>synth_miRNA-553-MIR-606
+AAACUACUGAAAAUCAAAGAU
+..................... (  0.00)
+>synth_miRNA-554-MIR-607
+GUUCAAAUCCAGAUCUAUAAC
+..................... (  0.00)
+>synth_miRNA-555-MIR-608
+AGGGGUGGUGUUGGGACAGCUCCGU
+.(((((.((......)).))))).. ( -7.90)
+>synth_miRNA-556-MIR-609
+AGGGUGUUUCUCUCAUCUCU
+.(((((.......))))).. ( -2.90)
+>synth_miRNA-557-MIR-610
+UGAGCUAAAUGUGUGCUGGGA
+(.(((.........))).).. ( -2.20)
+>synth_miRNA-558-MIR-611
+GCGAGGACCCCUCGGGGUCUGAC
+....((((((....))))))... (-10.80)
+>synth_miRNA-559-MIR-612
+GCUGGGCAGGGCUUCUGAGCUCCUU
+.......((((((....))).))). ( -5.10)
+>synth_miRNA-560-MIR-613
+AGGAAUGUUCCUUCUUUGCC
+((((....))))........ ( -2.30)
+>synth_miRNA-561-MIR-614
+GAACGCCUGUUCUUGCCAGGUGG
+...((((((.......)))))). ( -8.00)
+>synth_miRNA-562-MIR-615
+UCCGAGCCUGGGUCUCCCUCUU
+.........(((...))).... ( -2.40)
+>synth_miRNA-563-MIR-615-5P
+GGGGGUCCCCGGUGCUCGGAUC
+(((....)))............ ( -4.20)
+>synth_miRNA-564-MIR-616*
+ACUCAAAACCCUUCAGUGACUU
+...................... (  0.00)
+>synth_miRNA-565-MIR-617
+AGACUUCCCAUUUGAAGGUGGC
+.......(((((....))))). ( -2.60)
+>synth_miRNA-566-MIR-618
+AAACUCUACUUGUCCUUCUGAGU
+..((((.............)))) ( -1.80)
+>synth_miRNA-567-MIR-619
+GACCUGGACAUGUUUGUGCCCAGU
+...((((.(((....))).)))). ( -6.20)
+>synth_miRNA-568-MIR-620
+AUGGAGAUAGAUAUAGAAAU
+.................... (  0.00)
+>synth_miRNA-569-MIR-621
+GGCUAGCAACAGCGCUUACCU
+((..(((......)))..)). ( -5.10)
+>synth_miRNA-570-MIR-622
+ACAGUCUGCUGAGGUUGGAGC
+.((((((....)))))).... ( -2.50)
+>synth_miRNA-571-MIR-623
+AUCCCUUGCAGGGGCUGUUGGGU
+..(((..((((...)))).))). ( -6.40)
+>synth_miRNA-572-MIR-624*
+UAGUACCAGUACCUUGUGUUCA
+...................... (  0.00)
+>synth_miRNA-573-MIR-624
+CACAAGGUAUUGGUAUUACCU
+....(((((.......))))) ( -3.90)
+>synth_miRNA-574-MIR-625
+AGGGGGAAAGUUCUAUAGUCC
+..................... (  0.00)
+>synth_miRNA-575-MIR-626
+AGCUGUCUGAAAAUGUCUU
+................... (  0.00)
+>synth_miRNA-576-MIR-627
+GUGAGUCUCUAAGAAAAGAGGA
+.....(((((......))))). ( -3.50)
+>synth_miRNA-577-MIR-628
+UCUAGUAAGAGUGGCAGUCGA
+..................... (  0.00)
+>synth_miRNA-578-MIR-629*
+GUUCUCCCAACGUAAGCCCAGC
+...................... (  0.00)
+>synth_miRNA-579-MIR-629
+UGGGUUUACGUUGGGAGAACU
+..(((((.(.....).))))) ( -1.50)
+>synth_miRNA-580-MIR-630
+AGUAUUCUGUACCAGGGAAGGU
+..........(((......))) ( -1.30)
+>synth_miRNA-581-MIR-631
+AGACCUGGCCCAGACCUCAGC
+....((((........)))). ( -1.10)
+>synth_miRNA-582-MIR-632
+GUGUCUGCUUCCUGUGGGA
+...(((((.....))))). ( -2.50)
+>synth_miRNA-583-MIR-633
+CUAAUAGUAUCUACCACAAUAAA
+....................... (  0.00)
+>synth_miRNA-584-MIR-634
+AACCAGCACCCCAACUUUGGAC
+..........(((....))).. ( -1.80)
+>synth_miRNA-585-MIR-635
+ACUUGGGCACUGAAACAAUGUCC
+....(((((.((...)).))))) ( -4.20)
+>synth_miRNA-586-MIR-636
+UGUGCUUGCUCGUCCCGCCCGCA
+..(((..((.......))..))) ( -2.60)
+>synth_miRNA-587-MIR-637
+ACUGGGGGCUUUCGGGCUCUGCGU
+((..((((((....))))))..)) ( -6.70)
+>synth_miRNA-588-MIR-638
+AGGGAUCGCGGGCGGGUGGCGGCCU
+.(((.((((.(.....).))))))) ( -8.00)
+>synth_miRNA-589-MIR-639
+AUCGCUGCGGUUGCGAGCGCUGU
+..((((((....)).)))).... ( -6.00)
+>synth_miRNA-590-MIR-640
+AUGAUCCAGGAACCUGCCUCU
+..((..(((....)))..)). ( -2.00)
+>synth_miRNA-591-MIR-641
+AAAGACAUAGGAUAGAGUCACCUC
+...(((..........)))..... ( -1.10)
+>synth_miRNA-592-MIR-642
+GUCCCUCUCCAAAUGUGUCUUG
+...................... (  0.00)
+>synth_miRNA-593-MIR-643
+ACUUGUAUGCUAGCUCAGGUAG
+(((((..........))))).. ( -2.30)
+>synth_miRNA-594-MIR-644
+AGUGUGGCUUUCUUAGAGC
+......(((((...))))) ( -1.50)
+>synth_miRNA-595-MIR-645
+UCUAGGCUGGUACUGCUGA
+....(((.......))).. ( -1.60)
+>synth_miRNA-596-MIR-646
+AAGCAGCUGCCUCUGAGGC
+........((((...)))) ( -2.90)
+>synth_miRNA-597-MIR-647
+GUGGCUGCACUCACUUCCUUC
+(((....)))........... ( -2.10)
+>synth_miRNA-598-MIR-648
+AAGUGUGCAGGGCACUGGU
+.(((((.....)))))... ( -4.90)
+>synth_miRNA-599-MIR-649
+AAACCUGUGUUGUUCAAGAGUC
+...................... (  0.00)
+>synth_miRNA-600-MIR-650
+AGGAGGCAGCGCUCUCAGGAC
+.((((......))))...... ( -3.60)
+>synth_miRNA-601-MIR-651
+UUUAGGAUAAGCUUGACUUUUG
+.(((((.....)))))...... ( -0.80)
+>synth_miRNA-602-MIR-653
+GUGUUGAAACAAUCUCUACUG
+..................... (  0.00)
+>synth_miRNA-603-MIR-654
+UAUGUCUGCUGACCAUCACCUU
+...(((....)))......... ( -1.90)
+>synth_miRNA-604-MIR-654-5P
+UGGUGGGCCGCAGAACAUGUGC
+........((((.....)))). ( -2.20)
+>synth_miRNA-605-MIR-655
+AUAAUACAUGGUUAACCUCUUU
+...................... (  0.00)
+>synth_miRNA-606-MIR-656
+AAUAUUAUACAGUCAACCUCU
+..................... (  0.00)
+>synth_miRNA-607-MIR-657
+GGCAGGUUCUCACCCUCUCUAGG
+((.(((.......))).)).... ( -1.20)
+>synth_miRNA-608-MIR-658
+GGCGGAGGGAAGUAGGUCCGUUGGU
+.((.((.(((......))).)).)) ( -7.10)
+>synth_miRNA-609-MIR-659
+CUUGGUUCAGGGAGGGUCCCCA
+.........(((......))). ( -4.20)
+>synth_miRNA-610-MIR-660
+UACCCAUUGCAUAUCGGAGUUG
+...................... (  0.00)
+>synth_miRNA-611-MIR-661
+UGCCUGGGUCUCUGGCCUGCGCGU
+.((.((((((...)))))).)).. ( -7.40)
+>synth_miRNA-612-MIR-662
+UCCCACGUUGUGGCCCAGCAG
+..((((...))))........ ( -2.90)
+>synth_miRNA-613-MIR-663
+AGGCGGGGCGCCGCGGGACCGC
+..((((....))))........ ( -7.30)
+>synth_miRNA-614-MIR-665
+ACCAGGAGGCUGAGGCCCCU
+...(((.(((....)))))) ( -6.80)
+>synth_miRNA-615-MIR-668
+UGUCACUCGGCUCGGCCCACUACC
+........(((...)))....... ( -2.40)
+>synth_miRNA-616-MIR-671
+UCCGGUUCUCAGGGCUCCACC
+.((........))........ ( -1.60)
+>synth_miRNA-617-MIR-671-5P
+AGGAAGCCCUGGAGGGGCUGGAG
+....((((((...)))))).... ( -8.90)
+>synth_miRNA-618-MIR-675
+UGGUGCGGAGAGGGCCCACAGUG
+(((.((.......)))))..... ( -4.70)
+>synth_miRNA-619-MIR-7*
+CAACAAAUCACAGUCUGCCAUA
+...................... (  0.00)
+>synth_miRNA-620-MIR-7
+UGGAAGACUAGUGAUUUUGUUGU
+....................... (  0.00)
+>synth_miRNA-621-MIR-708*
+CAACUAGACUGUGAGCUUCUAG
+...(((((.........))))) ( -2.20)
+>synth_miRNA-622-MIR-708
+AAGGAGCUUACAAUCUAGCUGGG
+....((((........))))... ( -3.70)
+>synth_miRNA-623-MIR-744
+UGCGGGGCUAGGGCUAACAGCA
+(((..(((....)))....))) ( -3.80)
+>synth_miRNA-624-MIR-758
+UUUGUGACCUGGUCCACUAACC
+...(((........)))..... ( -1.50)
+>synth_miRNA-625-MIR-760
+CGGCUCUGGGUCUGUGGGGA
+...(((((......))))). ( -2.40)
+>synth_miRNA-626-MIR-765
+UGGAGGAGAAGGAAGGUGAUG
+..................... (  0.00)
+>synth_miRNA-627-MIR-766
+ACUCCAGCCCCACAGCCUCAGC
+...................... (  0.00)
+>synth_miRNA-628-MIR-767
+UCUGCUCAUACCCCAUGGUUUCU
+.........(((....))).... ( -0.70)
+>synth_miRNA-629-MIR-767-5P
+UGCACCAUGGUUGUCUGAGCAUG
+.....((((.((....)).)))) ( -3.00)
+>synth_miRNA-630-MIR-768
+UCACAAUGCUGACACUCAAACUGCUGAC
+............................ (  0.00)
+>synth_miRNA-631-MIR-768-5P
+GUUGGAGGAUGAAAGUACGGAGUGAU
+.......................... (  0.00)
+>synth_miRNA-632-MIR-769
+CUGGGAUCUCCGGGGUCUUGGUU
+(((((((((...))))))))).. ( -6.50)
+>synth_miRNA-633-MIR-769-5P
+UGAGACCUCUGGGUUCUGAGCU
+(.(((((....)).))).)... ( -2.60)
+>synth_miRNA-634-MIR-770
+CGUGGGCCUGAUGUGGUGCUGG
+...(.(((......))).)... ( -5.10)
+>synth_miRNA-635-MIR-770-5P
+AGUACCACGUGUCAGGGCCACA
+.(..((........))..)... ( -1.00)
+>synth_miRNA-636-MIR-801
+GAUUGCUCUGCGUGCGGAAUCGAC
+((((.(.(.....).).))))... ( -3.90)
+>synth_miRNA-637-MIR-802
+UCAGUAACAAAGAUUCAUCCUU
+...................... (  0.00)
+>synth_miRNA-638-MIR-873
+GCAGGAACUUGUGAGUCUCCU
+..(((((((....))).)))) ( -3.60)
+>synth_miRNA-639-MIR-874
+CUGCCCUGGCCCGAGGGACCGA
+...((((......))))..... ( -6.10)
+>synth_miRNA-640-MIR-875
+CCUGGAAACACUGAGGUUGUG
+(((.(......).)))..... ( -1.80)
+>synth_miRNA-641-MIR-875-5P
+UAUACCUCAGUUUUAUCAGGUG
+..(((((.(......).))))) ( -2.30)
+>synth_miRNA-642-MIR-876
+UGGUGGUUUACAAAGUAAUUCA
+...(((.((((...)))).))) ( -1.10)
+>synth_miRNA-643-MIR-876-5P
+UGGAUUUCUUUGUGAAUCACCA
+..(((((......))))).... ( -1.70)
+>synth_miRNA-644-MIR-877
+GUAGAGGAGAUGGCGCAGGG
+.................... (  0.00)
+>synth_miRNA-645-MIR-885
+AGGCAGCGGGGUGUAGUGGAUA
+..(((......)))........ ( -0.90)
+>synth_miRNA-646-MIR-885-5P
+UCCAUUACACUACCCUGCCUCU
+...................... (  0.00)
+>synth_miRNA-647-MIR-886
+CGCGGGUGCUUACUGACCCUU
+...((((........)))).. ( -6.20)
+>synth_miRNA-648-MIR-886-5P
+CGGGUCGGAGUUAGCUCAAGCGG
+...((..(((....)))..)).. ( -3.10)
+>synth_miRNA-649-MIR-887
+GUGAACGGGCGCCAUCCCGAGG
+.....((((......))))... ( -5.20)
+>synth_miRNA-650-MIR-888*
+GACUGACACCUCUUUGGGUGAA
+......(((((....))))).. ( -5.20)
+>synth_miRNA-651-MIR-888
+UACUCAAAAAGCUGUCAGUCA
+..................... (  0.00)
+>synth_miRNA-652-MIR-889
+UUAAUAUCGGACAACCAUUGU
+........((....))..... ( -0.30)
+>synth_miRNA-653-MIR-890
+UACUUGGAAAGGCAUCAGUUG
+..................... (  0.00)
+>synth_miRNA-654-MIR-891A
+UGCAACGAACCUGAGCCACUGA
+...................... (  0.00)
+>synth_miRNA-655-MIR-891B
+UGCAACUUACCUGAGUCAUUGA
+....((((....))))...... ( -0.50)
+>synth_miRNA-656-MIR-892A
+CACUGUGUCCUUUCUGCGUAG
+..((((((.......)))))) ( -0.20)
+>synth_miRNA-657-MIR-892B
+CACUGGCUCCUUUCUGGGUAGA
+......(((((....))).)). ( -2.70)
+>synth_miRNA-658-MIR-9*
+UAAAGCUAGAUAACCGAAAGU
+..................... (  0.00)
+>synth_miRNA-659-MIR-9
+UCUUUGGUUAUCUAGCUGUAUGA
+.....((((....))))...... ( -0.20)
+>synth_miRNA-660-MIR-92A
+UAUUGCACUUGUCCCGGCCUGU
+...................... (  0.00)
+>synth_miRNA-661-MIR-92B
+UAUUGCACUCGUCCCGGCCUCC
+...................... (  0.00)
+>synth_miRNA-662-MIR-93
+CAAAGUGCUGUUCGUGCAGGUAG
+.......((((....)))).... ( -3.40)
+>synth_miRNA-663-MIR-95
+UUCAACGGGUAUUUAUUGAGCA
+...................... (  0.00)
+>synth_miRNA-664-MIR-96
+UUUGGCACUAGCACAUUUUUGCU
+.........((((......)))) ( -2.10)
+>synth_miRNA-665-MIR-98
+UGAGGUAGUAAGUUGUAUUGUU
+...................... (  0.00)
+>synth_miRNA-666-MIR-99A
+AACCCGUAGAUCCGAUCUUGUG
+...................... (  0.00)
+>synth_miRNA-667-MIR-99B
+CACCCGUAGAACCGACCUUGCG
+....(((((........))))) ( -1.80)
+>synth_miRNA-668-MIR-101B
+UACAGUACUGUGAUAGCUGAA
+..((((.........)))).. ( -1.90)
+>synth_miRNA-669-MIR-105
+CCAAGUGCUCAGAUGCUUGUGGU
+(((...((......))...))). ( -4.80)
+>synth_miRNA-670-MIR-106A
+CAAAGUGCUAACAGUGCAGGUAG
+....(((((...)))))...... ( -2.40)
+>synth_miRNA-671-MIR-133A*
+GCUGGUAAAAUGGAACCAAAU
+..((((........))))... ( -3.10)
+>synth_miRNA-672-MIR-151
+CUAGACUGAGGCUCCUUGAGG
+.....((.(((...))).)). ( -1.70)
+>synth_miRNA-673-MIR-155
+UUAAUGCUAAUUGUGAUAGGGGU
+....................... (  0.00)
+>synth_miRNA-674-MIR-17*
+ACUGCAGUGAGGGCACUUGUA
+..(((((((....))).)))) ( -3.50)
+>synth_miRNA-675-MIR-182
+UUUGGCAAUGGUAGAACUCACACCG
+.........(((.(......)))). ( -1.00)
+>synth_miRNA-676-MIR-18B
+UAAGGUGCAUCUAGUGCUGUUAG
+...(((((.....)))))..... ( -2.60)
+>synth_miRNA-677-MIR-193B
+AACUGGCCCACAAAGUCCCGCU
+...................... (  0.00)
+>synth_miRNA-678-MIR-199B-5P
+CCCAGUGUUUAGACUACCUGUUC
+..(((.((.......)))))... ( -1.80)
+>synth_miRNA-679-MIR-201
+UACUCAGUAAGGCAUUGUUCUU
+...................... (  0.00)
+>synth_miRNA-680-MIR-202
+AGAGGUAUAGCGCAUGGGAAGA
+...................... (  0.00)
+>synth_miRNA-681-MIR-207
+GCUUCUCCUGGCUCUCCUCCCUC
+(((......)))........... ( -2.20)
+>synth_miRNA-682-MIR-211
+UUCCCUUUGUCAUCCUUUGCCU
+...................... (  0.00)
+>synth_miRNA-683-MIR-215
+AUGACCUAUGAUUUGACAGAC
+..................... (  0.00)
+>synth_miRNA-684-MIR-217
+UACUGCAUCAGGAACUGACUGGA
+........(((.......))).. ( -2.20)
+>synth_miRNA-685-MIR-220
+CCACCACAGUGUCAGACACUU
+.......(((((...))))). ( -2.80)
+>synth_miRNA-686-MIR-224
+UAAGUCACUAGUGGUUCCGUU
+..................... (  0.00)
+>synth_miRNA-687-MIR-28
+CACUAGAUUGUGAGCUGCUGGA
+(((......))).......... ( -2.10)
+>synth_miRNA-688-MIR-290
+AAAGUGCCGCCUAGUUUUAAGCCC
+........................ (  0.00)
+>synth_miRNA-689-MIR-290-5P
+ACUCAAACUAUGGGGGCACUUU
+.((((.....))))........ ( -1.90)
+>synth_miRNA-690-MIR-291A
+AAAGUGCUUCCACUUUGUGUGC
+((((((....))))))...... ( -3.50)
+>synth_miRNA-691-MIR-291A-5P
+CAUCAAAGUGGAGGCCCUCUCU
+.........((((.....)))) ( -2.10)
+>synth_miRNA-692-MIR-291B
+AAAGUGCAUCCAUUUUGUUUGU
+((((((....))))))...... ( -1.20)
+>synth_miRNA-693-MIR-291B-5P
+GAUCAAAGUGGAGGCCCUCUCC
+.........((((.....)))) ( -3.60)
+>synth_miRNA-694-MIR-292
+AAAGUGCCGCCAGGUUUUGAGUGU
+.....(((....)))......... ( -2.50)
+>synth_miRNA-695-MIR-292-5P
+ACUCAAACUGGGGGCUCUUUUG
+.((((...)))).......... ( -1.40)
+>synth_miRNA-696-MIR-293
+AGUGCCGCAGAGUUUGUAGUGU
+...((.(((.....))).)).. ( -1.00)
+>synth_miRNA-697-MIR-294
+AAAGUGCUUCCCUUUUGUGUGU
+...................... (  0.00)
+>synth_miRNA-698-MIR-295
+AAAGUGCUACUACUUUUGAGUCU
+((((((....))))))....... ( -1.30)
+>synth_miRNA-699-MIR-297B
+AUGUAUGUGUGCAUGAACAUGU
+....((((((......)))))) ( -2.60)
+>synth_miRNA-700-MIR-297C
+AUGUAUGUGUGCAUGUACAUGU
+((((((((....)))))))).. ( -4.10)
+>synth_miRNA-701-MIR-298
+GGCAGAGGAGGGCUGUUCUUCCC
+......(((((......))))). ( -5.50)
+>synth_miRNA-702-MIR-299
+UAUGUGGGACGGUAAACCGCUU
+...((((.........)))).. ( -4.50)
+>synth_miRNA-703-MIR-300
+UAUGCAAGGGCAAGCUCUCUUC
+.....(((((......))))). ( -1.80)
+>synth_miRNA-704-MIR-301B
+CAGUGCAAUGGUAUUGUCAAAGC
+((((((....))))))....... ( -4.00)
+>synth_miRNA-705-MIR-302B*
+ACUUUAACAUGGGAAUGCUUUCU
+...........((((....)))) ( -0.90)
+>synth_miRNA-706-MIR-302C*
+UUUAACAUGGGGUUACCUGCUG
+........(((....))).... ( -2.60)
+>synth_miRNA-707-MIR-302C
+CAAGUGCUUCCAUGUUUCAGUGG
+.........((((......)))) ( -2.40)
+>synth_miRNA-708-MIR-322*
+AAACAUGAAGCGCUGCAACA
+.................... (  0.00)
+>synth_miRNA-709-MIR-322-MIR-424
+CAGCAGCAAUUCAUGUUUUGGA
+(((.((((.....))))))).. ( -1.30)
+>synth_miRNA-710-MIR-325
+UUUAUUGAGCACCUCCUAUCAA
+...................... (  0.00)
+>synth_miRNA-711-MIR-325-5P
+CCUAGUAGGUGCUCAGUAAGUGU
+(((...))).............. ( -0.10)
+>synth_miRNA-712-MIR-327
+ACUUGAGGGGCAUGAGGAU
+.(((.(......).))).. ( -0.30)
+>synth_miRNA-713-MIR-329
+AACACACCCAGCUAACCUUUUU
+...................... (  0.00)
+>synth_miRNA-714-MIR-330
+GCAAAGCACAGGGCCUGCAGAGA
+(((..((.....)).)))..... ( -3.30)
+>synth_miRNA-715-MIR-337-5P
+GAACGGCGUCAUGCAGGAGUU
+.....((.....))....... ( -0.60)
+>synth_miRNA-716-MIR-339
+UGAGCGCCUCGGCGACAGAGCCG
+.........((((......)))) ( -6.10)
+>synth_miRNA-717-MIR-341
+UCGGUCGAUCGGUCGGUCGGU
+....((((((....)))))). ( -5.20)
+>synth_miRNA-718-MIR-343
+UCUCCCUUCAUGUGCCCAGA
+.................... (  0.00)
+>synth_miRNA-719-MIR-344
+UGAUCUAGCCAAAGCCUGACUGU
+...((..((....))..)).... ( -1.00)
+>synth_miRNA-720-MIR-344-5P
+UCAGGCUCCUGGCUAGAUUCCAGG
+.......(((((.......))))) ( -5.40)
+>synth_miRNA-721-MIR-344-5P
+UCAGGCUCCUGGCUAGAUUCCA
+...((((...))))........ ( -2.20)
+>synth_miRNA-722-MIR-345-5P
+GCUGACCCCUAGUCCAGUGCUU
+((((((.....)).)))).... ( -3.00)
+>synth_miRNA-723-MIR-346
+UGUCUGCCCGAGUGCCUGCCUCU
+.........(((.......))). ( -0.90)
+>synth_miRNA-724-MIR-34B-5P
+AGGCAGUGUAAUUAGCUGAUUGU
+...((((.......))))..... ( -2.90)
+>synth_miRNA-725-MIR-350
+UUCACAAAGCCCAUACACUUUCAC
+........................ (  0.00)
+>synth_miRNA-726-MIR-350
+UUCACAAAGCCCAUACACUUUC
+...................... (  0.00)
+>synth_miRNA-727-MIR-351
+UCCCUGAGGAGCCCUUUGAGCCUGU
+......(((..(.....)..))).. ( -2.50)
+>synth_miRNA-728-MIR-351
+UCCCUGAGGAGCCCUUUGAGCCUGA
+......(((..(.....)..))).. ( -2.50)
+>synth_miRNA-729-MIR-362
+AACACACCUGUUCAAGGAUUCA
+......(((.....)))..... ( -2.30)
+>synth_miRNA-730-MIR-362-5P
+AAUCCUUGGAACCUAGGUGUGAAU
+...(((........)))....... ( -1.50)
+>synth_miRNA-731-MIR-374*
+GGUUGUAUUAUCAUUGUCCGAG
+(((......))).......... ( -0.10)
+>synth_miRNA-732-MIR-376A
+AUCGUAGAGGAAAAUCCACGU
+..(((.((......)).))). ( -2.30)
+>synth_miRNA-733-MIR-376B*
+GUGGAUAUUCCUUCUAUGGUU
+(((((.......))))).... ( -2.30)
+>synth_miRNA-734-MIR-376B
+AUCAUAGAGGAACAUCCACUU
+........(((...))).... ( -1.30)
+>synth_miRNA-735-MIR-376C
+AACAUAGAGGAAAUUUCACGU
+..................... (  0.00)
+>synth_miRNA-736-MIR-380
+UAUGUAGUAUGGUCCACAUCUU
+.....((.(((.....))))). ( -0.70)
+>synth_miRNA-737-MIR-383
+AGAUCAGAAGGUGACUGUGGCU
+((.(((.....)))))...... ( -0.60)
+>synth_miRNA-738-MIR-384
+AUUCCUAGAAAUUGUUCACAAU
+...................... (  0.00)
+>synth_miRNA-739-MIR-384-5P
+UGUAAACAAUUCCUAGGCAAUGU
+....................... (  0.00)
+>synth_miRNA-740-MIR-429
+UAAUACUGUCUGGUAAUGCCGU
+..........((((...)))). ( -1.60)
+>synth_miRNA-741-MIR-433-5P
+UACGGUGAGCCUGUCAUUAUUC
+...(((((.....))))).... ( -2.10)
+>synth_miRNA-742-MIR-434
+UUUGAACCAUCACUCGACUCCU
+.((((........))))..... ( -0.30)
+>synth_miRNA-743-MIR-434-5P
+GCUCGACUCAUGGUUUGAACCA
+..........((((....)))) ( -2.00)
+>synth_miRNA-744-MIR-449B
+AGGCAGUGUUGUUAGCUGGC
+.(.((((.......)))).) ( -4.10)
+>synth_miRNA-745-MIR-449C
+AGGCAGUGCAUUGCUAGCUGG
+.((((......))))...... ( -3.20)
+>synth_miRNA-746-MIR-450B
+AUUGGGAACAUUUUGCAUGCAU
+..((.(((...))).))..... ( -0.10)
+>synth_miRNA-747-MIR-450B-5P
+UUUUGCAGUAUGUUCCUGAAUA
+.....(((.......))).... ( -0.50)
+>synth_miRNA-748-MIR-453
+AGGUUGCCUCAUAGUGAGCUUGCA
+....(((((((...))))...))) ( -2.70)
+>synth_miRNA-749-MIR-455
+GCAGUCCACGGGCAUAUACAC
+...(((....)))........ ( -1.80)
+>synth_miRNA-750-MIR-463*
+UACCUAAUUUGUUGUCCAUCA
+..................... (  0.00)
+>synth_miRNA-751-MIR-463
+UGAUAGACACCAUAUAAGGUAG
+........(((......))).. ( -1.90)
+>synth_miRNA-752-MIR-464
+UACCAAGUUUAUUCUGUGAGAUA
+....................... (  0.00)
+>synth_miRNA-753-MIR-465A-465B-465C
+GAUCAGGGCCUUUCUAAGUAGA
+...................... (  0.00)
+>synth_miRNA-754-MIR-465A-5P
+UAUUUAGAAUGGCACUGAUGUGA
+............(((....))). ( -2.10)
+>synth_miRNA-755-MIR-465B-5P
+UAUUUAGAAUGGUGCUGAUCUG
+...................... (  0.00)
+>synth_miRNA-756-MIR-465C-5P
+UAUUUAGAAUGGCGCUGAUCUG
+...................... (  0.00)
+>synth_miRNA-757-MIR-465D
+UAUUUAGAAUGGUACUGAUGUG
+...................... (  0.00)
+>synth_miRNA-758-MIR-466A-466B-466C-466E
+UAUACAUACACGCACACAUAAGA
+....................... (  0.00)
+>synth_miRNA-759-MIR-466A-5P
+UAUGUGUGUGUACAUGUACAUA
+(((((((....))))))).... ( -2.80)
+>synth_miRNA-760-MIR-466B-5P
+GAUGUGUGUGUACAUGUACAUG
+.((((((....))))))..... ( -2.10)
+>synth_miRNA-761-MIR-466C-5P
+GAUGUGUGUGUGCAUGUACAUA
+.((((((....))))))..... ( -2.40)
+>synth_miRNA-762-MIR-466D-5P
+UGUGUGUGCGUACAUGUACAUG
+...((((((......)))))). ( -5.60)
+>synth_miRNA-763-MIR-466E-5P
+GAUGUGUGUGUACAUGUACAUA
+......((((((....)))))) ( -2.20)
+>synth_miRNA-764-MIR-466F-5P
+UACGUGUGUGUGCAUGUGCAUG
+(((((((....))))))).... ( -5.30)
+>synth_miRNA-765-MIR-466G
+AUACAGACACAUGCACACACA
+..................... (  0.00)
+>synth_miRNA-766-MIR-466H
+UGUGUGCAUGUGCUUGUGUGUA
+....(((((........))))) ( -1.50)
+>synth_miRNA-767-MIR-467A*-467D*
+AUAUACAUACACACACCUACAC
+...................... (  0.00)
+>synth_miRNA-768-MIR-467A-467B
+UAAGUGCCUGCAUGUAUAUGCG
+.........((((....)))). ( -2.80)
+>synth_miRNA-769-MIR-467B*
+AUAUACAUACACACACCAACAC
+...................... (  0.00)
+>synth_miRNA-770-MIR-467C
+UAAGUGCGUGCAUGUAUAUGUG
+...((((......))))..... ( -1.50)
+>synth_miRNA-771-MIR-467D
+UAAGUGCGCGCAUGUAUAUGCG
+........(((((....))))) ( -3.90)
+>synth_miRNA-772-MIR-467E
+AUAAGUGUGAGCAUGUAUAUGU
+..........((((....)))) ( -0.20)
+>synth_miRNA-773-MIR-468
+UAUGACUGAUGUGCGUGUGUCUG
+((((((....)).))))...... ( -1.20)
+>synth_miRNA-774-MIR-469
+UGCCUCUUUCAUUGAUCUUGGUGUCC
+.(((...............))).... ( -1.30)
+>synth_miRNA-775-MIR-470
+UUCUUGGACUGGCACUGGUGAGU
+.......(((.((....)).))) ( -3.20)
+>synth_miRNA-776-MIR-471
+UACGUAGUAUAGUGCUUUUCAC
+...(((......)))....... ( -0.60)
+>synth_miRNA-777-MIR-483
+UCACUCCUCCCCUCCCGUCUU
+..................... (  0.00)
+>synth_miRNA-778-MIR-483-5P
+AAGACGGGAGAAGAGAAGGGAG
+...................... (  0.00)
+>synth_miRNA-779-MIR-488*
+CCCAGAUAAUAGCACUCUCAA
+..................... (  0.00)
+>synth_miRNA-780-MIR-488
+UUGAAAGGCUGUUUCUUGGUCU
+.....((((((.....)))))) ( -3.00)
+>synth_miRNA-781-MIR-489
+AAUGACACCACAUAUAUGGCAGC
+.......(((......))).... ( -1.20)
+>synth_miRNA-782-MIR-493
+UGAAGGUCCUACUGUGUGCCAGG
+....(((.(......).)))... ( -2.80)
+>synth_miRNA-783-MIR-500
+AAUGCACCUGGGCAAGGGUUCA
+..((.((((......)))).)) ( -3.80)
+>synth_miRNA-784-MIR-501
+AAUGCACCCGGGCAAGGAUUUG
+..(((......)))........ ( -1.80)
+>synth_miRNA-785-MIR-501-5P
+AAUCCUUUGUCCCUGGGUGAAA
+.((((.........)))).... ( -2.50)
+>synth_miRNA-786-MIR-503
+UAGCAGCGGGAACAGUACUGCAG
+.....((((........)))).. ( -5.40)
+>synth_miRNA-787-MIR-505
+CGUCAACACUUGCUGGUUUUCU
+...................... (  0.00)
+>synth_miRNA-788-MIR-509
+UGAUUGACAUUUCUGUAAUGG
+.......((((.....)))). ( -0.90)
+>synth_miRNA-789-MIR-509-5P
+UACUCCAGAAUGUGGCAAUCAU
+....(((.....)))....... ( -1.30)
+>synth_miRNA-790-MIR-511
+AUGCCUUUUGCUCUGCACUCA
+........(((...))).... ( -0.30)
+>synth_miRNA-791-MIR-540
+AGGUCAGAGGUCGAUCCUGG
+.......(((.....))).. ( -2.00)
+>synth_miRNA-792-MIR-540-5P
+CAAGGGUCACCCUCUGACUCUGU
+..(((((((.....))))))).. ( -7.50)
+>synth_miRNA-793-MIR-541
+AAGGGAUUCUGAUGUUGGUCACACU
+.........((((....)))).... ( -1.60)
+>synth_miRNA-794-MIR-544
+AUUCUGCAUUUUUAGCAAGCUC
+....(((.......)))..... ( -1.50)
+>synth_miRNA-795-MIR-546
+AUGGUGGCACGGAGUC
+................ (  0.00)
+>synth_miRNA-796-MIR-547
+CUUGGUACAUCUUUGAGUGAGU
+((((.(.((....))).)))). ( -0.70)
+>synth_miRNA-797-MIR-582
+CCUGUUGAACAACUGAACCCAA
+...................... (  0.00)
+>synth_miRNA-798-MIR-582-5P
+UACAGUUGUUCAACCAGUUACU
+...................... (  0.00)
+>synth_miRNA-799-MIR-598
+UACGUCAUCGUCGUCAUCGUUA
+.(((....)))........... ( -0.60)
+>synth_miRNA-800-MIR-654-5P
+UGGUAAGCUGCAGAACAUGUGU
+.........(((.....))).. ( -0.40)
+>synth_miRNA-801-MIR-665
+ACCAGGAGGCUGAGGUCCCU
+...(((.(((....)))))) ( -4.10)
+>synth_miRNA-802-MIR-666
+GGCUGCAGCGUGAUCGCCUGCU
+....((((((....)).)))). ( -6.80)
+>synth_miRNA-803-MIR-666-5P
+AGCGGGCACAGCUGUGAGAGCC
+.((...(((....)))...)). ( -4.40)
+>synth_miRNA-804-MIR-667
+UGACACCUGCCACCCAGCCCAAG
+....................... (  0.00)
+>synth_miRNA-805-MIR-669A
+AGUUGUGUGUGCAUGUUCAUGU
+..........((((....)))) ( -0.10)
+>synth_miRNA-806-MIR-669B
+AGUUUUGUGUGCAUGUGCAUGU
+........((((....)))).. ( -3.10)
+>synth_miRNA-807-MIR-669C
+AUAGUUGUGUGUGGAUGUGUGU
+...................... (  0.00)
+>synth_miRNA-808-MIR-670
+AUCCCUGAGUGUAUGUGGUGAA
+.((((...........)).)). ( -1.00)
+>synth_miRNA-809-MIR-672
+UGAGGUUGGUGUACUGUGUGUGA
+....................... (  0.00)
+>synth_miRNA-810-MIR-673
+UCCGGGGCUGAGUUCUGUGCACC
+..((((((...))))))...... ( -3.60)
+>synth_miRNA-811-MIR-673-5P
+CUCACAGCUCUGGUCCUUGGAG
+.......(((((.....))))) ( -1.30)
+>synth_miRNA-812-MIR-674*
+CACAGCUCCCAUCUCAGAACAA
+...................... (  0.00)
+>synth_miRNA-813-MIR-674
+GCACUGAGAUGGGAGUGGUGUA
+.((((........))))..... ( -3.80)
+>synth_miRNA-814-MIR-675
+CUGUAUGCCCUAACCGCUCAGU
+(((...((.......)).))). ( -1.00)
+>synth_miRNA-815-MIR-675-5P
+UGGUGCGGAAAGGGCCCACAGU
+(((.((.......))))).... ( -4.70)
+>synth_miRNA-816-MIR-676*
+ACUCUACAACCUUAGGACUUGC
+..((((......))))...... ( -0.20)
+>synth_miRNA-817-MIR-676
+CCGUCCUGAGGUUGUUGAGCU
+.........((((....)))) ( -0.90)
+>synth_miRNA-818-MIR-677
+UUCAGUGAUGAUUAGCUUCUGA
+.((((.............)))) ( -1.10)
+>synth_miRNA-819-MIR-678
+GUCUCGGUGCAAGGACUGGAGG
+.((.((((......)))))).. ( -4.00)
+>synth_miRNA-820-MIR-679
+GGACUGUGAGGUGACUCUUGGU
+..(((..(((....)))..))) ( -4.40)
+>synth_miRNA-821-MIR-680
+GGGCAUCUGCUGACAUGGGGG
+.(((....))).......... ( -1.70)
+>synth_miRNA-822-MIR-681
+CAGCCUCGCUGGCAGGCAGCU
+..(((((....).)))).... ( -5.70)
+>synth_miRNA-823-MIR-682
+CUGCAGUCACAGUGAAGUCUG
+...(((.(........).))) ( -1.00)
+>synth_miRNA-824-MIR-683
+CCUGCUGUAAGCUGUGUCCUC
+...(((...)))......... ( -0.80)
+>synth_miRNA-825-MIR-684
+AGUUUUCCCUUCAAGUCAA
+................... (  0.00)
+>synth_miRNA-826-MIR-685
+UCAAUGGCUGAGGUGAGGCAC
+....((.((......)).)). ( -2.70)
+>synth_miRNA-827-MIR-686
+AUUGCUUCCCAGACGGUGAAGA
+....((((((....)).)))). ( -5.40)
+>synth_miRNA-828-MIR-687
+CUAUCCUGGAAUGCAGCAAUGA
+.....(((.....)))...... ( -1.40)
+>synth_miRNA-829-MIR-688
+UCGCAGGCGACUACUUAUUC
+(((....))).......... ( -0.30)
+>synth_miRNA-830-MIR-689
+CGUCCCCGCUCGGCGGGGUCC
+.(.((((((...)))))).). (-12.00)
+>synth_miRNA-831-MIR-690
+AAAGGCUAGGCUCACAACCAAA
+...(((...))).......... ( -0.30)
+>synth_miRNA-832-MIR-691
+AUUCCUGAAGAGAGGCAGAAAA
+...(((......)))....... ( -2.00)
+>synth_miRNA-833-MIR-692
+AUCUCUUUGAGCGCCUCACUC
+.......((((...))))... ( -1.40)
+>synth_miRNA-834-MIR-693
+GCAGCUUUCAGAUGUGGCUGUAA
+((((((.........)))))).. ( -6.90)
+>synth_miRNA-835-MIR-693-5P
+CAGCCACAUCCGAAAGUUUUC
+..................... (  0.00)
+>synth_miRNA-836-MIR-694
+CUGAAAAUGUUGCCUGAAG
+................... (  0.00)
+>synth_miRNA-837-MIR-695
+AGAUUGGGCAUAGGUGACUGAA
+...................... (  0.00)
+>synth_miRNA-838-MIR-696
+GCGUGUGCUUGCUGUGGG
+(((......)))...... ( -1.60)
+>synth_miRNA-839-MIR-697
+AACAUCCUGGUCCUGUGGAGA
+....(((.........))).. ( -1.70)
+>synth_miRNA-840-MIR-698
+CAUUCUCGUUUCCUUCCCU
+................... (  0.00)
+>synth_miRNA-841-MIR-699
+AGGCAGUGCGACCUGGCUCG
+((.(((......))).)).. ( -3.80)
+>synth_miRNA-842-MIR-700
+CACGCGGGAACCGAGUCCACC
+.((.(((...))).))..... ( -2.70)
+>synth_miRNA-843-MIR-701
+UUAGCCGCUGAAAUAGAUGGA
+....((((((...))).))). ( -1.90)
+>synth_miRNA-844-MIR-702
+UGCCCACCCUUUACCCCGCUC
+..................... (  0.00)
+>synth_miRNA-845-MIR-703
+AAAACCUUCAGAAGGAAAGAA
+....((((...))))...... ( -1.50)
+>synth_miRNA-846-MIR-704
+AGACAUGUGCUCUGCUCCUAG
+..................... (  0.00)
+>synth_miRNA-847-MIR-705
+GGUGGGAGGUGGGGUGGGCA
+.................... (  0.00)
+>synth_miRNA-848-MIR-706
+AGAGAAACCCUGUCUCAAAAAA
+.((((.......))))...... ( -2.70)
+>synth_miRNA-849-MIR-707
+CAGUCAUGCCGCUUGCCUACG
+..................... (  0.00)
+>synth_miRNA-850-MIR-709
+GGAGGCAGAGGCAGGAGGA
+....((....))....... ( -0.60)
+>synth_miRNA-851-MIR-710
+CCAAGUCUUGGGGAGAGUUGAG
+.(((.((((...)))).))).. ( -5.10)
+>synth_miRNA-852-MIR-711
+GGGACCCGGGGAGAGAUGUAAG
+...................... (  0.00)
+>synth_miRNA-853-MIR-712*
+UGCGAGUCACCCCCGGGUGUUG
+.......((((....))))... ( -3.70)
+>synth_miRNA-854-MIR-712
+CUCCUUCACCCGGGCGGUACC
+(.(((......))).)..... ( -1.40)
+>synth_miRNA-855-MIR-713
+UGCACUGAAGGCACACAGC
+(((.......)))...... ( -0.90)
+>synth_miRNA-856-MIR-714
+CGACGAGGGCCGGUCGGUCGC
+((((........))))..... ( -5.20)
+>synth_miRNA-857-MIR-715
+CUCCGUGCACACCCCCGCGUG
+...((((........)))).. ( -2.50)
+>synth_miRNA-858-MIR-717
+CUCAGACAGAGAUACCUUCUCU
+.......(((((.....))))) ( -4.30)
+>synth_miRNA-859-MIR-718
+CUUCCGCCCGGCCGGGUGUCG
+....(((((....)))))... ( -7.40)
+>synth_miRNA-860-MIR-719
+AUCUCGGCUACAGAAAAAUGUU
+.........(((......))). ( -0.10)
+>synth_miRNA-861-MIR-720
+AUCUCGCUGGGGCCUCCA
+..(((....)))...... ( -0.90)
+>synth_miRNA-862-MIR-721
+CAGUGCAAUUAAAAGGGGGAA
+..................... (  0.00)
+>synth_miRNA-863-MIR-741
+UGAGAGAUGCCAUUCUAUGUAGA
+....(((......)))....... ( -0.90)
+>synth_miRNA-864-MIR-742*
+UACUCACAUGGUUGCUAAUCA
+..................... (  0.00)
+>synth_miRNA-865-MIR-742
+GAAAGCCACCAUGCUGGGUAAA
+...(.(((......))).)... ( -2.10)
+>synth_miRNA-866-MIR-743A
+GAAAGACACCAAGCUGAGUAGA
+...................... (  0.00)
+>synth_miRNA-867-MIR-743B
+GAAAGACAUCAUGCUGAAUAGA
+...................... (  0.00)
+>synth_miRNA-868-MIR-743B-5P
+UGUUCAGACUGGUGUCCAUCA
+......(((....)))..... ( -2.10)
+>synth_miRNA-869-MIR-759
+GCAGAGUGCAAACAAUUUUGAC
+.((((((.......)))))).. ( -2.80)
+>synth_miRNA-870-MIR-761
+GCAGCAGGGUGAAACUGACACA
+....(((.......)))..... ( -2.00)
+>synth_miRNA-871-MIR-762
+GGGGCUGGGGCCGGGACAGAGC
+..(((....))).......... ( -3.70)
+>synth_miRNA-872-MIR-763
+CCAGCUGGGAAGAACCAGUGGC
+(((.((((......))))))). ( -8.80)
+>synth_miRNA-873-MIR-764
+AGGAGGCCAUAGUGGCAACUGU
+.((..((((...))))..)).. ( -5.00)
+>synth_miRNA-874-MIR-764-5P
+GGUGCUCACAUGUCCUCCU
+((.((......)))).... ( -1.40)
+>synth_miRNA-875-MIR-770
+CGUGGGCCUGACGUGGAGCUGG
+..(.(((((.....)).))).) ( -2.10)
+>synth_miRNA-876-MIR-770-5P
+AGCACCACGUGUCUGGGCCACG
+.((.(((......))))).... ( -4.10)
+>synth_miRNA-877-MIR-7B
+UGGAAGACUUGUGAUUUUGUUGU
+....................... (  0.00)
+>synth_miRNA-878-MIR-801
+GAUUGCUGUGCGUGCGGAAUCGAC
+((((.((((....))))))))... ( -5.40)
+>synth_miRNA-879-MIR-804
+UGUGAGUUGUUCCUCACCUGGA
+.(((((......)))))..... ( -5.20)
+>synth_miRNA-880-MIR-805
+GAAUUGAUCAGGACAUAGGG
+.................... (  0.00)
+>synth_miRNA-881-MIR-871
+UAUUCAGAUUAGUGCCAGUCAUG
+......((((......))))... ( -0.80)
+>synth_miRNA-882-MIR-872
+AAGGUUACUUGUUAGUUCAGG
+.......((((......)))) ( -1.50)
+>synth_miRNA-883-MIR-875
+CCUGAAAAUACUGAGGCUAUG
+(((.(......).)))..... ( -1.60)
+>synth_miRNA-884-MIR-876
+UAGUGGUUUACAAAGUAAUUCA
+...(((.((((...)))).))) ( -1.10)
+>synth_miRNA-885-MIR-876-5P
+UGGAUUUCUCUGUGAAUCACUA
+..(((((......))))).... ( -1.70)
+>synth_miRNA-886-MIR-878
+GCAUGACACCACACUGGGUAGA
+.......(((......)))... ( -1.80)
+>synth_miRNA-887-MIR-878-5P
+UAUCUAGUUGGAUGUCAAGACA
+(((((....)))))........ ( -1.40)
+>synth_miRNA-888-MIR-879
+AGAGGCUUAUAGCUCUAAGCC
+...((((((......)))))) ( -6.10)
+>synth_miRNA-889-MIR-880
+UACUCCAUCCUCUCUGAGUAGA
+(((((..........))))).. ( -2.60)
+>synth_miRNA-890-MIR-881
+AACUGUGUCUUUUCUGAAUAGA
+..((((.((......)))))). ( -1.80)
+>synth_miRNA-891-MIR-882
+AGGAGAGAGUUAGCGCAUUAGU
+...................... (  0.00)
+>synth_miRNA-892-MIR-883A
+UAACUGCAACAGCUCUCAGUAU
+..((((..........)))).. ( -0.90)
+>synth_miRNA-893-MIR-883B
+UAACUGCAACAUCUCUCAGUAU
+..((((..........)))).. ( -0.90)
+>synth_miRNA-894-MIR-883B-5P
+UACUGAGAAUGGGUAGCAGUCA
+.((((..(.....)..)))).. ( -1.20)
+>synth_miRNA-895-MIR-1*
+GCACAUACUUCUUUAUGUACCC
+..(((((......))))).... ( -1.80)
+>synth_miRNA-896-MIR-1
+UGGAAUGUAAAGAAGUGUGUAU
+...................... (  0.00)
+>synth_miRNA-897-MIR-105
+UCAAGUGCUCAGAUGUCUGUGGU
+......((((((....))).))) ( -2.10)
+>synth_miRNA-898-MIR-190B
+UGAUAUGUUUGAUAUUAGGUU
+((((((.....)))))).... ( -1.90)
+>synth_miRNA-899-MIR-196C
+UAGGUAGUUUCGUGUUGUUGGG
+...................... (  0.00)
+>synth_miRNA-900-MIR-201
+CACUCAGUAAGGCAUUGUUCUU
+...................... (  0.00)
+>synth_miRNA-901-MIR-202
+AGAGGUAUAGCGCAUGGGAAAA
+...................... (  0.00)
+>synth_miRNA-902-MIR-207
+GCUUCUCCUGGCUCUCCUCCCUU
+(((......)))........... ( -2.20)
+>synth_miRNA-903-MIR-20A*
+ACUGCAUUACGAGCACUUACA
+..(((.......)))...... ( -1.20)
+>synth_miRNA-904-MIR-20B*
+ACUGCAGUGUGAGCACUUCUG
+.....((((....)))).... ( -2.00)
+>synth_miRNA-905-MIR-290
+AAAGUGCCGCCAGGUUUUAGGGCC
+.....(((............))). ( -3.20)
+>synth_miRNA-906-MIR-290-5P
+UCUCAAACUAUGGGGGCACUUU
+(((((.....)))))....... ( -2.10)
+>synth_miRNA-907-MIR-291B
+AAAGUGCAUCCAUUUUGUUAGU
+((((((....))))))...... ( -1.20)
+>synth_miRNA-908-MIR-291B-5P
+CAUCAAAGUGGAGGCCCUCUCC
+.........((((.....)))) ( -3.60)
+>synth_miRNA-909-MIR-293
+AGUGCCGCAAAGUUUGCAGUGU
+...((.((((...)))).)).. ( -2.80)
+>synth_miRNA-910-MIR-294
+AAAGUGCUUCCAUUUUGUGUGU
+((((((....))))))...... ( -1.20)
+>synth_miRNA-911-MIR-295
+AAAGUGCUACUACUUUUGGGUGU
+((((((....))))))....... ( -1.30)
+>synth_miRNA-912-MIR-297
+AUGUAUGUGUGCAUGUAUGCAUG
+........(((((....))))). ( -3.80)
+>synth_miRNA-913-MIR-297C
+AUGUAUGUGUGUAUGUACAUGU
+((((((((....)))))))).. ( -4.10)
+>synth_miRNA-914-MIR-327
+CCUUGAGGGGCAUGAGGGU
+((((.(......).)))). ( -3.10)
+>synth_miRNA-915-MIR-333
+GUGGUGUGCUAGUUACUUUU
+..((((.......))))... ( -0.30)
+>synth_miRNA-916-MIR-336
+UCACCCUUCCAUAUCUAGUCU
+..................... (  0.00)
+>synth_miRNA-917-MIR-339
+UGAGCGCCUCGACGACAGAGCCA
+.....(.(((.......))).). ( -1.80)
+>synth_miRNA-918-MIR-343
+UCUCCCUCCGUGUGCCCAGA
+.................... (  0.00)
+>synth_miRNA-919-MIR-344
+UGAUCUAGCCAAAGCCUGACCGU
+.(.((..((....))..)).).. ( -1.20)
+>synth_miRNA-920-MIR-346
+UGUCUGCCUGAGUGCCUGCCUCU
+.........(((.......))). ( -0.70)
+>synth_miRNA-921-MIR-347
+UGUCCCUCUGGGUCGCCCA
+.(.(((...))).)..... ( -3.30)
+>synth_miRNA-922-MIR-349
+CAGCCCUGCUGUCUUAACCUCU
+((((...))))........... ( -2.80)
+>synth_miRNA-923-MIR-352
+AGAGUAGUAGGUUGCAUAGUA
+...(((......)))...... ( -0.10)
+>synth_miRNA-924-MIR-377
+AUCACACAAAGGCAACUUUUGG
+......((((((...)))))). ( -2.80)
+>synth_miRNA-925-MIR-382*
+AAUCAUUCACGGACAACACUU
+..................... (  0.00)
+>synth_miRNA-926-MIR-449B
+AGGCAGUGUGUUGUUAGCUGGC
+.(.((((.........)))).) ( -3.70)
+>synth_miRNA-927-MIR-450A
+UUUUGCGAUGUGUUCCUAAUGU
+...................... (  0.00)
+>synth_miRNA-928-MIR-450B-5P
+UUUUGCAGUAUGUUCCUGUAUA
+...(((((.......))))).. ( -3.00)
+>synth_miRNA-929-MIR-453
+AGGUUGUCCAUAGUGAGUUUGCA
+.((....)).............. ( -0.80)
+>synth_miRNA-930-MIR-463
+UGAUAGACGCCAAUUUGGGUAG
+........(((......))).. ( -2.10)
+>synth_miRNA-931-MIR-465
+GAUCAGUGCCUUUCUGAGUAGA
+..((((.......))))..... ( -2.50)
+>synth_miRNA-932-MIR-465-5P
+UAUUUAGAACGGUGCUGGUGUGA
+....................... (  0.00)
+>synth_miRNA-933-MIR-466B-5P
+UAUGUGUGUGUGUAUGUCCAUG
+...................... (  0.00)
+>synth_miRNA-934-MIR-466C-5P
+UGUGAUGUGUGCAUGUACAUG
+....(((((......))))). ( -1.80)
+>synth_miRNA-935-MIR-489
+AAUGACAUCACAUAUAUGGCAGC
+....................... (  0.00)
+>synth_miRNA-936-MIR-504
+AGACCCUGGUCUGCACUCUGUC
+((((....)))).......... ( -2.30)
+>synth_miRNA-937-MIR-509
+UGAUUGACAUGUCUGCAGUGG
+..((((.((....)))))).. ( -1.20)
+>synth_miRNA-938-MIR-509-5P
+UACUCCAGAAUAUGGCAAUCAU
+....(((.....)))....... ( -1.40)
+>synth_miRNA-939-MIR-532-5P
+CAUGCCUUGAGUGUAGGACUGU
+((..(((.......)))..)). ( -1.90)
+>synth_miRNA-940-MIR-547
+AUUGGUACUUCUUUAAGUGAGA
+.....(((((....)))))... ( -0.90)
+>synth_miRNA-941-MIR-590
+UAAUUUUAUGUAUGAGCUGGU
+..................... (  0.00)
+>synth_miRNA-942-MIR-590-5P
+GAACUUGCUCAUAAAAGUACAG
+..((((........)))).... ( -1.70)
+>synth_miRNA-943-MIR-653
+GUGUUGAAACAUUCUCUACUG
+(((..(((...)))..))).. ( -0.30)
+>synth_miRNA-944-MIR-654
+UAUGUCUGCUGACCGUCACCUU
+...(((....)))......... ( -1.90)
+>synth_miRNA-945-MIR-654-5P
+UGGUGAACUGCAGAACAUGUGU
+.........(((.....))).. ( -0.40)
+>synth_miRNA-946-MIR-664
+UAUUCAUUUACUCCCCAGCCUA
+...................... (  0.00)
+>synth_miRNA-947-MIR-673
+UCCGGGACUGAGUUCUGUGCACC
+..((((((...))))))...... ( -4.10)
+>synth_miRNA-948-MIR-673-5P
+CUCACAGCUCCGGUCCUUGGAG
+.......(((((.....))))) ( -4.20)
+>synth_miRNA-949-MIR-741
+UGAAAGAUGCCACGCUAUGUAGA
+....................... (  0.00)
+>synth_miRNA-950-MIR-742
+GAAAGCCACCAUGUUGGGUAAA
+...(.(((......))).)... ( -2.10)
+>synth_miRNA-951-MIR-743A
+GAAAGACGCCAAACUGGGUAGA
+.......(((......)))... ( -2.10)
+>synth_miRNA-952-MIR-743B
+GAAAGACACCAUACUGAAUAGA
+...................... (  0.00)
+>synth_miRNA-953-MIR-871
+UAUUCAGAUUGGUGCCGGUCACA
+......(((((....)))))... ( -3.10)
+>synth_miRNA-954-MIR-875
+CCUGAAAACACUGAGGCUGCG
+(((.(......).)))..... ( -1.60)
+>synth_miRNA-955-MIR-876
+UGGUGGUUUGCAAAGUAAUUCA
+...(((.((((...)))).))) ( -1.10)
+>synth_miRNA-956-MIR-876-5P
+UGGAUUUCUCUGUGAAUCACCA
+..(((((......))))).... ( -1.70)
+>synth_miRNA-957-MIR-878
+GCAUGACACCAUACUGGGUAGA
+.......(((......)))... ( -1.80)
+>synth_miRNA-958-MIR-878-5P
+UAUCUAGUUGGCUGUCAGUCA
+........(((((...))))) ( -2.00)
+>synth_miRNA-959-MIR-880
+UACUCCAUUCAUUCUGAGUAGA
+(((((..........))))).. ( -2.60)
+>synth_miRNA-960-MIR-881
+AACUGUGGCAUUUCUGAAUAGA
+..((((...........)))). ( -0.50)
+>synth_miRNA-961-MIR-882A
+AUGGGAAUGUUAGAGCAUUAGC
+.....(((((....)))))... ( -1.80)
+>synth_miRNA-962-MIR-882B
+AUGGCAAUGUUAGAGCAUUAGC
+...(((((((....))))).)) ( -2.90)
