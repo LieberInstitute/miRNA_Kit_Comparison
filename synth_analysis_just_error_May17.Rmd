@@ -761,7 +761,7 @@ ggplot(data = melt(GCplot), aes(x=GC, y = value, fill = variable)) + geom_jitter
 #absolute error without direction of GC
 
 ```{r}
-table(seqs$GC)
+#table(seqs$GC)
 GC <-data.frame(round(seqs$GC, digits = 1))
 abs_errorGC<-cbind(GC, error_synth)
 colnames(abs_errorGC)[1]<-c("GC")
@@ -863,7 +863,7 @@ boxplot(abs(sweep(miRge_synth, 2, colMeans(miRge_synth))), ylim=c(0,200000))
 
 Fold_ing_data
 ```{r}
-folding <-readLines("/Users/carriewright/Documents/miRNA seq Projects/fastas_and_foldinginfo/synth_fold_output.txt") #read in the file from RNA fold
+#folding <-readLines("/Users/carriewright/Documents/miRNA seq Projects/fastas_and_foldinginfo/synth_fold_output.txt") #read in the file from RNA fold
 folding_G <- folding[seq(3, length(folding), 3)] #grab only every thrid line
 folding_Gs <-vapply(strsplit(folding_G," "), `[`, 3, FUN.VALUE=character(1))
 folding_Gs <-gsub(")", "", folding_Gs)
