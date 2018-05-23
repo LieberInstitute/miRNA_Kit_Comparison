@@ -19,7 +19,7 @@ library("Biostrings")
 #s = readDNAStringSet("/home/carrie/synthetic_miRNA/synthetic_allspecies.fa")#on SRV2
 s = readDNAStringSet(here("synthetic_allspecies.fa"))
 
-s = readDNAStringSet("/Users//carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/synthetic_allspecies.fa")
+#s = readDNAStringSet("/Users//carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/synthetic_allspecies.fa")
 s<- unique(s)
 newnames <-(gsub(" ", "", names(s)))
 newnames<-sapply(strsplit(names(s), ":"), `[`, 1) #just to grab the first object
