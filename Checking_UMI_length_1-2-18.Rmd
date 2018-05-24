@@ -1,0 +1,230 @@
+---
+title: "Checking_UMI_length_with_synthetic_sequences"
+output: html_notebook
+---
+
+
+```{r, eval=FALSE}
+test.data<-c("NNNNCARRIEANDRUUDNNNNSTUFF", "NNNNNCARRIEANDRUUDNNNNSTUFF", "NNNCARRIEANDRUUDNNNNSTUFF", "NNNNCARRIEANDRUUDNNNNSTUFF")
+test.data
+grep("^.NNNN*", test.data, value = FALSE) ### it turns out we can use the * in R... in grep
+```
+```{r}
+##USing this as help: http://girke.bioinformatics.ucr.edu/GEN242/mydoc_Rsequences_04.html
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, include = FALSE}
+#Now let's load the synthetic data for the fastqs that are untrimmed but the lanes are combined for each kit
+library("Biostrings")
+```
+
+###Other Things I Tried
+```{r, include=FALSE}
+for (items in seq_1) {
+  print(items %in% test.data2)
+}
+
+perfect_match <- grep("^....TACT....TGC", test.data2)
+any_match <- grep("CCTGTACTGAGCTGCCCCGAGTGGAATTCTCGGGTGCCAAGGAACTCCAGT", test.data2)
+
+d <- matrix(nrow=20000, ncol=3)
+
+
+for (i in seq_1$head.sequences.) {
+  print(do.call("rbind", sapply(seq_2, FUN = function(i) c(grep(as.character(i), seq_2$head.sequences.)))))
+}
+
+system.time({d <- matrix(nrow=20000, ncol=3) 
++ for (i in 1:20000) { d[i,] <- c(i+i, i*i, i/1)}})
+
+any_match<-do.call("rbind", sapply(test.data[1:2], FUN = function(i) c(paste("test", i)), simplify = FALSE))
+any_match<-do.call("rbind", sapply(test.data[1:2], FUN = function(i) c(grep("1", i)), simplify = FALSE))
+any_match<-do.call("rbind", sapply(test.data4, FUN = function(i) for(each_sequence in test.data3) {print(grep(each_sequence,i))}, simplify = FALSE))
+any_match<-do.call("rbind", sapply(test.data[1:2], FUN = function(i) for(i in test.data3) {(grep(i, test.data))}, simplify = FALSE))
+
+
+
+#this is kinda working... but it is only the output for the second pass through each sequence for test.data3....hmmmmmmmm
+theresults <-list()
+do.call("cbind", sapply(test.data4, FUN = function(i) for(each_sequence in test.data3) {theresults[[each_sequence]]<<-(grep(each_sequence,i))}, simplify = FALSE))
+
+
+
+
+seq_results<-list()
+overallresults <-list(seq_results)
+do.call("rbind", sapply(test.data4, FUN = function(i) for(each_sequence in test.data3) {
+  seq_results[[each_sequence]]<<-(grep(each_sequence,i))}, simplify = FALSE))
+
+
+seq_results<-list()
+for(each_sequence in test.data3) {
+  seq_results[[each_sequence]]<<-(grep(each_sequence,i))}
+
+
+
+
+sapply(test.data4, FUN = function(i) for(each_sequence in test.data3) {print(grep(each_sequence,i))}, simplify = FALSE)
+sapply(testdata, FUN = function(i) for(each_sequence in testseq) {print(grep(each_sequence,i))}, simplify = FALSE)
+
+```
+
+
+
+###Test Particular Examples
+```{r, eval = FALSE}
+test4<- c("^T..T", "^LAC")
+test2 <- c("TACT", "LACC", "TLAC")
+for(i in test4) {print(length(grep(i, test2)))}
+
+
+test4<- c("^T..T", "^LAC")
+test2 <- c("TACT", "TLAC")
+for(i in test4) {print(length(grep(i, test2)))}
+
+test4<- c("^T..T", "^LAC")
+test2 <- c("TACT", "TLAC")
+for(i in test4) {print(length(grep(i, test2)))}
+```
+
+### Test on Fake Data
+```{r}
+test4<- c("^T..T", "L..C")
+test2 <- c("TACT", "LACC", "LTCC")
+for(i in test4) {print(length(grep(i, test2)))}# this works now but we will need to capture the output when it is too long - will use capture.output
+
+
+test4<- c("...T", "...C", "..CC")
+test2 <- c("TACT", "LACC")
+for(i in test4) {print(length(grep(i, test2)))}# this works now but we will need to capture the output when it is too long - will use capture.output
+# prints the output for the length of the sequences to look for  found in the test data
+
+#What if I try to include special characters around the wildcard "i"
+
+test4<- c("T", "C")
+test2 <- c("TACT", "LACC")
+for(i in test4) {print(length(grep("^...i", test2)))}
+
+capture.output(for(i in test4) {print(length(grep(i, test2)))}, file = "/Users/carriewright/Desktop/UMI_match_test.txt")
+length
+```
+
+### Test with data like ours for ideal matches
+```{r, eval = FALSE}
+test4<- c("T", "D")
+test2 <- c("TACCT", "LACDNNNTGG", "LACDNNTGG", "LACDNNNAGG", "CPPDNNNTGG")
+
+test5<-paste0("^...", test4)
+test6<-paste0("^...", test4, "...TGG")
+
+for(i in test4) {print(length(grep(paste0(i, "^..."), test2)))}#this doesn't work
+for(i in test4) {print(grep(paste0(i, "^..."), test2))}# this doesn't work
+for(i in test5) {print(length(grep(i, test2)))}
+for(i in test6) {print(length(grep(i, test2)))}
+
+capture.output(for(i in test6) {print(length(grep(i, test2)))})
+
+```
+###checking loading the data
+```{r}
+#Illumina_raw = readDNAStringSet("/Users/carriewright/Desktop/Synthetic Data fastqs/Illumina4_acc_HCC73BBXX_S48_R1_001.fastq.gz", format = "fastq")
+#Illumina_df <- data.frame(Illumina_raw)
+Ill<-Illumina_raw[1:100,]
+Illdf<-data.frame(seqs =Illumina_df[1:100,])
+Ill
+Illdf
+#system.time(length(grep("AAGGAACTCCAGT", Illdf$seqs)))
+#system.time(length(grep("AAGGAACTCCAGT", Ill)))
+
+tic(grepl("AAGGAACTCCAGT", Illdf$seqs, perl = TRUE))
+toc()
+tic(grepl("AAGGAACTCCAGT", Ill, perl = TRUE))
+toc()
+tic(grep("AAGGAACTCCAGT", Ill))
+toc()
+
+tic(length(which(grepl("^ACCTAGTGTTAGT", Illumina_df$Illumina_raw, perl = TRUE)=="TRUE"))) # 8 seconds
+toc()
+tic(length(which(grepl("^ACCTAGTGTTAGT", Illumina_raw, perl= TRUE)=="TRUE"))) # 31 seconds... much slower
+toc()
+
+Illdf[grepl("AAGGAACTCCAGT", Illdf$seqs),]
+Illdf[grepl("^ACCTAGTGTTAGT", Illdf$seqs),]
+
+Illdf2<-head(Illdf)
+Illdf2
+Illdf[grepl("^.CT", Illdf$seqs),]
+
+
+```
+
+###Load the data - takes awhile!!!
+```{r}
+ #where it actually is on the server "/media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/Clontech4_acc_HCC73BBXX_S23_R1_001.fastq.gz")
+Illumina_raw = readDNAStringSet("/Users/carriewright/Desktop/Synthetic Data fastqs/Illumina4_acc_HCC73BBXX_S48_R1_001.fastq.gz", format = "fastq")
+NEB_raw = readDNAStringSet("/Users/carriewright/Desktop/Synthetic Data fastqs/NEB4_acc_HCC73BBXX_S44_R1_001.fastq.gz", format = "fastq")
+NEXTflex_raw = data.frame(readDNAStringSet("/Users/carriewright/Desktop/Synthetic Data fastqs/NEXTFlex4_acc_HCC73BBXX_S52_R1_001.fastq.gz", format = "fastq"))
+Clontech_raw = data.frame(readDNAStringSet("/Users/carriewright/Desktop/Synthetic Data fastqs/Clontech4_acc_HCC73BBXX_S23_R1_001.fastq.gz", format = "fastq"))
+
+Illumina_df <- data.frame(seqs =Illumina_raw)
+NEB_df <- data.frame(seqs =NEB_raw)
+NEXTflex_df <- data.frame(seqs =NEXTflex_raw)
+Clontech_df <- data.frame(seqs =Clontech_raw)
+
+save(Illumina_df, File = "/Users/carriewright//Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/AccurData/Illumina_df.rda")
+save(NEB_df, File = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/AccurData/NEB.rda")
+save(NEXTflex_df, File = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/AccurData/NEXTflex.rda")
+save(Clontech_df, File = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/AccurData/Clontech.rda")
+
+Synth_seqs = readDNAStringSet("/Users/carriewright/Desktop/Synthetic Data fastqs/synthetic_all_species.unique.fasta", format = "fasta")
+max(width(Synth_seqs))#28
+min(width(Synth_seqs))#16 is min
+
+
+load("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/AccurData/Illumina.rda")
+
+Synth_names_csv <- read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/mapped.csv", header = TRUE, sep = ",")
+Synth_names <- data.frame(name =Synth_names_csv$mRNA, sequence = rownames(Synth_names_csv))
+Synth_seqs <-data.frame(Synth_seqs)
+synthtest <- data.frame(head(Synth_seqs))
+
+fastqtest <- data.frame(head(Illumina))
+
+```
+
+###Functions
+
+```{r, eval = FALSE}
+Any_match_of_seq<-function(synth_sequences, actual_data)
+for(i in synth_sequences) {print(length(grep(i, actual_data)))}
+
+syth_sequences_ideal <- paste("^....", Synth_seqs, "....TGG")
+
+Ideal_match_of_seq_NEXTflex<-function(synth_sequences_ideal, actual_data)
+for(i in synth_sequences_ideal) {print(length(grep(i, actual_data)))}
+
+syth_sequences_ideal_ill <- paste("^", Synth_seqs, "TGG")
+Ideal_match_of_seq_Illumina<-function(synth_sequences_ideal_ill, actual_data)
+for(i in synth_sequences_ideal) {print(length(grep(i, actual_data)))}
+
+###todo Ideal match-- need to specify grep more -- need seq to look like this: start of the line ^....syth_seq....NEED to know the sequence after which is the rest of the 3 prime adapter - this is the adapter sequence TGGAATTCTCGGGTGCCAAGG- but the synth sequences vary by length- clould do TGG like cutadapt - requires at least 3 bases of the adapter be there
+#for(i in synth_sequences) {print(length(grep(^....i....TGG, actual_data)))} depends on the max and min length of the synth seqs
+
+```
+##Test of our functions and on actual data
+```{r}
+Any_match_of_seq(synth_sequences = test6, actual_data = test2)
+Any_match_of_seq(synth_sequences = synthtest$head.Synth_seqs., actual_data = fastqtest$head.Illumina.)
+Any_match_of_seq(synth_sequences = synthtest$head.Synth_seqs., actual_data = Illumina$)
+synthtest
+fastqtest
+
+```
+##Actual Analysis
+```{r, eval=FALSE}
+capture.output(Any_match_of_seq(synth_sequences = Synth_seqs$Synth_seqs, actual_data = NEXTflex$readDNAStringSet...Users.carriewright.Desktop.NEXTFlex4_acc_HCC73BBXX_S52_R1_001.fastq.gz...), file = "/Users/carriewright/Desktop/any_match_NEXTflex.txt")
+syth_sequences_ideal_NEXTflex <- data.frame(idealseqs =paste0("^....", Synth_seqs$Synth_seqs, "....TGG"))
+capture.output(Ideal_match_of_seq_NEXTflex(synth_sequences_ideal = syth_sequences_ideal_NEXTflex$idealseqs, actual_data = NEXTflex$readDNAStringSet...Users.carriewright.Desktop.NEXTFlex4_acc_HCC73BBXX_S52_R1_001.fastq.gz...), file ="/Users/carriewright/Desktop/Ideal_match_NEXTflex.txt")
+
+```
+
