@@ -98,7 +98,7 @@ library(here)
 #trying the other data out###################
 Pheno<- read.table(here("IsoPheno.txt"), header = T)
 miR_counts <- read.table(here("Repro_deduped_and_five_double_cont/miR.Counts.csv"),header = T, sep = ",")
-miR_counts <-miR_counts[-grep("fq.", colnames(miR_counts))]# to remove extra files.....
+#miR_counts <-miR_counts[-grep("fq.", colnames(miR_counts))]# to remove extra files.....
 #miR_counts <-miR_counts[-grep("acc", colnames(miR_counts))]# to remove second batch of 1000ng files.....
 miRNAtotal <-t(miR_counts[1,])
 miRNAtotal <- miRNAtotal[-1,]
@@ -849,7 +849,7 @@ miRNA_det_NEXTflex <-miRNA_det_data
 cor_result_final
 names(miRNA_det_NEXTflex)
 
-get_miRNAS_det(data = split_kit_thresh$NEXTflex_deduped)
+get_miRNAS_det(data = split_kit_thresh$Deduped)
 miRNA_det_NEXTflex_deduped <-miRNA_det_data
 cor_result_final
 names(miRNA_det_NEXTflex_deduped)
@@ -1042,8 +1042,8 @@ Names_thresh <-list()
 get_names_thresh<-function(data) {
 Names_thresh<<-intersect(intersect(intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]]))), rownames(as.data.frame(data[[5]]))), rownames(as.data.frame(data[[6]])))}
 
-kits <-names(split_kit_thresh$NEXTflex_deduped)
-tested_data <- split_kit_thresh$NEXTflex_deduped
+kits <-names(split_kit_thresh$Deduped)
+tested_data <- split_kit_thresh$Deduped
 test_names <- data.frame(combn(kits, m= 2))
 
 get_names_thresh(data = tested_data)
