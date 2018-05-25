@@ -10,10 +10,12 @@ output: html_document
 ```{r, echo=TRUE}
 #library(pheatmap)
 library(Biostrings)
-mature_miRNAs<-Biostrings::readRNAStringSet(("/Users/carriewright/Documents/miRNA seq Projects/mature_hsa.fa"))
+mature_miRNAs<-Biostrings::readRNAStringSet(here("mature.fa"))
+#mature_miRNAs<-Biostrings::readRNAStringSet(("/Users/carriewright/Documents/miRNA seq Projects/mature_hsa.fa"))
+mature_miRNAs<-mature_miRNAs[grep("hsa", names(mature_miRNAs)),]
 miRNAs<-as.data.frame(mature_miRNAs)
 lengths<-stringr::str_length(miRNAs$x)
-
+save(lengths, file = "/Users/carriewright/Documents/miRNA seq Projects/Kit_comparison_May22/miRNA_hsa_lengths.rda")
 ```
 
 ```{r}
