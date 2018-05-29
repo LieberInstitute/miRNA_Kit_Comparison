@@ -1,0 +1,18 @@
+---
+title: "Percentage_May22"
+author: "Carrie Wright"
+date: "May 25, 2018"
+output: html_document
+---
+
+```{r}
+library("here")
+library("ggplot2")
+library("reshape2")
+percentages <- read.table(here("Percentages_other_RNAs"), sep = "\t", header = TRUE)
+percent<-data.frame(t(percentages))
+RNAs<-percentages[-grep("File", colnames(percentages))]
+mRNA<-melt(RNAs, )
+
+```
+
