@@ -411,9 +411,9 @@ plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from th
   )
 
 library(ggrepel)
-#plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +geom_label_repel(
-#    position = pos
-#  ) +geom_text(aes(x=variable, label=ifelse(value > 15,as.character(miRNA),'')),vjust = 1)
+plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +geom_label_repel(
+    position = pos
+  ) +geom_text(aes(x=variable, label=if_else(value > 15,as.character(miRNA),'')),vjust = 1)
 
 ```
 

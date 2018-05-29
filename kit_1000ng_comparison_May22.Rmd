@@ -9,7 +9,8 @@ output: html_document
 library(edgeR)
 library(here)
 
-Pheno<- read.table(here("Brain_samples_missingClontech_batch2/Pheno_brain_full_May22.txt"), header = T)
+#Pheno<- read.table(here("Brain_samples_missingClontech_batch2/Pheno_brain_full_May22.txt"), header = T)
+Pheno<- read.table(here("Brain_samples_missingClontech_batch2/Pheno_2.csv"), header = T, sep = ",")
 #Pheno<- read.table(here("Brain_liberal_trimmed_Ns_kept_Data/Pheno.csv"), header = T, sep = ",")
 Pheno1000 <- Pheno[which(Pheno$startingAmt =="1000"),]
 
@@ -36,7 +37,10 @@ Pheno1000$File <- colnames(miR_1000_raw)
 identical(as.character(Pheno1000$File), colnames(miR_1000_raw)) ###Check that these match 
 
 miR_RPMs<- as.matrix(cpm(miR_1000_raw)) #from the edgeR package
-load("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/UnionInfo.rda")
+load(here("miRNA_hsa_GC.rda"))#this does not appear to be in the same order as miR_1000_raw... think this is in part because they have different lengths
+load(here("miRNA_hsa_lengths.rda"))
+load(here("UnionInfo.rda"))
+#load("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/UnionInfo.rda")
 ```
 #Thresholding with Threshold-seq
 

@@ -1,22 +1,9 @@
 File,Kit,Batch,startingAmt,TriplicateGroup,Triplicate
- mm0_acc_Clontech_trimmed.1_R1.fq,Clontech,Accur,1000,Clontech1000_Batch2,1
- mm0_acc_Clontech_trimmed.2_R1.fq,Clontech,Accur,1000,Clontech1000_Batch2,2
- mm0_acc_Clontech_trimmed.3_R1.fq,Clontech,Accur,1000,Clontech1000_Batch2,3
- mm0_acc_Illumina_trimmed.1_R1.fq,Illumina,Accur,1000,Illumina1000_Batch2,1
- mm0_acc_Illumina_trimmed.2_R1.fq,Illumina,Accur,1000,Illumina1000_Batch2,2
- mm0_acc_Illumina_trimmed.3_R1.fq,Illumina,Accur,1000,Illumina1000_Batch2,3
- mm0_acc_NEB_trimmed.1_R1.fq,NEB,Accur,1000,NEB1000_Batch2,1
- mm0_acc_NEB_trimmed.2_R1.fq,NEB,Accur,1000,NEB1000_Batch2,2
- mm0_acc_NEB_trimmed.3_R1.fq,NEB,Accur,1000,NEB1000_Batch2,3
- mm0_acc_NEXT_trimmed.1_R1.fq,NEXTflex,Accur,1000,NEXTflex1000_Batch2,1
- mm0_acc_NEXT_trimmed.2_R1.fq,NEXTflex,Accur,1000,NEXTflex1000_Batch2,2
- mm0_acc_NEXT_trimmed.3_R1.fq,NEXTflex,Accur,1000,NEXTflex1000_Batch2,3
- directional_deduped_lib_align_seed15_acc_1_bam2fastq.fq,Deduped,Accur,1000,Deduped1000_Batch2,1
- directional_deduped_lib_align_seed15_acc_2_bam2fastq.fq,Deduped,Accur,1000,Deduped1000_Batch2,2
- directional_deduped_lib_align_seed15_acc_3_bam2fastq.fq,Deduped,Accur,1000,Deduped1000_Batch2,3
- Fivepercent_acc_1.fq,Fivepercent,Accur,1000,Fivepercent1000_Batch2,1
- Fivepercent_acc_2.fq,Fivepercent,Accur,1000,Fivepercent1000_Batch2,2
- Fivepercent_acc_3.fq,Fivepercent,Accur,1000,Fivepercent1000_Batch2,3
+Illumina_trimmed.11.fq,Illumina,Accur,1000,Illumina1000_Batch2,1
+NEB_trimmed.11.fq,NEB,Accur,1000,NEB1000_Batch2,1
+NEXT_trimmed.11.fq,NEXTflex,Accur,1000,NEXTflex1000_Batch2,1
+Deduped_lib_align_seed15_acc_11_bam2fastq.fq,Deduped,Accur,1000,Deduped1000_Batch2,1
+ Five_double_acc_11.fq,Fivepercent,Accur,1000,Fivepercent1000_Batch2,1
  mm0_Clontech_trimmed.1_R1.fq,Clontech,Repro,100,Clontech100,1
  mm0_Clontech_trimmed.2_R1.fq,Clontech,Repro,100,Clontech100,2
  mm0_Clontech_trimmed.3_R1.fq,Clontech,Repro,100,Clontech100,3
@@ -95,9 +82,6 @@ File,Kit,Batch,startingAmt,TriplicateGroup,Triplicate
  mapped_NEXT_16.fq,Double,Repro,2000,Double2000,1
  mapped_NEXT_17.fq,Double,Repro,2000,Double2000,2
  mapped_NEXT_18.fq,Double,Repro,2000,Double2000,3
- directional_deduped_lib_align_seed15_acc_1_bam2fastq.fq,Deduped,Accur,1000,Deduped1000_Batch2,1
- directional_deduped_lib_align_seed15_acc_2_bam2fastq.fq,Deduped,Accur,1000,Deduped1000_Batch2,2
- directional_deduped_lib_align_seed15_acc_3_bam2fastq.fq,Deduped,Accur,1000,Deduped1000_Batch2,3
  directional_deduped_lib_align_seed15_1_bam2fastq.fq,Deduped,Repro,100,Deduped100,1
  directional_deduped_lib_align_seed15_2_bam2fastq.fq,Deduped,Repro,100,Deduped100,2
  directional_deduped_lib_align_seed15_3_bam2fastq.fq,Deduped,Repro,100,Deduped100,3
@@ -116,24 +100,21 @@ File,Kit,Batch,startingAmt,TriplicateGroup,Triplicate
  directional_deduped_lib_align_seed15_16_bam2fastq.fq,Deduped,Repro,2000,Deduped2000,1
  directional_deduped_lib_align_seed15_17_bam2fastq.fq,Deduped,Repro,2000,Deduped2000,2
  directional_deduped_lib_align_seed15_18_bam2fastq.fq,Deduped,Repro,2000,Deduped2000,3
- Fivepercent_acc_1.fq,Fivepercent,Accur,1000,Fivepercent1000_Batch2,1
- Fivepercent_acc_2.fq,Fivepercent,Accur,1000,Fivepercent1000_Batch2,2
- Fivepercent_acc_3.fq,Fivepercent,Accur,1000,Fivepercent1000_Batch2,3
- Fivepercent_1.fq,Fivepercent,Repro,100,Fivepercent100,1
- Fivepercent_2.fq,Fivepercent,Repro,100,Fivepercent100,2
- Fivepercent_3.fq,Fivepercent,Repro,100,Fivepercent100,3
- Fivepercent_4.fq,Fivepercent,Repro,250,Fivepercent250,1
- Fivepercent_5.fq,Fivepercent,Repro,250,Fivepercent250,2
- Fivepercent_6.fq,Fivepercent,Repro,250,Fivepercent250,3
- Fivepercent_7.fq,Fivepercent,Repro,500,Fivepercent500,1
- Fivepercent_8.fq,Fivepercent,Repro,500,Fivepercent500,2
- Fivepercent_9.fq,Fivepercent,Repro,500,Fivepercent500,3
- Fivepercent_10.fq,Fivepercent,Repro,1000,Fivepercent1000_Batch1,1
- Fivepercent_11.fq,Fivepercent,Repro,1000,Fivepercent1000_Batch1,2
- Fivepercent_12.fq,Fivepercent,Repro,1000,Fivepercent1000_Batch1,3
- Fivepercent_13.fq,Fivepercent,Repro,1500,Fivepercent1500,1
- Fivepercent_14.fq,Fivepercent,Repro,1500,Fivepercent1500,2
- Fivepercent_15.fq,Fivepercent,Repro,1500,Fivepercent1500,3
- Fivepercent_16.fq,Fivepercent,Repro,2000,Fivepercent2000,1
- Fivepercent_17.fq,Fivepercent,Repro,2000,Fivepercent2000,2
- Fivepercent_18.fq,Fivepercent,Repro,2000,Fivepercent2000,3
+Five_double_1.fq,Fivepercent,Repro,100,Fivepercent100,1
+Five_double_2.fq,Fivepercent,Repro,100,Fivepercent100,2
+Five_double_3.fq,Fivepercent,Repro,100,Fivepercent100,3
+Five_double_4.fq,Fivepercent,Repro,250,Fivepercent250,1
+Five_double_5.fq,Fivepercent,Repro,250,Fivepercent250,2
+Five_double_6.fq,Fivepercent,Repro,250,Fivepercent250,3
+Five_double_7.fq,Fivepercent,Repro,500,Fivepercent500,1
+Five_double_8.fq,Fivepercent,Repro,500,Fivepercent500,2
+Five_double_9.fq,Fivepercent,Repro,500,Fivepercent500,3
+Five_double_10.fq,Fivepercent,Repro,1000,Fivepercent1000_Batch1,1
+Five_double_11.fq,Fivepercent,Repro,1000,Fivepercent1000_Batch1,2
+Five_double_12.fq,Fivepercent,Repro,1000,Fivepercent1000_Batch1,3
+Five_double_13.fq,Fivepercent,Repro,1500,Fivepercent1500,1
+Five_double_14.fq,Fivepercent,Repro,1500,Fivepercent1500,2
+Five_double_15.fq,Fivepercent,Repro,1500,Fivepercent1500,3
+Five_double_16.fq,Fivepercent,Repro,2000,Fivepercent2000,1
+Five_double_17.fq,Fivepercent,Repro,2000,Fivepercent2000,2
+Five_double_18.fq,Fivepercent,Repro,2000,Fivepercent2000,3
