@@ -1,0 +1,195 @@
+---
+title: "synth_preprocessing"
+author: "Carrie Wright"
+date: "May 30, 2018"
+output: html_document
+---
+
+Code to clean fasta file to only include unique sequnces and create a new one:
+```{r, eval =FALSE}
+library(here)
+#using an excel given to us from Miltenyi we created fasta files for each species, then we merged, then we did this
+library("Biostrings")
+#s = readDNAStringSet("/home/carrie/synthetic_miRNA/synthetic_allspecies.fa")#on SRV2
+s = readDNAStringSet(here("synthetic_allspecies.fa"))
+
+#s = readDNAStringSet("/Users//carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/synthetic_allspecies.fa")
+s<- unique(s)
+newnames <-(gsub(" ", "", names(s)))
+newnames<-sapply(strsplit(names(s), ":"), `[`, 1) #just to grab the first object
+number<-seq(1,962,1)
+newnames<-paste(number,newnames,sep = "-")
+newnames<-paste("synth_miRNA",newnames,sep = "-")
+names(s)<-newnames
+#Biostrings::writeXStringSet(seqs,format = "fasta", filepath = "/Users//carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/synth_seqs_named.fa")
+
+
+```
+Code to create deduped file
+```{r, eval =FALSE}
+#InDir=/media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq
+#outDir=/media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem
+
+#reading every 4th line starting with line 2, get first 4 characters of sequence
+#awk2='NR%4==2'
+#< list_for_UMI.txt parallel -P4 "cat $InDir/mm0_acc_NEXT_trim1.{}_R1.fq | awk '$awk2' | cut -d' ' -f2 | cut -c1-4 > $outDir/first4_{}.txt"
+
+#reading every 4th line starting with line 2, get last 4 characters of sequence
+#< list_for_UMI.txt parallel -P4 "cat $InDir/mm0_acc_NEXT_trim1.{}_R1.fq | awk '$awk2' | sed 's/^.*\(.\{4\}\)/\1/' > $outDir/last4_{}.txt"
+
+#pasting first UMI 4 nuc. with last UMI 4 nuc.
+#< list_for_UMI.txt parallel -P4 "paste -d'\0' $outDir/first4_{}.txt $outDir/last4_{}.txt > $outDir/UMI_{}.txt"
+
+#quadruple UMIs
+#< list_for_UMI.txt parallel -P4 "awk '{for(i=0;i<4;i++)print}' $outDir/UMI_{}.txt >$outDir/quad_UMI_{}.txt"
+
+# add an "_" to the front of every UMI line
+#awk3='$0="_"$0'
+#< list_for_UMI.txt parallel -P4 "awk '$awk3'  $outDir/quad_UMI_{}.txt > $outDir/final_UMI_{}.txt"
+
+# add the UMI to the fastq file identifier line
+#awk4='{getline p<f} (NR%4==1){$1=$1" "$2;$2=p}1'
+#< list_for_UMI.txt parallel -P4 "awk '$awk4' OFS= f=$outDir/final_UMI_{}.txt $InDir/mm0_acc_NEXT_trim1.{}_R1.fq > $outDir/NEXT_{}_UMItools_R1.fq"
+
+#remove reads from fastq with Ns in the UMI:
+#< list_for_UMI.txt parallel -P4 "sed -e '/_N\|_.*N/,+3d' $outDir/NEXT_{}_UMItools_R1.fq > $outDir/NEXT_Ns_rem_{}_UMItools_R1.fq"
+
+#remove random 4 base pair seqs that make up the UMI from the fastq read sequence line:
+< synth_list_for_UMI.txt parallel -P4 "cutadapt -u 4 -o $outDir/trim2_{}_Ns_kept_forUMI_tools.fq $outDir/NEXT_{}_UMItools_R1.fq"
+
+< synth_list_for_UMI.txt parallel -P4 "cutadapt -m 17 -u  -4 -o $outDir/trimmed_{}_Ns_kept_forUMI_tools.fq $outDir/trim2_{}_Ns_kept_forUMI_tools.fq"
+
+
+#remove space form the identifier of the fastq
+< synth_list_for_UMI.txt parallel -P4 "sed 's/ /-/' $outDir/trimmed_{}_Ns_kept_forUMI_tools.fq > $outDir/nospace_trimmed_{}_Ns_kept_forUMI_tools.fq"
+
+#bowtie allignment
+< synth_list_for_UMI.txt parallel -P3 "/usr/bin/bowtie /media/Backup1_/smallRNA/bowtie/index/allsynth --fullref -n 0 -l 17 -S $outDir/nospace_trimmed_{}_Ns_kept_forUMI_tools.fq $outDir/NEXT_acc_{}_Ns_kept_readyforUMItools.sam"
+
+#convert to bams
+< synth_list_for_UMI.txt parallel -P3 "samtools view -bS -o $outDir/NEXT_acc_{}_Ns_kept_readyforUMItools.bam $outDir/NEXT_acc_{}_Ns_kept_readyforUMItools.sam"
+
+#index and sort bams
+< synth_list_for_UMI.txt parallel -P3 "samtools sort $outDir/NEXT_acc_{}_Ns_kept_readyforUMItools.bam $outDir/NEXT_acc_{}_Ns_kept_readyforUMItools_sorted"
+< synth_list_for_UMI.txt parallel -P3 "samtools index $outDir/NEXT_acc_{}_Ns_kept_readyforUMItools_sorted.bam"
+
+#UMItools
+< synth_list_for_UMI.txt parallel -P3 "umi_tools dedup --method directional -I /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem/NEXT_acc_{}_Ns_kept_readyforUMItools_sorted.bam -S /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem/directional_deduped_acc_Ns_kept_{}_UMItools.bam"
+
+#convert deduped bam files to fastq files
+<synth_list_for_UMI.txt parallel -P3 "bam2fastx -q -Q -A -o $outDir/directional_dedupped_acc_Ns_kept_{}_bam2fastq.fq $outDir/directional_deduped_acc_Ns_kept_{}_UMItools.bam"
+
+```
+
+Check Raw Data ####NEED to redo with new preprocessed data
+```{r, eval = FALSE}
+###anymatches with grep
+any_NEXTflex<-read.table(file = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/anyMatch_NEXTflex.txt" , header = TRUE, sep = ",")
+any_Illumina<-read.table(file = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/anyMatch_Illumina.txt" , header = TRUE, sep = ",")
+any_NEB<-read.table(file = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/anyMatch_NEB.txt" , header = TRUE, sep = ",")
+any_Clontech<-read.table(file = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/anyMatch_Clontech.txt" , header = TRUE, sep = ",")
+###onlymatches in the location the are supposed to be 
+ideal_NEXTflex<-read.table(file = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/idealMatch_NEXTflex.txt" , header = TRUE, sep = ",")
+ideal_Illumina<-read.table(file = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/idealMatch_Illumina.txt" , header = TRUE, sep = ",")
+ideal_NEB<-read.table(file = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/idealMatch_NEB.txt" , header = TRUE, sep = ",")
+ideal_Clontech<-read.table(file = "/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/idealMatch_Clontech.txt" , header = TRUE, sep = ",")
+
+###need to reorder everything the same
+ordered_any_Clontech <- any_Clontech[order(any_Clontech$names),]
+ordered_any_Illumina <- any_Illumina[order(any_Illumina$names),]
+ordered_any_NEB <- any_NEB[order(any_NEB$names),]
+ordered_any_NEXTflex <- any_NEXTflex[order(any_NEXTflex$names),]
+
+ordered_ideal_Clontech <- ideal_Clontech[order(ideal_Clontech$names),]
+ordered_ideal_Illumina <- ideal_Illumina[order(ideal_Illumina$names),]
+ordered_ideal_NEB <- ideal_NEB[order(ideal_NEB$names),]
+ordered_ideal_NEXTflex <- ideal_NEXTflex[order(ideal_NEXTflex$names),]
+
+#check ordering
+identical(ordered_ideal_Clontech$names, ordered_any_Clontech$names)
+identical(ordered_ideal_Clontech$names, ordered_any_Illumina$names)
+any_Clontech[which(any_Clontech$names =="EBV-MIR-BART12: EBV-MIR-BART12."),]
+ordered_any_Clontech[which(ordered_any_Clontech$names =="EBV-MIR-BART12: EBV-MIR-BART12."),]
+```
+
+check raw data ratios
+```{r, eval = FALSE}
+Correct_Clontech_percent<-data.frame(names =ordered_ideal_Clontech$names, percent = ((ordered_ideal_Clontech$X0 / ordered_any_Clontech$X0)*100))
+Correct_NEB_percent<-data.frame(names =ordered_ideal_NEB$names, percent = ((ordered_ideal_NEB$X0 / ordered_any_NEB$X0)*100))
+Correct_NEXTflex_percent<-data.frame(names =ordered_ideal_NEXTflex$names, percent = ((ordered_ideal_NEXTflex$X0 / ordered_any_NEXTflex$X0)*100))
+Correct_Illumina_percent<-data.frame(names =ordered_ideal_Illumina$names, percent = ((ordered_ideal_Illumina$X0 / ordered_any_Illumina$X0)*100))
+
+ratios <-data.frame(Clontech =Correct_Clontech_percent$percent, Illumina =Correct_Illumina_percent$percent, NEB =Correct_NEB_percent$percent, NEXTflex =Correct_NEXTflex_percent$percent)
+rownames(ratios) <-Correct_Clontech_percent$names
+
+colMeans(ratios)
+NEB_ratio <-Correct_NEB_percent[-71,]
+mean(NEB_ratio$percent)
+
+which(any_NEB$X0 ==0) # no reads mapped to KSHV-MIR-K12-9*: KSHV-MIR-K12-9* for the raw data with grep
+#seqs[which(names(seqs) == "KSHV-MIR-K12-9-71"),] #this corresponds to this sequence which was difficult for most kits
+ordered_any_NEB[71,]
+ordered_any_Illumina[71,]
+ordered_any_NEXTflex[71,]
+ordered_any_Clontech[71,]
+
+#did miRge count this as zero for NEB?
+
+mean(any_NEB$X0)
+mean(any_NEXTflex$X0)
+mean(any_Illumina$X0)
+mean(any_Clontech$X0)
+
+
+```
+
+
+
+code to run miRge
+```{perl, include =FALSE, eval =FALSE}
+# made synthetic_miRNA.fa file for the mirna.fa file created in the step above and then random sequences for the other .fa files in the following command
+# such as this: 
+>random_sequence_for_miRge
+GAACGGTCCAACAGAAATATAATGTGAACCACATACATAGTTAAAATTTT
+CTAATGTCCATATTAAAAGAGGGAAAAAGAAACAGGTGAAATGATTTTAA
+TAATACATTTTACTTAATGCAATATGTCCAGGTAATTAGCATTTTAGCAT
+GTAATCAATACATTATTAATAAAATATGTCACATTCTTTTTTCATGCTGA
+AGCTTCAAAATCTGGTGTATATTTCACACTCACAGGGCATCTCAATTTGG
+ATGCTCTATTTTCACTGGAGTGATCTAATCTGTATTAAGATTTCATAAAA
+TGTACAGCTGAATAAGTAGAGTGACATGTCCGACTTGTTCCACGCATACT
+TAAAGGTTTTCCAATAGCTGAAGTATCAGTTTTAAAATTCAAATAGAAAT
+TAAGATAAACCTAAATAAAATAAATTAAGTAACATTCAGTTCTTCATTCA
+CACTAGCCAAATTTCTAGTGCTCAGTAGCTACACGTGGCTAGTGGCTACC
+ATATTGGATCGTACAAATCTTAGGCAAGCACCAAAACAAAGTTTGATGCT
+GAATCTTTAGGGCTAAGAACAGTACTTGGCATGTAGTAGTCTCTTGGCAT
+GTATTTACTGAATGAATGAAGAAGCTGCCATATAATTAGGTACACTTGTA
+GCTGCCACCAAGGAGAAGCTGTGAGTGCCACTAGAGTGTTTGGATGATGG
+GTAAAACTTCCCTAGGAAGTTACAAATAAACCCAGAGTTGCATAAAGGAT
+GAGGAGGAGTTAGGGATGCTAAGAATGGGAGAGGGCTTTCCAGGTAGAGG
+GTTTAGCAAGTACAAAAGCTTAGAGGTGGAGAACAGCTTGGTGACTTGGA
+GGGAGTGTAAAAATGGGAGCGTTTGCTGAGCCTAGTGATGGAGCGTAAGA
+ATGACTTTACAGGAAGGTGGAGATGTCTGTGGGGACCGTGTTAAGGAATT
+CTACTTTCTGCCAAGAGCAGAGAGAGTATTTGGAAAGGTTTTAAGTCAGC
+TCATGATGCAAGATTTGTTGTTTTTTTTTTTTTAAGTTTTTTTTTTCTTT
+TTTTTTTTTTTCTTTTTTGCT
+
+
+#scp /Users/carriewright/Documents/miRNA\ seq\ Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/synth_seqs_named.fa carrie@10.17.9.174:/home/carrie/miRge/miRge-master/
+
+#need to delete old folder or name something different each time
+perl miRge-build.pl --species synthetic_sequences --miRNA synth_mirna.fa --hairpin synth_hairpin.fa --other synth_orna.fa --mrna synth_hairpin.fa
+
+perl miRge.pl --species synthetic_sequences --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10  --SampleFiles acc_Clontech_trimmed.4.fq,acc_Illumina_trimmed.4.fq,acc_NEB_trimmed.4.fq,acc_NEXTflex_trimmed.4.fq,directional_deduped_acc_4_lim_16_Ns_kept_bam2fastq.fq,directional_deduped_acc_4_lim_16_Ns_rem_bam2fastq.fq
+
+perl miRge.pl --species synthetic_sequences --bowtie /media/DATA/carrie/programs/bowtie-1.2.2-linux-x86_64/bowtie--phred64 --CPU 10 --SampleFiles
+Clontech_trimmed.4_acc.fq,Illumina_trimmed.4_acc.fq,NEB_trimmed.4_acc.fq,trimmed_4_forUMI_tools.fq,directional_deduped_lib_align_seed15_acc_4_bam2fastq.fq,Fivepercent_acc_4.fq
+
+#These files need to be the 16 trimmed files... Running this now ok so the NEXTflix file is created for the script for the deduping and the random five percent file.
+
+#Fivepercent_acc_4.fq -> /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem_lib_align_new_bowtie_samp_four/Fivepercent_acc_4.fq
+#trimmed_4_forUMI_tools.fq -> /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem_lib_align_new_bowtie/trimmed_4_forUMI_tools.fq
+#NEB_trimmed.4_acc.fq -> /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq_int/NEB_trimmed.4_acc.fq
+#Clontech_trimmed.4_acc.fq -> /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq_int/Clontech_trimmed.4_acc.fq
+#Illumina_trimmed.4_acc.fq -> /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq_int/Illumina_trimmed.4_acc.fq
+#directional_deduped_lib_align_seed15_acc_4_bam2fastq.fq -> /media/Backup1_/smallRNA/FullHiSeq_mismatch0/accuracy/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem_lib_align_new_bowtie_samp_4/directional_deduped_lib_align_seed15_acc_4_bam2fastq.fq
+```
