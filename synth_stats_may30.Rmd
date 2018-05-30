@@ -97,19 +97,92 @@ my_scale <- function(x) {
 my_scale(miRge_synth)
 ```
 
+```{r}
+save(miRge_synth, seqs, error_synth, file = here("normalized_synth.rmd"))
+```
+
+
+
+###FUNCTIONS to get ttests results and output nicely
+```{r, echo = TRUE, eval=TRUE}
+library(dplyr)
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(names(data), m= 2))
+}
+
+get_test_results<- function(data,test_names) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    #tested_names[[i]]<<-(test_names[i][,1])
+    Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+    Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-colnames(Kit1)
+    tested_names2[[i]]<<-colnames(Kit2)
+    colnames(Kit1)<-c("error")
+    colnames(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1$error, y=Kit2$error, paired = TRUE) ### may have messed things up adding paired = TRUE previously had more ))
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x) {
+  #print(length(test_names))
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni_thresh = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+}
+```
+overall stats
+```{r}
+get_test_names(data = error_synth)
+#sink(here(synthlog.txt"))
+get_test_results(test_names = test_names, data = error_synth)
+#sink()
+ttestStats<-data.frame(lapply(tresults, get_ttestStats))
+
+colnames(ttestStats)<-tested_kits
+
+ttestStats
+synth <-melt(error_synth)
+fit = lm(synth$value ~ synth$variable)
+anova(fit)
+
+#### percentage
+errorData_toplot<-log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
+# 
+ get_test_names(data = errorData_toplot)
+# #sink(here(synthlog.txt"))
+ get_test_results(test_names = test_names, data = errorData_toplot)
+# #sink()
+ ttestStats<-data.frame(lapply(tresults, get_ttestStats))
+# 
+colnames(ttestStats)<-tested_kits
+# 
+ttestStats
+# synth <-melt(errorData_toplot)
+# fit = lm(synth$value ~ synth$variable)
+# anova(fit)
+```
 
 
 
 Base stats
 ```{r}
 
-#errorData_toplot<-log2(miRge_synth+1)
-#get_perc<-function(x) {(x/mean(x))*100}
-#errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
-#errorLast<-cbind(seqs_last, errorData_toplot)
-#errorFirst<-cbind(seqs_first, errorData_toplot)
-errorLast <-cbind(seqs_last, error_synth[1:6])
-errorFirst<-cbind(seqs_first, error_synth[1:6])
+errorData_toplot<-log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
+errorLast<-cbind(seqs_last, errorData_toplot)
+errorFirst<-cbind(seqs_first, errorData_toplot)
+
+#errorLast <-cbind(seqs_last, error_synth[1:6])
+#errorFirst<-cbind(seqs_first, error_synth[1:6])
 firstdata <-melt(errorFirst)
 lastdata <-melt(errorLast)
 
@@ -193,13 +266,14 @@ library(limma)
 #or
 #want to know for each length is there a sig difference bewteen kits... This could also be interesting
 GC <-seqs$length
-abs_error<-cbind(factor(GC), error_synth[1:6])
-#expression <- log2(miRge_synth+1)
-#get_perc<-function(x) {(x/mean(x))*100}
-#express_perc<-data.frame(lapply(expression, get_perc))
-
+#abs_error<-cbind(factor(GC), error_synth[1:6])
 #abs_error<-cbind(factor(GC), log2(miRge_synth +1))
-#abs_error<-cbind(factor(GC), express_perc)
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+
+abs_error<-cbind(factor(GC), express_perc)
 colnames(abs_error)[1] <-"factor"
 
 factordata<-melt(abs_error)
@@ -222,35 +296,7 @@ run_model_quad <-function(x){summary(lm(x[[3]]~x[[1]] +x[[4]]))}
 quad_model_stats<-lapply(split_data,run_model_quad)
 quad_model_stats
 ```
-repeated length stats
-```{r}
-library(limma)
-#want to know for each kit- is there a sig difference in detection of miRNAS of  different lengths ?
-#or
-#want to know for each length is there a sig difference bewteen kits... This could also be interesting
-errorFirst$x <-seqs$length
-abs_errorLength<-cbind(factor(length), error_synth[1:6])
-# Length<-errorLength$length
-# rownames(errorLength) <-NULL
-# 
-# data_Length <-as.matrix(t(errorLength[-1]))
-# colnames(data_Length)<-Length
 
-
-lengthdata<-melt(abs_errorLength)
-lengthdata$`factor(length)` <-as.integer(as.character(lengthdata$`factor(length)`))
-colnames(lengthdata)<-c("length", "kit", "value")
- split_length <- list() 
-
-for(i in lengthdata$kit) { 
-  split_length[[i]] <- data.frame(lengthdata[which(lengthdata$kit==i),])
-} 
- run_anova_length <-function(x){summary(lm(x[[3]]~x[[1]]))}
-length_f_stats<-lapply(split_length,run_anova_length)
-
-#length_f_stats<-data.frame(t(data.frame(lapply(length_f_stats, get_fStats))))
-length_f_stats
-```
 
 https://www.theanalysisfactor.com/r-tutorial-4/
 GCStats
@@ -260,14 +306,14 @@ library(limma)
 #or
 #want to know for each length is there a sig difference bewteen kits... This could also be interesting
 GC <-seqs$GC
-abs_error<-cbind(factor(GC), error_synth[1:6])
+#abs_error<-cbind(factor(GC), error_synth[1:6])
 
 #abs_error<-cbind(factor(GC), log2(miRge_synth +1))
 
-#expression <- log2(miRge_synth+1)
-#get_perc<-function(x) {(x/mean(x))*100}
-#express_perc<-data.frame(lapply(expression, get_perc))
-#abs_error<-cbind(factor(GC), express_perc)
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
 
 colnames(abs_error)[1] <-"factor"
 
@@ -299,14 +345,14 @@ library(limma)
 #or
 #want to know for each length is there a sig difference bewteen kits... This could also be interesting
 GC <-seqs$FoldG
-abs_error<-cbind(factor(GC), error_synth[1:6])
+#abs_error<-cbind(factor(GC), error_synth[1:6])
 
 #abs_error<-cbind(factor(GC), log2(miRge_synth +1))
 
-#expression <- log2(miRge_synth+1)
-#get_perc<-function(x) {(x/mean(x))*100}
-#express_perc<-data.frame(lapply(expression, get_perc))
-#abs_error<-cbind(factor(GC), express_perc)
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
 colnames(abs_error)[1] <-"factor"
 
 factordata<-melt(abs_error)
@@ -354,14 +400,14 @@ library(limma)
 #or
 #want to know for each length is there a sig difference bewteen kits... This could also be interesting
 GC <-TTTT
-abs_error<-cbind(factor(GC), error_synth[1:6])
+#abs_error<-cbind(factor(GC), error_synth[1:6])
 
 #abs_error<-cbind(factor(GC), log2(miRge_synth +1))
 
-#expression <- log2(miRge_synth+1)
-#get_perc<-function(x) {(x/mean(x))*100}
-#express_perc<-data.frame(lapply(expression, get_perc))
-#abs_error<-cbind(factor(GC), express_perc)
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
 colnames(abs_error)[1] <-"factor"
 
 factordata<-melt(abs_error)
