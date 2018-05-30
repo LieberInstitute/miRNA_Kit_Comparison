@@ -414,17 +414,21 @@ library(ggrepel)
 
 ranks_error<-data.frame(sapply(error_synth, rank))
 ranks_error$miRNA<-error_synth$miRNA
-cor.test(ranks_error$Clontech, ranks_error$Illumina)
-cor.test(ranks_error$NEXTflex, ranks_error$Fivepercent)
 
-plot(ranks_error$NEXTflex, ranks_error$Deduped)
+
+library(GGally)
+set.seed(42)
+ggpairs(ranks_error[1:6])
+
 error_ranks <- melt(ranks_error)
 
 ### plot just extremes:
 synth_with_lab <- synth
 #synth_with_lab$miRNA<-ifelse(synth_with_lab$value>20 | synth_with_lab$value<5 ,as.character(synth_with_lab$miRNA),'')
-synth_with_lab$miRNA<-ifelse(error_ranks$value>955 | error_ranks$value<5 ,as.character(synth_with_lab$miRNA),'')
-plot_with_labs<-plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) + geom_label_repel(data = synth_with_lab,aes(variable, value, fill = variable, label = miRNA),fontface = 'bold', color = 'white',label.padding = .35, box.padding = 0.35, point.padding = 0.5,segment.color = 'grey50') 
+synth_with_lab$miRNA<-ifelse(error_ranks$value>958 | error_ranks$value<5 ,as.character(synth_with_lab$miRNA),'')
+plot_with_labs<-plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) + geom_label_repel(data = synth_with_lab,aes(variable, value, fill = variable, label = miRNA),fontface = 'bold', color = 'white',label.padding = 0, box.padding = 0.1, point.padding = 0,segment.color = 'grey50') 
+
+plot_with_labs
 ```
 
 
@@ -483,25 +487,8 @@ myColor<-c(myColorbelow, myColorabove)
 ###################
 
 ```
-#general error without direction of first base and last base
 
-```{r}
-abs_errorLast<-cbind(seqs_last, error_synth)
-abs_errorFirst<-cbind(seqs_first, error_synth)
-
-aggdata <-aggregate(abs_errorFirst[-1], by=list(abs_errorFirst$x), FUN=mean)
-rownames(aggdata) <- aggdata$Group.1
-aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
-#pheatmap(aggdata, cluster_cols = FALSE, cluster_rows = FALSE, main = "Absolute error first base")
-pheatmap(aggdata, cluster_cols = FALSE, color = myColorabove, cluster_rows = FALSE, main = "Absolute error first base")
-
-aggdata <-aggregate(abs_errorLast[-1], by=list(abs_errorLast$x), FUN=mean)
-rownames(aggdata) <- aggdata$Group.1
-aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
-pheatmap(aggdata,color = myColorabove, cluster_cols = FALSE, cluster_rows = FALSE, main = "Absolute error of last base")
-
-```
-
+relative percentage heatmaps
 ```{r}
 library(pheatmap)
 make_heatmap <-function(Data, title){
@@ -556,7 +543,7 @@ last_f_stats
           #color = 'blue',  parse = TRUE)
 
 ```
-
+Looking at expression still but diff way
 ```{r, eval = TRUE}
 library(limma)
 #want to know for each kit- is there a sig difference between starting bases?
@@ -647,10 +634,27 @@ ttestStats
 
 ```
 
+#general error (not expression) without direction of first base and last base
+
+```{r}
+abs_errorLast<-cbind(seqs_last, error_synth)
+abs_errorFirst<-cbind(seqs_first, error_synth)
+
+aggdata <-aggregate(abs_errorFirst[-1], by=list(abs_errorFirst$x), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
+#pheatmap(aggdata, cluster_cols = FALSE, cluster_rows = FALSE, main = "Absolute error first base")
+pheatmap(aggdata, cluster_cols = FALSE, color = myColorabove, cluster_rows = FALSE, main = "Absolute error first base")
+
+aggdata <-aggregate(abs_errorLast[-1], by=list(abs_errorLast$x), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
+pheatmap(aggdata,color = myColorabove, cluster_cols = FALSE, cluster_rows = FALSE, main = "Absolute error of last base")
+
+```
 
 
-
-Length
+Length based on log2 expression +1
 ```{r}
 library(ggpubr)
 errorData_toplot<-log2(miRge_synth+1)
@@ -687,6 +691,20 @@ ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(
 lengthplot <-errorLength
 lengthplot$length <-factor(lengthplot$length)
 ggplot(data = melt(lengthplot), aes(x=length, y = value, fill = variable)) + geom_jitter()+geom_boxplot()+facet_grid(~variable) +theme(strip.text.x = element_text(size = 14),axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), axis.title.x = element_text(size = 18),axis.title.y = element_text(size = 18),title = element_text(size = 24), legend.position="none") +labs(y = "Percent expression relative to the mean", title = "Consistency of synthetic sequence detection across lengths", x = "Sequence Length")
+```
+Length stats without ebayes 
+```{r}
+lengthdata<-melt(data_Length)
+ split_length <- list() 
+
+for(i in lengthdata$Var1) { 
+  split_length[[i]] <- data.frame(lengthdata[which(lengthdata$Var1==i),])
+} 
+ run_anova_length <-function(x){anova(lm(x[[3]]~x[[2]]))}
+length_f_stats<-lapply(split_length,run_anova_length)
+
+length_f_stats<-data.frame(t(data.frame(lapply(length_f_stats, get_fStats))))
+length_f_stats
 ```
 
 #absolute error without direction of length
@@ -781,6 +799,27 @@ rownames(aggdata) <- aggdata$Group.1
 aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
 pheatmap(aggdata,color = myColorabove, cluster_cols = FALSE, cluster_rows = FALSE, main = "Absolute error of GC content")
 
+```
+
+
+GC stats of relative expression without ebayes 
+```{r}
+GC<-errorGC$GC
+rownames(errorGC) <-NULL
+
+data_GC <-as.matrix(t(errorGC[-1]))
+colnames(data_GC)<-GC
+GCdata<-melt(data_GC)
+ split_GC <- list() 
+
+for(i in GCdata$Var1) { 
+  split_GC[[i]] <- data.frame(GCdata[which(GCdata$Var1==i),])
+} 
+ run_anova_length <-function(x){anova(lm(x[[3]]~x[[2]]))}
+GC_f_stats<-lapply(split_GC,run_anova_length)
+
+GC_f_stats<-data.frame(t(data.frame(lapply(GC_f_stats, get_fStats))))
+GC_f_stats
 ```
 
 GCStats
