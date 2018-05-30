@@ -299,13 +299,69 @@ library(limma)
 #or
 #want to know for each length is there a sig difference bewteen kits... This could also be interesting
 GC <-seqs$FoldG
-#abs_error<-cbind(factor(GC), error_synth[1:6])
-expression <- log2(miRge_synth+1)
-get_perc<-function(x) {(x/mean(x))*100}
-express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), error_synth[1:6])
 
 #abs_error<-cbind(factor(GC), log2(miRge_synth +1))
-abs_error<-cbind(factor(GC), express_perc)
+
+#expression <- log2(miRge_synth+1)
+#get_perc<-function(x) {(x/mean(x))*100}
+#express_perc<-data.frame(lapply(expression, get_perc))
+#abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){summary(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+
+#length_f_stats<-data.frame(t(data.frame(lapply(length_f_stats, get_fStats))))
+model_stats
+
+run_model_quad <-function(x){summary(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+quad_model_stats
+```
+
+
+
+repeat stats
+Repeats
+```{r}
+#grep("TTTT", seqs$x)
+#grep("GGGG", seqs$x)
+
+
+TTTT<-sapply(gregexpr("TTTT", seqs$x), function(x) sum(x != -1))
+GGGG<-sapply(gregexpr("GGGG", seqs$x), function(x) sum(x != -1))
+AAAA<-sapply(gregexpr("AAAA", seqs$x), function(x) sum(x != -1))
+CCCC<-sapply(gregexpr("CCCC", seqs$x), function(x) sum(x != -1))
+patterns <- c("TT", "GG", "CC", "AA")
+dublets <- sapply(gregexpr(paste(patterns,collapse="|"), 
+                        seqs$x), function(x) sum(x != -1))
+```
+
+```{r}
+library(limma)
+#want to know for each kit- is there a sig difference in detection of miRNAS of  different lengths ?
+#or
+#want to know for each length is there a sig difference bewteen kits... This could also be interesting
+GC <-TTTT
+abs_error<-cbind(factor(GC), error_synth[1:6])
+
+#abs_error<-cbind(factor(GC), log2(miRge_synth +1))
+
+#expression <- log2(miRge_synth+1)
+#get_perc<-function(x) {(x/mean(x))*100}
+#express_perc<-data.frame(lapply(expression, get_perc))
+#abs_error<-cbind(factor(GC), express_perc)
 colnames(abs_error)[1] <-"factor"
 
 factordata<-melt(abs_error)
