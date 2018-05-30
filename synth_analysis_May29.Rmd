@@ -980,6 +980,27 @@ pheatmap(aggdata,color = myColorabove, cluster_cols = FALSE, cluster_rows = FALS
 ```
 
 
+Fold stats without ebayes
+```{r}
+
+rownames(errorFoldG) <-NULL
+
+data_foldG <-as.matrix(t(errorFoldG[-1]))
+colnames(data_foldG)<-FoldG$FoldG
+FoldGdata<-melt(data_foldG)
+ split_fold <- list() 
+
+for(i in FoldGdata$Var1) { 
+  split_fold[[i]] <- data.frame(FoldGdata[which(FoldGdata$Var1==i),])
+} 
+ run_anova_length <-function(x){anova(lm(x[[3]]~x[[2]]))}
+foldg_f_stats<-lapply(split_fold,run_anova_length)
+
+foldg_f_stats<-data.frame(t(data.frame(lapply(foldg_f_stats, get_fStats))))
+foldg_f_stats
+```
+
+
 Fold Stats
 ```{r}
 library(limma)
