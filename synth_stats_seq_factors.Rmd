@@ -47,6 +47,10 @@ get_ttestStats<- function(x) {
     bonferroni_thresh = format(.05/length(test_names), digits = 2),
     sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
 }
+
+#get_lmStats <-function(x) {
+#  c(p=x$coefficients[2,4], scientific = TRUE, digits =2)
+#}
 ```
 overall stats
 ```{r}
@@ -170,14 +174,9 @@ LengthStats
 
 ```{r}
 library(limma)
-#want to know for each kit- is there a sig difference in detection of miRNAS of  different lengths ?
-#or
-#want to know for each length is there a sig difference bewteen kits... This could also be interesting
+library(broom)
+
 GC <-seqs$length
-# abs_error<-cbind(factor(GC), error_synth[1:6])
-# abs_error<-data.frame(abs_error[1], lapply(abs_error[2:7], get_perc))
-
-
 
 expression <- log2(miRge_synth+1)
 get_perc<-function(x) {(x/mean(x))*100}
@@ -198,13 +197,14 @@ for(i in factordata$kit) {
 } 
  run_model <-function(x){(lm(x[[3]]~x[[1]]))}
 model_stats<-lapply(split_data,run_model)
-#lapply(model_stats, summary)
-#length_f_stats<-data.frame(t(data.frame(lapply(length_f_stats, get_fStats))))
-#model_stats
+model_summary<-lapply(model_stats, summary)
+lapply(model_summary, glance)
+
 
 run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
 quad_model_stats<-lapply(split_data,run_model_quad)
-lapply(quad_model_stats, summary)
+quad_summary<-lapply(quad_model_stats, summary)
+lapply(quad_summary, glance)
 
 anova(model_stats$Clontech, quad_model_stats$Clontech)
 anova(model_stats$Illumina, quad_model_stats$Illumina)
@@ -389,7 +389,7 @@ library(limma)
 #want to know for each kit- is there a sig difference in detection of miRNAS of  different lengths ?
 #or
 #want to know for each length is there a sig difference bewteen kits... This could also be interesting
-GC <-AAAA
+GC <-TTTT
 #abs_error<-cbind(factor(GC), error_synth[1:6])
 
 #abs_error<-cbind(factor(GC), log2(miRge_synth +1))
@@ -503,12 +503,131 @@ lapply(model_stats, summary)
 run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
 quad_model_stats<-lapply(split_data,run_model_quad)
 
- anova(model_stats$Clontech, quad_model_stats$Clontech)
- anova(model_stats$Illumina, quad_model_stats$Illumina)#sig and better
+ anova(model_stats$Clontech, quad_model_stats$Clontech)#not sig
+ anova(model_stats$Illumina, quad_model_stats$Illumina)
  anova(model_stats$NEB, quad_model_stats$NEB)
  anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)
  anova(model_stats$Deduped, quad_model_stats$Deduped)
  anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+
+ table(GC)
+```
+anyG
+```{r}
+library(limma)
+
+GC <-anyG
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+
+run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+
+ anova(model_stats$Clontech, quad_model_stats$Clontech)#not sig
+ anova(model_stats$Illumina, quad_model_stats$Illumina)
+ anova(model_stats$NEB, quad_model_stats$NEB)
+ anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)
+ anova(model_stats$Deduped, quad_model_stats$Deduped)
+ anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+
+ table(GC)
+```
+
+anyC
+```{r}
+library(limma)
+
+GC <-anyC
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+
+run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+
+ anova(model_stats$Clontech, quad_model_stats$Clontech)
+ anova(model_stats$Illumina, quad_model_stats$Illumina)#sig
+ anova(model_stats$NEB, quad_model_stats$NEB)#sig
+ anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)
+ anova(model_stats$Deduped, quad_model_stats$Deduped)
+ anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+
+ table(GC)
+```
+
+anyquad
+```{r}
+library(limma)
+
+GC <-(TTTT+ CCCC+ GGGG+ AAAA)
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+
+#run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+#quad_model_stats<-lapply(split_data,run_model_quad)
+
+ anova(model_stats$Clontech, quad_model_stats$Clontech)#notsig
+ anova(model_stats$Illumina, quad_model_stats$Illumina)#notsig
+ anova(model_stats$NEB, quad_model_stats$NEB)#notsig
+ anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)#notsig
+ anova(model_stats$Deduped, quad_model_stats$Deduped)#notsig
+ anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)#notsig
 
  table(GC)
 ```
@@ -557,7 +676,10 @@ pd$GGGG <- GGGG
 pd$AAAA <- AAAA
 pd$rep <- (TTTT+ CCCC+ GGGG+ AAAA)
 pd$dublets
-
+pd$anT <- anyT
+pd$anyC <-anyC
+pd$anyG <- anyG
+pd$anyA <- anyA
 
 #modFull = model.matrix(~GC + length +FoldG + First_base + Last_base +TTTT + CCCC + GGGG +AAAA, data=pd)
 
