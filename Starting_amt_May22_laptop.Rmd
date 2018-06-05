@@ -236,17 +236,46 @@ for(kit in names(split_norm_Amt[[amt]])){
 #detection rate
 ```{r}
 #100
-lapply(split_amt_thresh$starting_amt_100, dim)
+det_100<-lapply(split_amt_thresh$starting_amt_100, dim)
 #250
-lapply(split_amt_thresh$starting_amt_250, dim)
+det_250<-lapply(split_amt_thresh$starting_amt_250, dim)
 #500
-lapply(split_amt_thresh$starting_amt_500, dim)
+det_500<-lapply(split_amt_thresh$starting_amt_500, dim)
 #1000
-lapply(split_amt_thresh$starting_amt_1000, dim)
+det_1000<-lapply(split_amt_thresh$starting_amt_1000, dim)
 #1500
-lapply(split_amt_thresh$starting_amt_1500, dim)
+det_1500<-lapply(split_amt_thresh$starting_amt_1500, dim)
 #2000
-lapply(split_amt_thresh$starting_amt_2000, dim)
+det_2000<-lapply(split_amt_thresh$starting_amt_2000, dim)
+
+
+det_100<-unlist(det_100)[grep("1", names(unlist(det_100)))]
+det_100<-data.frame(det_100)
+det_250<-unlist(det_250)[grep("1", names(unlist(det_250)))]
+det_250<-data.frame(det_250)
+det_500<-unlist(det_500)[grep("1", names(unlist(det_500)))]
+det_500<-data.frame(det_500)
+det_1000<-unlist(det_1000)[grep("1", names(unlist(det_1000)))]
+det_1000<-data.frame(det_1000)
+det_1500<-unlist(det_1500)[grep("1", names(unlist(det_1500)))]
+det_1500<-data.frame(det_1500)
+det_2000<-unlist(det_2000)[grep("1", names(unlist(det_2000)))]
+det_2000<-data.frame(det_2000)
+
+det_100 <-melt(t(det_100))
+det_250 <-melt(t(det_250))
+det_500 <-melt(t(det_500))
+det_1000 <-melt(t(det_1000))
+det_1500 <-melt(t(det_1500))
+det_2000 <- melt(t(det_2000))
+detected <-rbind(det_100, det_250, det_500, det_1000, det_1500, det_2000)
+detected$Var1 <-gsub("det_", "", detected$Var1)
+detected$Var1<-as.numeric(as.character(detected$Var1))
+ggplot(data = detected, aes(x = Var1, y = value)) + geom_boxplot() + facet_grid(Var2 ~ .)
+ggplot(data = detected, aes(x = Var1, y = value)) + geom_boxplot()
+ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +stat_smooth(method ="loess")
+ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +geom_abline()
+ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +facet_grid(Var2 ~ .)+stat_smooth(aes(Var1, value), method = "loess")
 ```
 
 
