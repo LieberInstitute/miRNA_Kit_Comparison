@@ -158,7 +158,7 @@ for(i in Pheno$startingAmt) {
 Normalization by kit for each starting amount - to allow tests to compare kits at a given starting amt
 
 Later will do normalization by starting amount for each kit  individually to compare how consistent the data is between starting amounts for each kit
-```{r, eval= TRUE, echo =FALSE}
+```{r, eval= FALSE, echo =FALSE}
 #library(tweeDEseq)
 #miR_1000_TMM<-data.frame(normalizeCounts(miR_1000_raw)
 #dim(norm_miR_1000)
@@ -176,6 +176,24 @@ norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
 #str(norm_miR)
 
 ```
+
+###DESeq2
+```{r, eval=TRUE, warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+norm_miR <-list()
+for(i in unique(Pheno$startingAmt)){
+dds<-DESeqDataSetFromMatrix(countData = split_startingAmt[[i]], colData = Pheno[which(Pheno$startingAmt==i),], design = ~ Kit)
+dds <- estimateSizeFactors(dds)
+norm_miR[[i]]<-data.frame(counts(dds, normalized = TRUE))
+dim(norm_miR)
+miRge_synth<-norm_miR
+}
+
+```
+
+
+
+
 ####changed split function for 2 from 3
 Now split normalized data by kit for each amount
 ```{r}
@@ -446,7 +464,7 @@ make_plot(Within_error_df = Within_error_df)
 
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 100ng Starting Amount") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
-plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 100ng Starting Amount") + geom_violin( outlier.shape = NA)
+
 ```
 ###Within Error Batch 250ng
 ```{r}
@@ -493,7 +511,7 @@ make_plot <- function(Within_error_df) {
 make_plot(Within_error_df = Within_error_df)
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 250ng Starting Amount") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
-plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 250ng Starting Amount") + geom_violin( outlier.shape = NA)
+
 ```
 
 
@@ -547,7 +565,7 @@ make_plot(Within_error_df = Within_error_df)
 
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 500ng Starting Amount") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
-plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 500ng Starting Amount") + geom_violin( outlier.shape = NA)
+
 ```
 
 ```{r, echo=TRUE, message=FALSE, warning=FALSE, eval = TRUE}
@@ -673,7 +691,6 @@ make_plot(Within_error_df = Within_error_df)
 
 plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 2000ng Starting Amount") + geom_boxplot(varwidth = TRUE, outlier.shape = NA)
 
-plot1000  + theme(legend.position = "none") + labs(y = "Absolute error from the mean", title = "Within batch error across kits with 2000ng Starting Amount") + geom_violin(outlier.shape = NA)
 ```
 
 
