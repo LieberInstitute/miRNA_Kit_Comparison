@@ -586,7 +586,7 @@ VarExp[grep("Last", VarExp$variable),]
 #pheatmap(VarExp)
 
 var_Table <-read.table(here("Var_exp_Table"))
-rank_Table <-sapply(var_Table, rank, )
+rank_Table <-sapply((-1*var_Table), rank )
 ```
 
 
