@@ -235,6 +235,8 @@ for(kit in names(split_norm_Amt[[amt]])){
 
 #detection rate
 ```{r}
+library(reshape2)
+library(ggplot2)
 #100
 det_100<-lapply(split_amt_thresh$starting_amt_100, dim)
 #250
