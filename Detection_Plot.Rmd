@@ -192,13 +192,15 @@ lapply(model_summary, glance)# all significant
 
 t.test(split_kit$Clontech$miRNA, split_kit$NEXTflex$miRNA)
 
+t.test(split_amt$`100`$miRNA[grep("Clontech",split_amt$`100`$Kit)], split_amt$`100`$miRNA[grep("NEB", split_amt$`100`$Kit)])
+
 Det <-t(detected)
 colnames(Det)<- Pheno$Kit
 split_amt <-list()
 for(i in unique(Pheno$startingAmt)) { 
-  split_amt[[i]] <- data.frame(Det[,which(Pheno$startingAmt==i), drop = FALSE])
-  colnames(split_amt[[i]]) <- Pheno$Kit[which(Pheno$startingAmt==i),]
-} 
+    split_amt[[i]] <- data.frame(Det[,which(Pheno$startingAmt==i), drop = FALSE])
+    colnames(split_amt[[i]]) <- Pheno$Kit[which(Pheno$startingAmt==i)]}
+
 
 ```
 
