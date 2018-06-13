@@ -275,9 +275,12 @@ detected$Var1 <-gsub("det_", "", detected$Var1)
 detected$Var1<-as.numeric(as.character(detected$Var1))
 ggplot(data = detected, aes(x = Var1, y = value)) + geom_boxplot() + facet_grid(Var2 ~ .)
 ggplot(data = detected, aes(x = Var1, y = value)) + geom_boxplot()
-ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +stat_smooth(method ="loess")
+ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +stat_smooth(method ="lm")
 ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +geom_abline()
 ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +facet_grid(Var2 ~ .)+stat_smooth(aes(Var1, value), method = "loess")
+ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +facet_grid(.~Var2)+stat_smooth(aes(Var1, value), method = "loess") + scale_x_continuous(breaks=unique(detected$Var1)) + theme(legend.position = "none") + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits")
+
+ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_line() +facet_grid(.~Var2) + scale_x_continuous(breaks=unique(detected$Var1)) + theme(legend.position = "none") + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits")
 ```
 
 
@@ -813,7 +816,7 @@ norm_miR_kit[[i]] <-data.frame(TMM$pseudo.counts)
 #str(norm_miR_kit)
 
 ```
-
+   
 
 Now split normalized data by kit for each amount
 ```{r}

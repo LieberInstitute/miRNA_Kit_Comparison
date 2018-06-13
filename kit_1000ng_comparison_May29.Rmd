@@ -200,7 +200,7 @@ thresh<-lapply(split_batch, genefilt_fun)
 
 split_batch_thresh <-list()
 split_batch_thresh$Clontech1000_Batch1<-split_batch$Clontech1000_Batch1[thresh$Clontech1000_Batch1,]
-split_batch_thresh$Clontech1000_Batch2<-split_batch$Clontech1000_Batch2[thresh$Clontech1000_Batch2,]
+#split_batch_thresh$Clontech1000_Batch2<-split_batch$Clontech1000_Batch2[thresh$Clontech1000_Batch2,]
 split_batch_thresh$Illumina1000_Batch1<-split_batch$Illumina1000_Batch1[thresh$Illumina1000_Batch1,]
 split_batch_thresh$Illumina1000_Batch2<-split_batch$Illumina1000_Batch2[thresh$Illumina1000_Batch2,]
 split_batch_thresh$NEB1000_Batch1<-split_batch$NEB1000_Batch1[thresh$NEB1000_Batch1,]

@@ -12,7 +12,53 @@ library("reshape2")
 percentages <- read.table(here("Percentages_other_RNAs"), sep = "\t", header = TRUE)
 percent<-data.frame(t(percentages))
 RNAs<-percentages[-grep("File", colnames(percentages))]
-mRNA<-melt(RNAs, )
+RNAs$Input_Amount <- factor(RNAs$Input_Amount)
+RNAs <-RNAs[-grep("Fivepercent", RNAs$Kit),]
+RNAs$Kit <-gsub("Five_double", "Fivepercent", RNAs$Kit)
+
+
+mRNA<-melt(RNAs)
+mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex","Deduped", "Fivepercent"))
+
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_point() +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.)
+
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat = "identity", aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.)
+
+##The good one
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge", aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.) + ylim(0,100)
+
+RNAs <-RNAs[-grep("piRNAdb",colnames(RNAs))]
+RNAs <-RNAs[-grep("piRNAregRNA",colnames(RNAs))]
+RNAs <-RNAs[-grep("tRNA_UCSC",colnames(RNAs))]
+
+RNAs <-RNAs[-grep("Deduped", RNAs$Kit),]
+RNAs <-RNAs[-grep("Fivepercent", RNAs$Kit),]
+
+
+mRNA<-melt(RNAs)
+mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex"))
+
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge", aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.) + ylim(0,100)
+
+total_mapped<-data.frame(rowSums(RNAs[3:11]))
+RNAs$Perc_mapped <- total_mapped$rowSums.RNAs.3.11..
+RNAs$Perc_unmapped <- 100-total_mapped$rowSums.RNAs.3.11..
+
+### why is Deduped not 100%???? miRNA
+
+mRNA<-melt(RNAs)
+mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex"))
+
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge", aes(y =value, fill = Kit)) +theme(axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10)) +labs(y = "Percent of reads", title = "RNA representation across Kits", x = "Sequence Length")+facet_grid(Input_Amount~.) + ylim(0,100)
+
+
+### add adapter sequences dimer mapping?
+
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_point() +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10)) +facet_grid(.~Input_Amount) +coord_flip()
+
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_point() +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10)) +facet_grid(Input_Amount~.)+coord_flip()
+
+ggplot(mRNA, aes(x = variable, y = value, color = Kit))+ geom_bar(stat = "identity", aes(y =value, fill = Kit))  +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10)) +facet_grid(.~Input_Amount) +coord_flip()
 
 ```
 
