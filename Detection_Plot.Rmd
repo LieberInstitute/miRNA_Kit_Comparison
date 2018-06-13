@@ -142,7 +142,7 @@ dds <- estimateSizeFactors(dds)
 norm_miR<-data.frame(counts(dds, normalized = TRUE))
 
 
-get_det <-function(x){sum(x>10)}
+get_det <-function(x){sum(x>10)}#determine number of miRNAs with greater than 10 reads
 detected <-lapply(norm_miR, get_det)
 detected <-data.frame(unlist(detected))
 det_Data <- cbind(detected, Pheno$startingAmt, Pheno$Kit)
@@ -193,7 +193,7 @@ lapply(model_summary, glance)# only Deduped and Fivepercent are significant
 
 
 split_amt <-list()
-for(i in unique(Det_data$Starting_Amount)) { 
+for(i in unique(as.character(Det_data$Starting_Amount))) { 
   split_amt[[i]] <- data.frame(Det_data[which(Det_data$Starting_Amount==i),])
 } 
  run_model <-function(x){(lm(x[[4]]~x[[2]]))}
@@ -208,10 +208,10 @@ t.test(split_amt$`100`$miRNA[grep("Clontech",split_amt$`100`$Kit)], split_amt$`1
 
 Det <-t(detected)
 colnames(Det)<- Pheno$Kit
-split_amt <-list()
-for(i in unique(Pheno$startingAmt)) { 
-    split_amt[[i]] <- data.frame(Det[,which(Pheno$startingAmt==i), drop = FALSE])
-    colnames(split_amt[[i]]) <- Pheno$Kit[which(Pheno$startingAmt==i)]}
+#split_amt <-list()
+#for(i in unique(Pheno$startingAmt)) { 
+#    split_amt[[i]] <- data.frame(Det[,which(Pheno$startingAmt==i), drop = FALSE])
+#    colnames(split_amt[[i]]) <- Pheno$Kit[which(Pheno$startingAmt==i)]}
 
 
 ```
@@ -264,41 +264,41 @@ colnames(ttestStats_across)<-tested_kits
 ttestStats_across
 ```
 #detected miRNAs
-```{r}
+```{r, echo = FALSE, eval = FALSE}
 get_miRNAs <- function(x) {rownames(as.data.frame(x))}
-miRNA_det_100<-lapply(split_amt_thresh$starting_amt_100,get_miRNAs)
+miRNA_det_100<-lapply(split_amt$`100`,get_miRNAs)
 lengths<-lapply(miRNA_det_100, length)
 lengths<- paste0(lengths, "\n")
 names(miRNA_det_100) <-paste0(names(miRNA_det_100), "\n")
 names(miRNA_det_100) <-paste0(names(miRNA_det_100), lengths)
 
-miRNA_det_250<-lapply(split_amt_thresh$starting_amt_250,get_miRNAs)
+miRNA_det_250<-lapply(split_amt$`250`,get_miRNAs)
 lengths<-lapply(miRNA_det_250, length)
 names(miRNA_det_250) <-paste0(names(miRNA_det_250), "\n")
 names(miRNA_det_250) <-paste0(names(miRNA_det_250), lengths)
 
-miRNA_det_500<-lapply(split_amt_thresh$starting_amt_500,get_miRNAs)
+miRNA_det_500<-lapply(split_amt$`500`,get_miRNAs)
 lengths<-lapply(miRNA_det_500, length)
 names(miRNA_det_500) <-paste0(names(miRNA_det_500), "\n")
 names(miRNA_det_500) <-paste0(names(miRNA_det_500), lengths)
 
-miRNA_det_1000<-lapply(split_amt_thresh$starting_amt_1000,get_miRNAs)
+miRNA_det_1000<-lapply(split_amt$`1000`,get_miRNAs)
 lengths<-lapply(miRNA_det_1000, length)
 names(miRNA_det_1000) <-paste0(names(miRNA_det_1000), "\n")
 names(miRNA_det_1000) <-paste0(names(miRNA_det_1000), lengths)
 
-miRNA_det_1500<-lapply(split_amt_thresh$starting_amt_1500,get_miRNAs)
+miRNA_det_1500<-lapply(split_amt$`1500`,get_miRNAs)
 lengths<-lapply(miRNA_det_1500, length)
 names(miRNA_det_1500) <-paste0(names(miRNA_det_1500), "\n")
 names(miRNA_det_1500) <-paste0(names(miRNA_det_1500), lengths)
 
-miRNA_det_2000<-lapply(split_amt_thresh$starting_amt_2000,get_miRNAs)
+miRNA_det_2000<-lapply(split_amt$`2000`,get_miRNAs)
 lengths<-lapply(miRNA_det_2000, length)
 names(miRNA_det_2000) <-paste0(names(miRNA_det_2000), "\n")
 names(miRNA_det_2000) <-paste0(names(miRNA_det_2000), lengths)
 ```
 VennDiagram
-```{r}
+```{r, echo = FALSE, eval = FALSE}
 library(VennDiagram)
 gg_color_hue <- function(n) {
   hues = seq(15, 375, length = n + 1)
@@ -310,7 +310,7 @@ cols = gg_color_hue(n)
 cols <-c(cols[1], cols[3:6])
 
 Amount <-data.frame(paste0("amt_", det_Data$`Pheno$startingAmt`))
-vp_100 <- venn.diagram(det_Data$unlist.detected.[grep("100", Amount$paste0..amt_...det_Data..Pheno.startingAmt..),], fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15, .25))
+vp_100 <- venn.diagram(det_Data$unlist.detected.[grep("100", Amount$paste0..amt_...det_Data..Pheno.startingAmt..)], fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15, .25))
 vp_250 <- venn.diagram(miRNA_det_250, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15, .25))
 vp_500 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15, .25))
 n=5
