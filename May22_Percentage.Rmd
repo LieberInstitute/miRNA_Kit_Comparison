@@ -22,7 +22,6 @@ mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex","D
 
 ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_point() +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.)
 
-ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat = "identity", aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.)
 
 ##The good one
 ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge", aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.) + ylim(0,100)
@@ -51,7 +50,7 @@ mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex"))
 
 ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge", aes(y =value, fill = Kit)) +theme(axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10)) +labs(y = "Percent of reads", title = "RNA representation across Kits", x = "Sequence Length")+facet_grid(Input_Amount~.) + ylim(0,100)
 
-
+ggplot(mRNA, aes(x = Input_amount, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge", aes(y =value, fill = Kit)) +theme(axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10)) +labs(y = "Percent of reads", title = "RNA representation across Kits", x = "Sequence Length")+facet_grid(.~Input_Amount) + ylim(0,100)
 ### add adapter sequences dimer mapping?
 
 ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_point() +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10)) +facet_grid(.~Input_Amount) +coord_flip()
