@@ -213,6 +213,7 @@ for(i in Pheno$startingAmt) {
 #summarized data
 ```{r}
 library(here)
+library(ggplot2)
 load(here("IsomiR_data/norm_miR.rda"))
 load(here("IsomiR_data/total_miRNA.rda"))
 load(here("IsomiR_data/Pheno.rda"))
@@ -230,7 +231,9 @@ isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NE
 #ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, fill = Kit)) +geom_boxplot()+facet_grid(StartingAmt~.) + geom_jitter(aes(color = Kit))
 #ggplot(data =isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, fill = Kit)) +geom_point(aes(x = StartingAmt, y = total_isomiRs))+facet_grid(.~Kit) + geom_jitter(aes(color = Kit))
 
-ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = StartingAmt)) + geom_jitter()+ geom_boxplot(aes(fill = Kit)) + facet_grid(.~Kit) + scale_x_continuous(breaks=unique(isomiR_DATA$StartingAmt)) + theme(legend.position = "none", axis.text.x = element_text(angle = 90, hjust = 1)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
+ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = StartingAmt)) + geom_jitter(aes(color = Kit))+ geom_boxplot(aes(fill = Kit)) + facet_grid(.~Kit) + scale_x_continuous(breaks=unique(isomiR_DATA$StartingAmt)) + theme(legend.position = "none", axis.text.x = element_text(size =14, angle = 60, hjust = 1), axis.text.y = element_text(size =14, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 20)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "isomiRNA Detection across kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))  
+
+
 
 #total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
 
@@ -242,25 +245,108 @@ ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = Start
 
 
 ```
+#stats
+Is there a relationship between starting amount and the number detected
+```{r}
+library(broom)
+det_mod <-lm(isomiR_DATA$total_isomiRs ~ isomiR_DATA$StartingAmt)
+summary(det_mod)
+det_mod <-lm(isomiR_DATA$total_isomiRs ~isomiR_DATA$Kit)
+summary(det_mod)
+
+split_kit <-list()
+for(i in isomiR_DATA$Kit) { 
+  split_kit[[i]] <- data.frame(isomiR_DATA[which(Det_data$Kit==i),])
+} 
+#Det_data$Starting_Amount<-factor(Det_data$Starting_Amount)
+ run_model <-function(x){(lm(x[["total_isomiRs"]]~x[["StartingAmt"]]))}
+model_stats<-lapply(split_kit,run_model)
+model_summary<-lapply(model_stats, summary)
+lapply(model_summary, glance)# only Deduped and Fivepercent are significant
+
+model_summary$Deduped
+split_amt <-list()
+for(i in unique(as.character(Det_data$Starting_Amount))) { 
+  split_amt[[i]] <- data.frame(Det_data[which(Det_data$Starting_Amount==i),])
+} 
+ run_model <-function(x){(lm(x[["miRNA"]]~x[["Kit"]]))}
+model_stats<-lapply(split_amt,run_model)
+model_summary<-lapply(model_stats, summary)
+lapply(model_summary, glance)# all significant
+
+
+t.test(split_kit$Clontech$miRNA, split_kit$NEXTflex$miRNA)
+
+t.test(split_amt$`100`$miRNA[grep("Clontech",split_amt$`100`$Kit)], split_amt$`100`$miRNA[grep("NEB", split_amt$`100`$Kit)])
+
+Det <-t(detected)
+colnames(Det)<- Pheno$Kit
+#split_amt <-list()
+#for(i in unique(Pheno$startingAmt)) { 
+#    split_amt[[i]] <- data.frame(Det[,which(Pheno$startingAmt==i), drop = FALSE])
+#    colnames(split_amt[[i]]) <- Pheno$Kit[which(Pheno$startingAmt==i)]}
+
+
+```
+
+
+```{r, echo = TRUE, eval=TRUE}
+library(dplyr)
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(unique(names(data)), m= 2))
+}
+
+get_test_results<- function(data,test_names) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    #tested_names[[i]]<<-(test_names[i][,1])
+    Kit1<-data[grep(test_names[i][1,], names(data))]
+    Kit2<-data[grep(test_names[i][2,], names(data))]
+    #Kit1<-data.frame(select(data, names(data)[names(data) %in% test_names[i][1,]]))
+    #Kit2<-data.frame(select(data, names(data)[names(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-names(Kit1)
+    tested_names2[[i]]<<-names(Kit2)
+    # colnames(Kit1)<-c("error")
+    # colnames(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1[[1]][4], y=Kit2[[1]][4], paired = FALSE) ### may have messed things up adding paired = TRUE previously had more ))
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x) {
+  #print(length(test_names))
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni_thresh = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+}
+
+#get_lmStats <-function(x) {
+#  c(p=x$coefficients[2,4], scientific = TRUE, digits =2)
+#}
+```
+
+```{r}
+get_test_names(split_kit)
+get_test_results(data = split_kit, test_names = test_names)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+```
 
 
 Threshold across triplicates
-```{r}
+```{r, eval = FALSE}
 library(genefilter)
+library(reshape2)
 isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above10$total_isomiRs_above10, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
 isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
 
 isomiR_DATA$StartingAmt<-paste0("starting_amt_", isomiR_DATA$StartingAmt)
-# split_isoData <- list()
-# for(i in unique(isomiR_DATA$StartingAmt)) {
-#   split_isoData[[i]] <- data.frame(isomiR_DATA[which(isomiR_DATA$StartingAmt == i),])
-# }
 
-# split_kit_isoData <- list()
-# for(i in unique(isomiR_DATA$StartingAmt)) {
-#   for(kit in unique(isomiR_DATA$Kit)){
-#   split_kit_isoData[[i]][kit] <- data.frame(isomiR_DATA[which(isomiR_DATA$StartingAmt == i & isomiR_DATA$Kit == kit),])}
-# }
 
 Pheno$startingAmt <-factor(Pheno$startingAmt)
 split_kit_isoData <- list()
@@ -299,20 +385,263 @@ thresh_number$variable <-as.numeric(as.character(thresh_number$variable))
 thresh_number<-thresh_number[-which(thresh_number$value =="0"),]
 thresh_number$kit <- factor(thresh_number$kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
 
+save(thresh_number, file = here("IsomiR_data/thresh_number.rda") )
+```
+
+plot of threshold across Triplicates
+```{r}
+load(here("IsomiR_data/thresh_number.rda"))
 ggplot(data = thresh_number, aes(x = variable, y = value, group = variable)) + geom_jitter(aes(col = kit))+ facet_grid(.~kit) + scale_x_continuous(breaks=unique(thresh_number$variable)) + theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "isomiRNA Detection across kits > 10 reads in all triplicates") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
-
-
 
 ```
 
 
 How consistent are the results...
-1) number of identified isomirs
-2) identity of identified isomirs
-3) expression of identified isomirs within a kit across triplicates
+X1) number of identified isomirs - can see on first plot
+2) identity of identified isomirs - need to use annotation this could be useful - like venn diagrams ...but could just determine percentage instead?
+3) expression of identified isomirs within a kit across triplicates - this is more in depth... so maybe good just to go ahead to this??/
 4) expression of identified isomirs across kits or identity of identified isomirs
 
+```{r}
 
+lapply(split_amt_thresh[[as.character(amt)]], var)
+
+```
+#####start here for faster analysis
+
+```{r}
+load(here("isomiR_data_extended/iso_Raw.rda"))
+load(here("isomiR_data_extended/iso_anno.rda"))
+Pheno<- read.table(here("IsomiR_data/IsoPheno.txt"), header = T)
+identical(colnames(iso_Raw), as.character(Pheno$File))
+miR_counts <- read.table(here("isomiR_data_extended/miR.Counts.csv"),header = T, sep = ",")
+miR_counts <-miR_counts[-grep("fq.", colnames(miR_counts))]# to remove extra files.....
+miR_counts <-miR_counts[-grep("acc", colnames(miR_counts))]# to remove second batch of 1000ng files.....
+Total_counts <-miR_counts[1,]
+miR_counts <-miR_counts[-1,]
+miR_counts <-miR_counts[-1]
+#remove second batch of 1000ng starting input
+iso_Raw <- iso_Raw[-grep("acc", colnames(iso_Raw))]
+Pheno <- Pheno [-grep("acc", Pheno$File),]
+```
+
+
+### comparison of error for each kit for given starting amount
+##Split the data
+```{r}
+
+Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
+###split the data by starting Amount
+split_startingAmt <- list() 
+for(i in Pheno$startingAmt) { 
+  split_startingAmt[[i]] <- data.frame(iso_Raw[which(Pheno$startingAmt==i)])
+}
+###split the pheno by starting Amount
+Pheno_Amt <- list() 
+for(i in Pheno$startingAmt) { 
+  Pheno_Amt[[i]] <- data.frame(Pheno[which(Pheno$startingAmt==i),])
+}
+
+Can_split_startingAmt <- list() 
+for(i in Pheno$startingAmt) { 
+  Can_split_startingAmt[[i]] <- data.frame(miR_counts[which(Pheno$startingAmt==i)])
+}
+```
+###TMM Normalization
+
+Normalization by kit for each starting amount - to allow tests to compare kits at a given starting amt
+
+Later will do normalization by starting amount for each kit  individually to compare how consistent the data is between starting amounts for each kit
+```{r, eval= TRUE, echo =FALSE}
+#library(tweeDEseq)
+#miR_1000_TMM<-data.frame(normalizeCounts(miR_1000_raw)
+#dim(norm_miR_1000)
+#or
+library(edgeR)
+
+norm_miR <-list()
+for(i in unique(Pheno$startingAmt)){
+d<-DGEList(counts = split_startingAmt[[i]], group = Pheno$Kit[which(Pheno$startingAmt==i)])
+miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
+norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
+}
+
+#str(norm_miR)
+
+Can_norm_miR <-list()
+for(i in unique(Pheno$startingAmt)){
+d<-DGEList(counts =Can_split_startingAmt[[i]], group = Pheno$Kit[which(Pheno$startingAmt==i)])
+miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
+Can_norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
+}
+
+```
+
+Now split normalized data by kit for each amount
+```{r}
+
+split_norm_Amt <- list() 
+for(i in names(norm_miR)) {
+  for(kit in unique(Pheno_Amt[[i]][3]$Kit))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
+  split_norm_Amt[[i]][[kit]] <-data.frame(norm_miR[[i]][which(Pheno_Amt[[i]][3] == kit)]) # take only the values that correspond to that kit for that amount
+}
+
+Can_split_norm_Amt <- list() 
+for(i in names(Can_norm_miR)) {
+  for(kit in unique(Pheno_Amt[[i]][3]$Kit))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
+  Can_split_norm_Amt[[i]][[kit]] <-data.frame(Can_norm_miR[[i]][which(Pheno_Amt[[i]][3] == kit)]) # take only the values that correspond to that kit for that amount
+}
+#str(split_norm_Amt)
+```
+
+
+
+
+###Filter the data across triplicates for given kit at a given amount
+```{r}
+###genefilter
+library(genefilter)
+
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 100 normalized reads in all samples of the set... 
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+
+thresh <-list()
+<<<<<<< HEAD
+for(amt in names(split_norm_Amt)){
+thresh[[amt]]<-lapply(split_norm_Amt[[amt]], genefilt_fun)}
+
+Can_thresh <-list()
+for(amt in names(Can_split_norm_Amt)){
+Can_thresh[[amt]]<-lapply(Can_split_norm_Amt[[amt]], genefilt_fun)}
+=======
+for(amt in names(split_norm_Amt))
+thresh[[amt]]<-lapply(split_norm_Amt[[amt]], genefilt_fun)
+
+Can_thresh <-list()
+for(amt in names(Can_split_norm_Amt))
+Can_thresh[[amt]]<-lapply(Can_split_norm_Amt[[amt]], genefilt_fun)
+>>>>>>> b7bb0ed04bcb3658c273201b6af02e8a95fddf50
+
+
+test <-split_norm_Amt$starting_amt_1000$Clontech[thresh$starting_amt_1000$Clontech,]
+
+split_amt_thresh <-list()
+for(amt in names(split_norm_Amt)){
+for(kit in names(split_norm_Amt[[amt]])){
+ split_amt_thresh[[amt]][[kit]]<- split_norm_Amt[[amt]][[kit]][thresh[[amt]][[kit]],]}
+}
+
+Can_split_amt_thresh <-list()
+for(amt in names(Can_split_norm_Amt)){
+for(kit in names(Can_split_norm_Amt[[amt]])){
+ Can_split_amt_thresh[[amt]][[kit]]<- Can_split_norm_Amt[[amt]][[kit]][Can_thresh[[amt]][[kit]],]}
+}
+```
+
+#detected miRNAs
+```{r}
+head(iso_anno[rownames(split_amt_thresh$starting_amt_100$Clontech),])
+get_miRNAs <- function(x) {rownames(as.data.frame(x))}
+miRNA_det_100<-lapply(split_amt_thresh$starting_amt_100,get_miRNAs)
+lengths<-lapply(miRNA_det_100, length)
+lengths<- paste0(lengths, "\n")
+names(miRNA_det_100) <-paste0(names(miRNA_det_100), "\n")
+names(miRNA_det_100) <-paste0(names(miRNA_det_100), lengths)
+
+miRNA_det_250<-lapply(split_amt_thresh$starting_amt_250,get_miRNAs)
+lengths<-lapply(miRNA_det_250, length)
+names(miRNA_det_250) <-paste0(names(miRNA_det_250), "\n")
+names(miRNA_det_250) <-paste0(names(miRNA_det_250), lengths)
+
+miRNA_det_500<-lapply(split_amt_thresh$starting_amt_500,get_miRNAs)
+lengths<-lapply(miRNA_det_500, length)
+names(miRNA_det_500) <-paste0(names(miRNA_det_500), "\n")
+names(miRNA_det_500) <-paste0(names(miRNA_det_500), lengths)
+
+miRNA_det_1000<-lapply(split_amt_thresh$starting_amt_1000,get_miRNAs)
+lengths<-lapply(miRNA_det_1000, length)
+names(miRNA_det_1000) <-paste0(names(miRNA_det_1000), "\n")
+names(miRNA_det_1000) <-paste0(names(miRNA_det_1000), lengths)
+
+miRNA_det_1500<-lapply(split_amt_thresh$starting_amt_1500,get_miRNAs)
+lengths<-lapply(miRNA_det_1500, length)
+names(miRNA_det_1500) <-paste0(names(miRNA_det_1500), "\n")
+names(miRNA_det_1500) <-paste0(names(miRNA_det_1500), lengths)
+
+miRNA_det_2000<-lapply(split_amt_thresh$starting_amt_2000,get_miRNAs)
+lengths<-lapply(miRNA_det_2000, length)
+names(miRNA_det_2000) <-paste0(names(miRNA_det_2000), "\n")
+names(miRNA_det_2000) <-paste0(names(miRNA_det_2000), lengths)
+```
+
+#detected miRNAs Can
+```{r}
+Can_miRNA_det_100<-lapply(Can_split_amt_thresh$starting_amt_100,get_miRNAs)
+lengths<-lapply(Can_miRNA_det_100, length)
+lengths<- paste0(lengths, "\n")
+names(Can_miRNA_det_100) <-paste0(names(Can_miRNA_det_100), "\n")
+names(Can_miRNA_det_100) <-paste0(names(Can_miRNA_det_100), lengths)
+
+Can_miRNA_det_250<-lapply(Can_split_amt_thresh$starting_amt_250,get_miRNAs)
+lengths<-lapply(Can_miRNA_det_250, length)
+names(Can_miRNA_det_250) <-paste0(names(Can_miRNA_det_250), "\n")
+names(Can_miRNA_det_250) <-paste0(names(Can_miRNA_det_250), lengths)
+
+Can_miRNA_det_500<-lapply(Can_split_amt_thresh$starting_amt_500,get_miRNAs)
+lengths<-lapply(Can_miRNA_det_500, length)
+names(Can_miRNA_det_500) <-paste0(names(Can_miRNA_det_500), "\n")
+names(Can_miRNA_det_500) <-paste0(names(Can_miRNA_det_500), lengths)
+
+Can_miRNA_det_1000<-lapply(Can_split_amt_thresh$starting_amt_1000,get_miRNAs)
+lengths<-lapply(Can_miRNA_det_1000, length)
+names(Can_miRNA_det_1000) <-paste0(names(Can_miRNA_det_1000), "\n")
+names(Can_miRNA_det_1000) <-paste0(names(Can_miRNA_det_1000), lengths)
+
+Can_miRNA_det_1500<-lapply(Can_split_amt_thresh$starting_amt_1500,get_miRNAs)
+lengths<-lapply(Can_miRNA_det_1500, length)
+names(Can_miRNA_det_1500) <-paste0(names(Can_miRNA_det_1500), "\n")
+names(Can_miRNA_det_1500) <-paste0(names(Can_miRNA_det_1500), lengths)
+
+Can_miRNA_det_2000<-lapply(Can_split_amt_thresh$starting_amt_2000,get_miRNAs)
+lengths<-lapply(Can_miRNA_det_2000, length)
+names(Can_miRNA_det_2000) <-paste0(names(Can_miRNA_det_2000), "\n")
+names(Can_miRNA_det_2000) <-paste0(names(Can_miRNA_det_2000), lengths)
+```
+
+VennDiagram
+```{r}
+library(VennDiagram)
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 5
+cols = gg_color_hue(n)
+cols <-c(cols[1], cols[3:5])
+
+vp_100 <- venn.diagram(miRNA_det_100, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_250 <- venn.diagram(miRNA_det_250, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_500 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_1000 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_1500 <- venn.diagram(miRNA_det_1500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_2000 <- venn.diagram(miRNA_det_2000, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+
+
+vp_Can100 <- venn.diagram(Can_miRNA_det_100, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_Can250 <- venn.diagram(Can_miRNA_det_250, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_Can500 <- venn.diagram(Can_miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_Can1000 <- venn.diagram(Can_miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_Can1500 <- venn.diagram(Can_miRNA_det_1500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+vp_Can2000 <- venn.diagram(Can_miRNA_det_2000, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15))
+
+
+```
+
+grid.draw(vp_1000);
 
 
 OLDER

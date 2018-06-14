@@ -159,11 +159,11 @@ gg_color_hue <- function(n) {
 
 n = 6
 cols = gg_color_hue(n)
-ggplot(data = Det_data, aes(x = Starting_Amount, y = miRNA, color = Kit)) + geom_point() +facet_grid(.~Kit) + scale_x_continuous(breaks=unique(Det_data$Starting_Amount)) + theme(legend.position = "none") + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits")
+ggplot(data = Det_data, aes(x = Starting_Amount, y = miRNA, color = Kit)) + geom_point() +facet_grid(.~Kit) + scale_x_continuous(breaks=unique(Det_data$Starting_Amount)) + theme(legend.position = "none") + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
 
-ggplot(data = Det_data, aes(x = Starting_Amount, y = miRNA, group = Starting_Amount)) + geom_jitter()+ geom_boxplot(aes(fill = Kit)) +scale_fill_manual(values=cols)+ facet_grid(.~Kit) + scale_x_continuous(breaks=unique(Det_data$Starting_Amount)) + theme(legend.position = "none", axis.text.x = element_text(angle = 90, hjust = 1)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
+ggplot(data = Det_data, aes(x = Starting_Amount, y = miRNA, group = Starting_Amount)) + geom_jitter(aes(color = Kit))+ geom_boxplot(aes(fill = Kit)) +scale_fill_manual(values=cols)+ facet_grid(.~Kit) + scale_x_continuous(breaks=unique(Det_data$Starting_Amount)) + theme(legend.position = "none", axis.text.x = element_text(angle = 90, hjust = 1)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
 
-ggplot(data = Det_data, aes(x = Starting_Amount, y = miRNA, group = Starting_Amount)) + geom_jitter()+ geom_boxplot(aes(fill = Kit)) +scale_fill_manual(values=cols)+ facet_grid(.~Kit) + scale_x_continuous(breaks=unique(Det_data$Starting_Amount)) + theme(legend.position = "none", axis.text.x = element_text(angle = 90, hjust = 1)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))
+ggplot(data = Det_data, aes(x = Starting_Amount, y = miRNA, group = Starting_Amount)) + geom_jitter(aes(color = Kit))+ geom_boxplot(aes(fill = Kit)) +scale_fill_manual(values=cols)+ facet_grid(.~Kit)+theme(strip.text.x = element_text(size = 16)) + scale_x_continuous(breaks=unique(Det_data$Starting_Amount)) + theme(legend.position = "none", axis.text.x = element_text(size =14, angle = 60, hjust = 1), axis.text.y = element_text(size =14, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 20)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))  
 
 #to add formula   
 #https://stackoverflow.com/questions/7549694/adding-regression-line-equation-and-r2-on-graph
@@ -176,7 +176,7 @@ library(broom)
 det_mod <-lm(Det_data$miRNA ~ Det_data$Starting_Amount)
 summary(det_mod)
 det_mod <-lm(Det_data$miRNA ~ Det_data$Kit)
-anova(det_mod)
+summary(det_mod)
 
 det_mod <-lm(Det_data$miRNA ~ Det_data$Kit*Det_data$Starting_Amount)
 summary(det_mod)
@@ -186,9 +186,9 @@ for(i in Det_data$Kit) {
   split_kit[[i]] <- data.frame(Det_data[which(Det_data$Kit==i),])
 } 
 #Det_data$Starting_Amount<-factor(Det_data$Starting_Amount)
- run_model <-function(x){(lm(x[[4]]~x[[1]]))}
+ run_model <-function(x){(lm(x[["miRNA"]]~x[["Starting_Amount"]]))}
 model_stats<-lapply(split_kit,run_model)
-model_summary<-lapply(model_stats, anova)
+model_summary<-lapply(model_stats, summary)
 lapply(model_summary, glance)# only Deduped and Fivepercent are significant
 
 
@@ -196,7 +196,7 @@ split_amt <-list()
 for(i in unique(as.character(Det_data$Starting_Amount))) { 
   split_amt[[i]] <- data.frame(Det_data[which(Det_data$Starting_Amount==i),])
 } 
- run_model <-function(x){(lm(x[[4]]~x[[2]]))}
+ run_model <-function(x){(lm(x[["miRNA"]]~x[["Kit"]]))}
 model_stats<-lapply(split_amt,run_model)
 model_summary<-lapply(model_stats, summary)
 lapply(model_summary, glance)# all significant
