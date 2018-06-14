@@ -100,76 +100,90 @@ perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie 
 carrie@srv02:~/miRge/miRge-master$ perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles Clontech_trimmed.1_acc.fq,Clontech_trimmed.2_acc.fq,Clontech_trimmed.3_acc.fq,Illumina_trimmed.1_acc.fq,Illumina_trimmed.2_acc.fq,Illumina_trimmed.3_acc.fq,NEB_trimmed.1_acc.fq,NEB_trimmed.2_acc.fq,NEB_trimmed.3_acc.fq,NEXT_trimmed.1_acc.fq,NEXT_trimmed.2_acc.fq,NEXT_trimmed.3_acc.fq,directional_deduped_int_trim_Ns_rem_1_acc.fq,directional_deduped_int_trim_Ns_rem_2_acc.fq,directional_deduped_int_trim_Ns_rem_3_acc.fq,Clontech_trimmed.1.fq,Clontech_trimmed.2.fq,Clontech_trimmed.3.fq,Clontech_trimmed.4.fq,Clontech_trimmed.5.fq,Clontech_trimmed.6.fq,Clontech_trimmed.7.fq,Clontech_trimmed.8.fq,Clontech_trimmed.9.fq,Clontech_trimmed.10.fq,Clontech_trimmed.11.fq,Clontech_trimmed.12.fq,Clontech_trimmed.13.fq,Clontech_trimmed.14.fq,Clontech_trimmed.15.fq,Clontech_trimmed.16.fq,Clontech_trimmed.17.fq,Clontech_trimmed.18.fq,Illumina_trimmed.1.fq,Illumina_trimmed.2.fq,Illumina_trimmed.3.fq,Illumina_trimmed.4.fq,Illumina_trimmed.5.fq,Illumina_trimmed.6.fq,Illumina_trimmed.7.fq,Illumina_trimmed.8.fq,Illumina_trimmed.9.fq,NEB_trimmed.1.fq,NEB_trimmed.2.fq,NEB_trimmed.3.fq,NEB_trimmed.4.fq,NEB_trimmed.5.fq,NEB_trimmed.6.fq,NEB_trimmed.7.fq,NEB_trimmed.8.fq,NEB_trimmed.9.fq,NEB_trimmed.10.fq,NEB_trimmed.11.fq,NEB_trimmed.12.fq,NEXT_trimmed.1.fq,NEXT_trimmed.2.fq,NEXT_trimmed.3.fq,NEXT_trimmed.4.fq,NEXT_trimmed.5.fq,NEXT_trimmed.6.fq,NEXT_trimmed.7.fq,NEXT_trimmed.8.fq,NEXT_trimmed.9.fq,NEXT_trimmed.10.fq,NEXT_trimmed.11.fq,NEXT_trimmed.12.fq,NEXT_trimmed.13.fq,NEXT_trimmed.14.fq,NEXT_trimmed.15.fq,NEXT_trimmed.16.fq,NEXT_trimmed.17.fq,NEXT_trimmed.18.fq,directional_deduped_int_trim_Ns_rem_1.fq,directional_deduped_int_trim_Ns_rem_2.fq,directional_deduped_int_trim_Ns_rem_3.fq,directional_deduped_int_trim_Ns_rem_4.fq,directional_deduped_int_trim_Ns_rem_5.fq,directional_deduped_int_trim_Ns_rem_6.fq,directional_deduped_int_trim_Ns_rem_7.fq,directional_deduped_int_trim_Ns_rem_8.fq,directional_deduped_int_trim_Ns_rem_9.fq,directional_deduped_int_trim_Ns_rem_10.fq,directional_deduped_int_trim_Ns_rem_11.fq,directional_deduped_int_trim_Ns_rem_12.fq,directional_deduped_int_trim_Ns_rem_13.fq,directional_deduped_int_trim_Ns_rem_14.fq,directional_deduped_int_trim_Ns_rem_15.fq,directional_deduped_int_trim_Ns_rem_16.fq,directional_deduped_int_trim_Ns_rem_17.fq,directional_deduped_int_trim_Ns_rem_18.fq
 ```
 
-
+#Generate count data
 ```{r}
 library(here)
-here()#should be Kit_comparison_project
-#need subdirectory IsomiR_data with isomirs.csv inside
-isomiR_Counts <-read.table(here("IsomiR_16lim_data/isomirs.csv"), header = TRUE, sep = ",", row.names = NULL)
-colnames(isomiR_Counts)<-colnames(isomiR_Counts)[-(grep("row.names", colnames(isomiR_Counts)))]
-isomiR_Counts<-as.data.frame(isomiR_Counts)
-Entropy <- isomiR_Counts$Entropy
 
-Pheno<- read.table(here("Pheno_repro_full_1_16_18_ns_kept.txt"), header = T)
-Counts <-isomiR_Counts[3:93]
-#Counts <-Counts[-grep("fq.", colnames(Counts))]# to remove extra files.....
-
-colnames(Counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(Counts))
-colnames(Counts)<-gsub("NEXT_", "NEXTflex_", colnames(Counts))
+# isomiR_Counts <-read.table(here("isomirs.csv"), header = TRUE, sep = ",", row.names = NULL)
+# colnames(isomiR_Counts)<-colnames(isomiR_Counts)[-(grep("row.names", colnames(isomiR_Counts)))]# shift everything to right
+# isomiR_Counts<-as.data.frame(isomiR_Counts)
+# Entropy <- isomiR_Counts$Entropy
+# 
+#Pheno<- read.table(here("Brain_samples_missingClontech_batch2/Pheno_brain_full_May22.txt"), header = T)
+#Pheno <- Pheno[6:length(Pheno$File),]
+#Pheno$Kit <- gsub("Five_double","Fivepercent", Pheno$Kit)
+#Pheno$Kit <- gsub("NEXTflex_deduped","Deduped", Pheno$Kit)
+# Counts <-isomiR_Counts[3:(length(isomiR_Counts) -2)]
+# Counts <-Counts[6:length(Counts)]# to remove extra files.....
+# 
+# colnames(Counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(Counts))
+# colnames(Counts)<-gsub("NEXT_", "NEXTflex_", colnames(Counts))
+# annotation <-isomiR_Counts[1:2]
 
 #save(Counts, file =here("IsomiR_data/Counts.rda"))
 #save(Entropy, file = here("IsomiR_data/Entropy.rda"))
-
-
-#load(here("IsomiR_data/Entropy.rda"))
-#load(here("IsomiR_data/Counts.rda"))
+#save(annotation, file = here("IsomiR_data/annotation.rda"))
+#save(Pheno, file = here("IsomiR_data/Pheno.rda"))
 ```
 
 Need to convert from RPM to raw counts
 
-
-
 ```{r}
+# library(here)
+# iso_RPM <-Counts
+# 
+# library(XML)
+# report_url<-here("IsomiR_data/report.html")# from miRge
+# urltxt <- readLines(report_url)
+# report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
+# report <- report [-length(report)]
+# report <-as.data.frame(report)
+# report <-report[1:9]
+# report <-report[seq(from =1, to = nrow(report), by = 5),]# remove extra empty lines
+# report <- report[6:length(report$NULL.File.name.s.),]#remove extra files
+# total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))# all isomir and canoncial reads
+# total_miRNA<-vapply(strsplit(as.character(report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads),"/"),`[`, 2, FUN.VALUE=character(1))#need to use the filtered number of miRNA reads
+# total_miRNA<-gsub("[[:blank:]]", "", total_miRNA)
+# total_miRNA<-as.numeric(as.character(total_miRNA))
+# 
+# rep.row<-function(x,n){
+#    matrix(rep(x,each=n),nrow=n)
+# }
+# dimensions<-dim(iso_RPM)
+# Totalmatrix<-rep.row((total_miRNA/1000000), dimensions[1])#width of isoRPM2
+# 
+# iso_Raw<- (iso_RPM)*(as.numeric(Totalmatrix))
+#iso_Raw <- round(iso_Raw,digits = 0)
+#save(iso_Raw, file = here("IsomiR_data/Iso_raw.rda"))
+#save(total_miRNA, report, file = here("IsomiR_data/total_miRNA.rda"))
+```
+
+#load processed data
+```{eval = FALSE}
 library(here)
-Pheno<- read.table(here("../Pheno_repro_full_1_16_18_ns_kept"), header = TRUE)
-miR_counts<-read.table(here("IsomiR_16lim_data/miR.Counts.csv"), header = TRUE, sep = ",")
-#iso_RPM<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/isomirs.csv"), header = TRUE, sep = ",")
-iso_RPM <-isomiR_Counts
-#fixing the columns
-iso_anno <-iso_RPM[1:2]
-entropy <- iso_RPM$Entropy
-iso_RPM2<-iso_RPM[3:(length(colnames(iso_RPM))-2)]
+#load(here("IsomiR_data/Entropy.rda"))
+load(here("IsomiR_data/Iso_raw.rda"))
+load(here("IsomiR_data/annotation.rda"))
+load(here("IsomiR_data/Pheno.rda"))
+load(here("IsomiR_data/total_miRNA.rda"))
+```
 
+Normalization... I think I only need to do by kit...
+###DESeq2
+```{r, eval=FALSE, warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+library(reshape2)
+library(ggplot2)
+norm_miR <-list()
+Pheno$Kit<- factor(Pheno$Kit)
+dds<-DESeqDataSetFromMatrix(countData = iso_Raw, colData = Pheno, design = ~ Kit)
+dds <- estimateSizeFactors(dds)
+norm_miR<-data.frame(counts(dds, normalized = TRUE))
+save(norm_miR, file = here("IsomiR_data/norm_miR.rda"))
+```
 
-library(XML)
-report_url<-here("IsomiR_16lim_data/report.html")
-#report_url<-here("IsomiR_data/report.html")
-urltxt <- readLines(report_url)
-report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
-report <- report [-length(report)]
-report <-as.data.frame(report)
-report <-report[1:9]
-report <-report[seq(from =1, to = nrow(report), by = 5),]
-total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
-total_miRNA<-vapply(strsplit(as.character(report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads),"/"),`[`, 2, FUN.VALUE=character(1))#need to use the filtered number of miRNA reads
-total_miRNA<-gsub("[[:blank:]]", "", total_miRNA)
-total_miRNA<-as.numeric(as.character(total_miRNA))
-total_miRNA2 <-miR_counts[1,][-1]
-###convert to raw counts... use miR_counts to get total miRNA mapped number - so the miRcounts I believe includes all sequences that allign - isomir and canonical
-#Total<-(miR_counts[1,])[-1] #remove miRNA column
-Total<-(total_miRNA) #remove miRNA column
-
-rep.row<-function(x,n){
-   matrix(rep(x,each=n),nrow=n)
-}
-dimensions<-dim(iso_RPM2)
-Totalmatrix<-rep.row((Total/1000000), dimensions[1])#width of isoRPM2
-
-iso_Raw<- (iso_RPM2)*(as.numeric(Totalmatrix))
-#iso_anno <-iso_RPM2_anno
-
-#iso_Raw <-as.data.frame(sapply(iso_Raw, as.integer))
-
+Could do fancier normalization
+```{r, eval = FALSE, echo = FALSE}
 Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
 ###split the data by starting Amount
 split_startingAmt <- list() 
@@ -182,14 +196,14 @@ for(i in Pheno$startingAmt) {
   Pheno_Amt[[i]] <- data.frame(Pheno[which(Pheno$startingAmt==i),])
 }
 
-library(edgeR)
-norm_miR <-list()
-for(i in unique(Pheno$startingAmt)){
-d<-DGEList(counts = split_startingAmt[[i]], group = Pheno$Kit[which(Pheno$startingAmt==i)])
-miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
-TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
-norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
-}
+# library(edgeR)
+# norm_miR <-list()
+# for(i in unique(Pheno$startingAmt)){
+# d<-DGEList(counts = split_startingAmt[[i]], group = Pheno$Kit[which(Pheno$startingAmt==i)])
+# miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+# TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
+# norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
+# }
 
 #save(norm_miR, miR_counts, Pheno, file = here("IsomiR_16lim_data/iso_data.rda"))
 ```
@@ -199,41 +213,113 @@ norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
 #summarized data
 ```{r}
 library(here)
-load(here("IsomiR_16lim_data/iso_data.rda"))
+load(here("IsomiR_data/norm_miR.rda"))
+load(here("IsomiR_data/total_miRNA.rda"))
+load(here("IsomiR_data/Pheno.rda"))
 norm_miRDF <-data.frame(norm_miR)
-total_isomiRs_above10 <- colSums(norm_miRDF>10)
+total_isomiRs_above10 <- colSums(norm_miRDF>100)
 total_isomiR_reads <- colSums(norm_miRDF)
 total_isomiR_reads <-data.frame(total_isomiR_reads)
 total_isomiRs_above10<-data.frame(total_isomiRs_above10)
 total_isomiR<-cbind(total_isomiR_reads, total_isomiRs_above10)
-total_miRNA <-miR_counts[1,][-1]
 
-report_url<-here("IsomiR_16lim_data/report.html")
-urltxt <- readLines(report_url)
-report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
-report <- report [-length(report)]
-report <-as.data.frame(report)
-report <-report[1:9]
-report <-report[seq(from =1, to = nrow(report), by = 5),]
-total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
+isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above10$total_isomiRs_above10, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
+isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
+
+#ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, fill = Kit)) +geom_boxplot()+facet_grid(.~StartingAmt)
+#ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, fill = Kit)) +geom_boxplot()+facet_grid(StartingAmt~.) + geom_jitter(aes(color = Kit))
+#ggplot(data =isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, fill = Kit)) +geom_point(aes(x = StartingAmt, y = total_isomiRs))+facet_grid(.~Kit) + geom_jitter(aes(color = Kit))
+
+ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = StartingAmt)) + geom_jitter()+ geom_boxplot(aes(fill = Kit)) + facet_grid(.~Kit) + scale_x_continuous(breaks=unique(isomiR_DATA$StartingAmt)) + theme(legend.position = "none", axis.text.x = element_text(angle = 90, hjust = 1)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
+
+#total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
 
 
-summarized_Data <- data.frame(total_miRNA=t(as.vector(total_miRNA)), report$NULL.Total.Input.Reads)
-colnames(summarized_Data)[1] <- c("total_miRNA_reads")
-summarized_Data$percentmiRNA <- (as.numeric(summarized_Data$total_miRNA_reads)/as.numeric(as.character(summarized_Data$report.NULL.Total.Input.Reads)))*100
+#summarized_Data <- data.frame(total_miRNA=(as.data.frame(total_miRNA)), totalreads =report$NULL.Total.Input.Reads)
+#summarized_Data$percentmiRNA <- (as.numeric(summarized_Data$total_miRNA)/as.numeric(as.character(summarized_Data$totalreads)))*100
+#summarized_Data$Kit <- Pheno$Kit
 
 
 
 ```
 
 
-
+Threshold across triplicates
 ```{r}
-load(here("IsomiR_data_new_incomplete/iso_data.rda"))
+library(genefilter)
+isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above10$total_isomiRs_above10, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
+isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
 
+isomiR_DATA$StartingAmt<-paste0("starting_amt_", isomiR_DATA$StartingAmt)
+# split_isoData <- list()
+# for(i in unique(isomiR_DATA$StartingAmt)) {
+#   split_isoData[[i]] <- data.frame(isomiR_DATA[which(isomiR_DATA$StartingAmt == i),])
+# }
+
+# split_kit_isoData <- list()
+# for(i in unique(isomiR_DATA$StartingAmt)) {
+#   for(kit in unique(isomiR_DATA$Kit)){
+#   split_kit_isoData[[i]][kit] <- data.frame(isomiR_DATA[which(isomiR_DATA$StartingAmt == i & isomiR_DATA$Kit == kit),])}
+# }
+
+Pheno$startingAmt <-factor(Pheno$startingAmt)
+split_kit_isoData <- list()
+for(i in unique(Pheno$startingAmt)) {
+  for(kit in unique(Pheno$Kit)){
+  split_kit_isoData[[i]][[kit]] <- data.frame(norm_miR[which(Pheno$startingAmt == as.character(i) & Pheno$Kit == as.character(kit))])}
+}
+
+poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 normalized reads in all samples of the set... 
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+
+thresh <-list()
+for(amt in names(split_kit_isoData)){
+thresh[[amt]]<-lapply(split_kit_isoData[[as.character(amt)]], genefilt_fun)}
+
+test <-split_kit_isoData$`100`$Clontech[thresh$`100`$Clontech,]
+
+split_amt_thresh <-list()
+for(amt in names(split_kit_isoData)){
+for(kit in names(split_kit_isoData[[amt]])){
+ split_amt_thresh[[amt]][[kit]]<- split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],]}
+}
+
+thresh_number <- list()
+for(amt in names(split_kit_isoData)){
+for(kit in names(split_kit_isoData[[amt]])){
+thresh_number[[amt]][[kit]]<- dim(split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],])[1]}
+}
+
+thresh_number <-data.frame(thresh_number)
+colnames(thresh_number) <-c("100", "250", "500", "1000", "1500", "2000")
+thresh_number$kit <- rownames(thresh_number)
+thresh_number <-melt(thresh_number)
+thresh_number$variable <-as.numeric(as.character(thresh_number$variable))
+thresh_number<-thresh_number[-which(thresh_number$value =="0"),]
+thresh_number$kit <- factor(thresh_number$kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+
+ggplot(data = thresh_number, aes(x = variable, y = value, group = variable)) + geom_jitter(aes(col = kit))+ facet_grid(.~kit) + scale_x_continuous(breaks=unique(thresh_number$variable)) + theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "isomiRNA Detection across kits > 10 reads in all triplicates") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
+
+
+
+```
+
+
+How consistent are the results...
+1) number of identified isomirs
+2) identity of identified isomirs
+3) expression of identified isomirs within a kit across triplicates
+4) expression of identified isomirs across kits or identity of identified isomirs
+
+
+
+
+OLDER
+```{r}
 split_norm_Amt <- list() 
 for(i in names(norm_miR)) {
-  for(kit in unique(Pheno_Amt[[i]][3]$Kit))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
+  for(kit in unique(Pheno_Amt[[i]][3]))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
   split_norm_Amt[[i]][[kit]] <-data.frame(norm_miR[[i]][which(Pheno_Amt[[i]][3] == kit)]) # take only the values that correspond to that kit for that amount
 }
 
@@ -259,7 +345,7 @@ for(kit in names(split_norm_Amt[[amt]])){
 
 #detected miRNAs
 
-head(iso_anno[rownames(split_amt_thresh$starting_amt_100$Clontech),])
+head(annotation[rownames(split_amt_thresh$starting_amt_100$Clontech),])
 get_miRNAs <- function(x) {rownames(as.data.frame(x))}
 miRNA_det_100<-lapply(split_amt_thresh$starting_amt_100,get_miRNAs)
 lengths<-lapply(miRNA_det_100, length)

@@ -366,7 +366,7 @@ FoldGplot <-errorFoldG
 FoldGplot$FoldG <-factor(FoldGplot$FoldG)
 ggplot(data = melt(FoldGplot), aes(x=FoldG, y = value, fill = variable)) + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")
 
-table(round(FoldG))
+table(round(seqs$FoldG))
 
 ```
 
@@ -400,7 +400,7 @@ errorData_toplot<-(errorData_toplot /colMeans(errorData_toplot))*100
 error<-as.data.frame(cbind(duplets, errorData_toplot))
 colnames(error) <- c("duplets", "Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
 
-aggdata <-aggregate(error[2:7], by=list(error$dublets), FUN=mean)
+aggdata <-aggregate(error, by=list(error$duplets), FUN=mean)
 rownames(aggdata) <- aggdata$Group.1
 aggdata<-aggdata[which(colnames(aggdata)!="Group.1"&colnames(aggdata)!="FoldG")]
 #sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
@@ -426,10 +426,10 @@ pheatmap(sorted_aggdata, color=myColor, breaks=myBreaks, main = "Duplets", clust
 ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(min(myBreaks-10), max(myBreaks+10)))
 errorplot <-error
 
-errorplot$dublets <-factor(error$dublets)
-ggplot(data = melt(errorplot), aes(x=dublets, y = value, fill = variable)) + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")
+errorplot$duplets <-factor(error$duplets)
+ggplot(data = melt(errorplot), aes(x=duplets, y = value, fill = variable)) + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")
 
-table(round(FoldG))
+table(round(seqs$FoldG))
 
 ```
 
@@ -529,7 +529,7 @@ pd$anyA <- anyA
 
 varCompAnalysis = apply(t(yGene),1,function(y) {
   if(runif(1) < 1e-4) cat(".")
-  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + dublets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT, data=pd)
+  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT, data=pd)
   full = anova(fit)
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
@@ -543,7 +543,7 @@ labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(vare
 colnames(labels_varexp)<-c("Kit", "variable")
 #colnames(labels_varexp)<-c("variable")
 VarExp<-cbind(labels_varexp,varexp$PctExp)
-#VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "dublets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
+#VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "duplets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
 VarExp$KitF <- factor(VarExp$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
 plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp)) + geom_boxplot(aes(fill = "black"), notch = TRUE, outlier.shape=NA) +facet_grid(~KitF)
 plotfull +ggtitle("Percent of Variance Explained by Influential Factors") +
@@ -702,7 +702,7 @@ pd$anyG
 
 varCompAnalysis = apply(t(yGene),1,function(y) {
   if(runif(1) < 1e-4) cat(".")
-  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + dublets+ AAAA+ TTTT + CCCC + GGGG + quads+ anyT + anyC + anyA + any G, data=pd)
+  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ AAAA+ TTTT + CCCC + GGGG + anyT + anyC + anyA + anyG, data=pd)
   full = anova(fit)
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
@@ -716,7 +716,7 @@ labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(vare
 colnames(labels_varexp)<-c("Kit", "variable")
 #colnames(labels_varexp)<-c("variable")
 VarExp<-cbind(labels_varexp,varexp$PctExp)
-VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "dublets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
+VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "duplets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
 VarExp$KitF <- factor(VarExp$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
 plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp)) + geom_boxplot(aes(fill = "black"), notch = TRUE, outlier.shape=NA) +facet_grid(~KitF)
 plotfull +ggtitle("Percent of Variance Explained by Influential Factors") +
