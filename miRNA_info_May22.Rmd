@@ -24,7 +24,7 @@ library(jaffelab)
 seqs<-Biostrings::readRNAStringSet(here("mature_hsa.fa"))
 seqs_human <-data.frame(seqs)
 #alphabetFrequency(seqs)
-GCcount<-letterFrequency(seqs, letters = c("CG"), as.prob = TRUE)
+GCcount<-data.frame(letterFrequency(seqs, letters = c("CG"), as.prob = TRUE))
 
 
 #GCcont <-data.frame(GCcont = GCcont)
@@ -32,11 +32,12 @@ length<-width(seqs)
 seqs_human$name <-rownames(seqs_human)
 seqs_human$name <-jaffelab::ss(seqs_human$name,pattern = " ", 1)
 rownames(seqs_human) <- NULL
-seqs_human$GC <- as.vector(GCcont)
+seqs_human$GC <- GCcount$C.G
 seqs_human$length <-length
 
 seqs_human$cDNA<-gsub("U", "T", seqs_human$seqs)
 seqs_human$FoldG<-FoldG$FoldG
+save(seqs_human, file = here("hsa_miRNA_info.rda"))
 ```
 
 

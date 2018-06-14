@@ -159,7 +159,8 @@ Need to convert from RPM to raw counts
 ```
 
 #load processed data
-```{r}
+```{eval = FALSE}
+library(here)
 #load(here("IsomiR_data/Entropy.rda"))
 load(here("IsomiR_data/Iso_raw.rda"))
 load(here("IsomiR_data/annotation.rda"))
@@ -169,7 +170,7 @@ load(here("IsomiR_data/total_miRNA.rda"))
 
 Normalization... I think I only need to do by kit...
 ###DESeq2
-```{r, eval=TRUE, warning=FALSE, message=FALSE, echo =FALSE}
+```{r, eval=FALSE, warning=FALSE, message=FALSE, echo =FALSE}
 library(DESeq2)
 library(reshape2)
 library(ggplot2)
@@ -182,7 +183,7 @@ save(norm_miR, file = here("IsomiR_data/norm_miR.rda"))
 ```
 
 Could do fancier normalization
-```{r, eval = FALSE}
+```{r, eval = FALSE, echo = FALSE}
 Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
 ###split the data by starting Amount
 split_startingAmt <- list() 
@@ -195,14 +196,14 @@ for(i in Pheno$startingAmt) {
   Pheno_Amt[[i]] <- data.frame(Pheno[which(Pheno$startingAmt==i),])
 }
 
-library(edgeR)
-norm_miR <-list()
-for(i in unique(Pheno$startingAmt)){
-d<-DGEList(counts = split_startingAmt[[i]], group = Pheno$Kit[which(Pheno$startingAmt==i)])
-miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
-TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
-norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
-}
+# library(edgeR)
+# norm_miR <-list()
+# for(i in unique(Pheno$startingAmt)){
+# d<-DGEList(counts = split_startingAmt[[i]], group = Pheno$Kit[which(Pheno$startingAmt==i)])
+# miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+# TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
+# norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
+# }
 
 #save(norm_miR, miR_counts, Pheno, file = here("IsomiR_16lim_data/iso_data.rda"))
 ```
@@ -214,6 +215,7 @@ norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
 library(here)
 load(here("IsomiR_data/norm_miR.rda"))
 load(here("IsomiR_data/total_miRNA.rda"))
+load(here("IsomiR_data/Pheno.rda"))
 norm_miRDF <-data.frame(norm_miR)
 total_isomiRs_above10 <- colSums(norm_miRDF>100)
 total_isomiR_reads <- colSums(norm_miRDF)
@@ -224,29 +226,100 @@ total_isomiR<-cbind(total_isomiR_reads, total_isomiRs_above10)
 isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above10$total_isomiRs_above10, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
 isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
 
-ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, fill = Kit)) +geom_boxplot()+facet_grid(.~StartingAmt)
-ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, color = Kit)) +geom_boxplot()+facet_grid(StartingAmt~.)
+#ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, fill = Kit)) +geom_boxplot()+facet_grid(.~StartingAmt)
+#ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, fill = Kit)) +geom_boxplot()+facet_grid(StartingAmt~.) + geom_jitter(aes(color = Kit))
+#ggplot(data =isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, fill = Kit)) +geom_point(aes(x = StartingAmt, y = total_isomiRs))+facet_grid(.~Kit) + geom_jitter(aes(color = Kit))
+
+ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = StartingAmt)) + geom_jitter()+ geom_boxplot(aes(fill = Kit)) + facet_grid(.~Kit) + scale_x_continuous(breaks=unique(isomiR_DATA$StartingAmt)) + theme(legend.position = "none", axis.text.x = element_text(angle = 90, hjust = 1)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
+
+#total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
 
 
-total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
-
-
-summarized_Data <- data.frame(total_miRNA=(as.data.frame(total_miRNA)), totalreads =report$NULL.Total.Input.Reads)
-summarized_Data$percentmiRNA <- (as.numeric(summarized_Data$total_miRNA)/as.numeric(as.character(summarized_Data$totalreads)))*100
-summarized_Data$Kit <- Pheno$Kit
+#summarized_Data <- data.frame(total_miRNA=(as.data.frame(total_miRNA)), totalreads =report$NULL.Total.Input.Reads)
+#summarized_Data$percentmiRNA <- (as.numeric(summarized_Data$total_miRNA)/as.numeric(as.character(summarized_Data$totalreads)))*100
+#summarized_Data$Kit <- Pheno$Kit
 
 
 
 ```
 
 
-
+Threshold across triplicates
 ```{r}
-load(here("IsomiR_data_new_incomplete/iso_data.rda"))
+library(genefilter)
+isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above10$total_isomiRs_above10, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
+isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
 
+isomiR_DATA$StartingAmt<-paste0("starting_amt_", isomiR_DATA$StartingAmt)
+# split_isoData <- list()
+# for(i in unique(isomiR_DATA$StartingAmt)) {
+#   split_isoData[[i]] <- data.frame(isomiR_DATA[which(isomiR_DATA$StartingAmt == i),])
+# }
+
+# split_kit_isoData <- list()
+# for(i in unique(isomiR_DATA$StartingAmt)) {
+#   for(kit in unique(isomiR_DATA$Kit)){
+#   split_kit_isoData[[i]][kit] <- data.frame(isomiR_DATA[which(isomiR_DATA$StartingAmt == i & isomiR_DATA$Kit == kit),])}
+# }
+
+Pheno$startingAmt <-factor(Pheno$startingAmt)
+split_kit_isoData <- list()
+for(i in unique(Pheno$startingAmt)) {
+  for(kit in unique(Pheno$Kit)){
+  split_kit_isoData[[i]][[kit]] <- data.frame(norm_miR[which(Pheno$startingAmt == as.character(i) & Pheno$Kit == as.character(kit))])}
+}
+
+poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 normalized reads in all samples of the set... 
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+
+thresh <-list()
+for(amt in names(split_kit_isoData)){
+thresh[[amt]]<-lapply(split_kit_isoData[[as.character(amt)]], genefilt_fun)}
+
+test <-split_kit_isoData$`100`$Clontech[thresh$`100`$Clontech,]
+
+split_amt_thresh <-list()
+for(amt in names(split_kit_isoData)){
+for(kit in names(split_kit_isoData[[amt]])){
+ split_amt_thresh[[amt]][[kit]]<- split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],]}
+}
+
+thresh_number <- list()
+for(amt in names(split_kit_isoData)){
+for(kit in names(split_kit_isoData[[amt]])){
+thresh_number[[amt]][[kit]]<- dim(split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],])[1]}
+}
+
+thresh_number <-data.frame(thresh_number)
+colnames(thresh_number) <-c("100", "250", "500", "1000", "1500", "2000")
+thresh_number$kit <- rownames(thresh_number)
+thresh_number <-melt(thresh_number)
+thresh_number$variable <-as.numeric(as.character(thresh_number$variable))
+thresh_number<-thresh_number[-which(thresh_number$value =="0"),]
+thresh_number$kit <- factor(thresh_number$kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+
+ggplot(data = thresh_number, aes(x = variable, y = value, group = variable)) + geom_jitter(aes(col = kit))+ facet_grid(.~kit) + scale_x_continuous(breaks=unique(thresh_number$variable)) + theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "isomiRNA Detection across kits > 10 reads in all triplicates") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
+
+
+
+```
+
+
+How consistent are the results...
+1) number of identified isomirs
+2) identity of identified isomirs
+3) expression of identified isomirs within a kit across triplicates
+4) expression of identified isomirs across kits or identity of identified isomirs
+
+
+
+
+OLDER
+```{r}
 split_norm_Amt <- list() 
 for(i in names(norm_miR)) {
-  for(kit in unique(Pheno_Amt[[i]][3]$Kit))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
+  for(kit in unique(Pheno_Amt[[i]][3]))# take the third list from each respective amount selected from norm_miR names - the third is the kit - so for each kit in the list of kits for a given amount...
   split_norm_Amt[[i]][[kit]] <-data.frame(norm_miR[[i]][which(Pheno_Amt[[i]][3] == kit)]) # take only the values that correspond to that kit for that amount
 }
 
@@ -272,7 +345,7 @@ for(kit in names(split_norm_Amt[[amt]])){
 
 #detected miRNAs
 
-head(iso_anno[rownames(split_amt_thresh$starting_amt_100$Clontech),])
+head(annotation[rownames(split_amt_thresh$starting_amt_100$Clontech),])
 get_miRNAs <- function(x) {rownames(as.data.frame(x))}
 miRNA_det_100<-lapply(split_amt_thresh$starting_amt_100,get_miRNAs)
 lengths<-lapply(miRNA_det_100, length)
