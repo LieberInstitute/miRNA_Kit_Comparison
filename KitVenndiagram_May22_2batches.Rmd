@@ -1,0 +1,619 @@
+---
+title: "Kit_Venndiagram_1_19_18"
+author: "Carrie Wright"
+date: "1/19/2018"
+output: html_document
+---
+
+load the data
+```{r, eval=TRUE, echo=FALSE}
+library(edgeR)
+library(here)
+#Pheno<- read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/Pheno_repro_full_1_16_18_ns_kept", header = T)
+Pheno<-read.table(here("Complete_data/Pheno.txt"), header = TRUE)
+#miR_counts<-read.table("/home/carrie/miRge/miRge-master/Keeping_Ns_Repro_Analysis/miR.Counts.csv", header = TRUE, sep = ",") #original location
+#miR_counts<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/ReproData/miR.Counts.csv", header = TRUE, sep = ",")
+miR_counts<-read.table(here("/Complete_data/miR.Counts.csv"), header = TRUE, sep = ",")
+
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+
+colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
+colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+miR_counts<-miR_counts[-1,]#remove total miRNA counts row
+
+Pheno$File<-gsub("NEXTflex_deduped", "Deduped", Pheno$File)
+Pheno$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno$Kit)
+Pheno$TriplicateGroup<-gsub("NEXTflex_deduped", "Deduped", Pheno$TriplicateGroup)
+Pheno$miRNAtotal <-miRNAtotal
+ 
+identical(as.character(Pheno$File), colnames(data.frame(miR_counts))) ###Check that these match 
+identical(rownames(miRNAtotal), Pheno$File)
+
+```
+## to grab only 1microgram starting amt
+```{r}
+miR_counts <- data.frame(miR_counts[which(Pheno$startingAmt == "1000")])
+Pheno <- data.frame(Pheno[which(Pheno$startingAmt == "1000"),]) 
+```
+
+###TMM Normalization
+
+```{r, eval= FALSE, echo =FALSE}
+library(edgeR)
+group <-Pheno$Kit
+d<-DGEList(counts = miR_counts, group = group)
+miR_1000_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_1000_TMM_edgeR_factors)
+norm_miR_counts <-data.frame(TMM$pseudo.counts)
+dim(norm_miR_counts)
+```
+
+###DESeq2
+```{r, eval=TRUE,warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+dds<-DESeqDataSetFromMatrix(countData = miR_counts, colData = Pheno, design = ~ Kit)
+dds <- estimateSizeFactors(dds)
+norm_miR_counts<-data.frame(counts(dds, normalized = TRUE))
+dim(norm_miR_counts)
+```
+
+```{r}
+###split the data by kit
+split_kit <- list() 
+for(i in Pheno$Kit) { 
+  split_kit[[i]] <- data.frame(norm_miR_counts[which(Pheno$Kit==i)]) #raw counts
+} 
+
+```
+
+
+```{r}
+###genefilter
+library(genefilter)
+library(VennDiagram)
+#library(venneuler)
+#poverafun <- genefilter::pOverA(p = .5, A = 529)# at least 529 reads for 50% of samples
+poverafun <- genefilter::pOverA(p = 1, A = 1)#at least 100 normalized reads in all samples of the set... 
+#poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 raw reads in all samples #292
+#poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 raw reads in all samples #125
+
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+thresh<-lapply(split_kit, genefilt_fun)
+
+split_kit_thresh <-list()
+split_kit_thresh$Clontech<-split_kit$Clontech[thresh$Clontech,]
+split_kit_thresh$NEB<-split_kit$NEB[thresh$NEB,]
+split_kit_thresh$NEXTflex<-split_kit$NEXTflex[thresh$NEXTflex,]
+split_kit_thresh$Illumina<-split_kit$Illumina[thresh$Illumina,]
+split_kit_thresh$Deduped<-split_kit$Deduped[thresh$Deduped,]
+
+dim(split_kit_thresh$Clontech)
+dim(split_kit_thresh$Illumina)
+dim(split_kit_thresh$NEB)
+dim(split_kit_thresh$NEXTflex)
+dim(split_kit_thresh$Deduped)
+
+
+#doesn't include overlaps and greater than 4 expression value
+Clontech<-as.vector(rownames(split_kit_thresh$Clontech))
+Illumina<-as.vector(rownames(split_kit_thresh$Illumina))
+NEB<-as.vector(rownames(split_kit_thresh$NEB))
+NEXTflex<-as.vector(rownames(split_kit_thresh$NEXTflex))
+Deduped<-as.vector(rownames(split_kit_thresh$Deduped))
+
+
+
+#miRNA_det<-list("Clontech" = Clontech, "Illumina" = Illumina, "NEB" = NEB, "NextFlex" =NEXTflex)
+
+miRNA_det<-list("Clontech\n(N=480)" = Clontech, "Illumina\n(N=186)" = Illumina, "NEB\n(N=792)" = NEB, "NextFlex\n(N=747)" =NEXTflex, "Deduped\n(N=717)" = Deduped)
+
+
+
+#vp_alpha <- venn.diagram(miRNA_det, fill = c("red", "white", "blue", "green"), alpha = 0.5, filename = NULL)
+
+#grid.draw(vp_alpha);
+#venn.plot <- venn.diagram(
+# x = miRNA_det,
+#  filename = NULL
+#)
+#grid.draw(venn.plot)
+```
+VennDiagram
+```{r}
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 5
+cols = gg_color_hue(n)
+cols <-cols[1:5]
+vp_alpha <- venn.diagram(miRNA_det, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.3,.3,.3, .3, .3))
+
+
+grid.draw(vp_alpha);
+
+#dev.new(width = 4, height = 4)
+#plot(1:n, pch = 16, cex = 2, col = cols)
+```
+
+Need to run grid.draw(vp_alpha) seperately
+
+
+
+Characterize the unique miRNAs for each kit
+
+Use the fasta file in documents..
+```{r}
+library(here)
+library(Biostrings)
+seqs = readRNAStringSet(here("mature_hsa.fa"))
+#hmmm ignored several sequences
+newnames<-sapply(strsplit(names(seqs), " "), `[`, 1) #just to grab the first object
+names(seqs)<-newnames
+Clontec_seqs <-seqs[which(names(seqs) %in% rownames(split_kit_thresh$Clontech)),]
+```
+###might want to convert our synthetic CDNA data into RNA and vice versa here... did not find a package to do this... FastUtils is working on it... I guess I can just gsub... strange that they haven't finished- maybe I should contact
+
+```{r}
+#To grab unique sequeces for each kit look inside overlaps list to find those that correspond to the unique sequneces for each kit
+vennlists<- calculate.overlap(x = miRNA_det)
+vennlengths<-lapply(vennlists, length)
+uniqueNEXTflex<-vennlists[which(vennlengths == 22)] #NEXTflex
+uniqueNEB<-vennlists[which(vennlengths == 95)] #NEB
+which(vennlengths == 3) # Illumina # not sure which think 30th which is a2 - it is!
+uniqueClontech<-vennlists[which(vennlengths == 18)] #Clontech
+which(vennlengths == 1) #NEXTflex_deduped # not sure which think 27th which is a5
+
+##checkingit
+getUniqueClontech <-rownames(split_kit_thresh$Clontech)[which(!rownames(split_kit_thresh$Clontech) %in% rownames(split_kit_thresh$NEB))]
+getUniqueClontech <-getUniqueClontech[which(!getUniqueClontech %in% rownames(split_kit_thresh$NEXTflex))]
+getUniqueClontech <-getUniqueClontech[which(!getUniqueClontech %in% rownames(split_kit_thresh$Deduped))]
+getUniqueClontech <-getUniqueClontech[which(!getUniqueClontech %in% rownames(split_kit_thresh$Illumina))]
+length(getUniqueClontech)                                                               
+identical(getUniqueClontech, uniqueClontech$a1)
+
+
+getUniqueIllumina<-rownames(split_kit_thresh$Illumina)[which(!rownames(split_kit_thresh$Illumina) %in% rownames(split_kit_thresh$NEB))]
+getUniqueIllumina <-getUniqueIllumina[which(!getUniqueIllumina %in% rownames(split_kit_thresh$NEXTflex))]
+getUniqueIllumina <-getUniqueIllumina[which(!getUniqueIllumina %in% rownames(split_kit_thresh$Deduped))]
+getUniqueIllumina <-getUniqueIllumina[which(!getUniqueIllumina %in% rownames(split_kit_thresh$Clontech))]
+length(getUniqueIllumina)                                                               
+identical(getUniqueIllumina, vennlists$a2)
+
+getUniqueDeduped<-rownames(split_kit_thresh$Deduped)[which(!rownames(split_kit_thresh$Deduped) %in% rownames(split_kit_thresh$NEB))]
+getUniqueDeduped <-getUniqueDeduped[which(!getUniqueDeduped %in% rownames(split_kit_thresh$NEXTflex))]
+getUniqueDeduped <-getUniqueDeduped[which(!getUniqueDeduped %in% rownames(split_kit_thresh$Illumina))]
+getUniqueDeduped <-getUniqueDeduped[which(!getUniqueDeduped %in% rownames(split_kit_thresh$Clontech))]
+length(getUniqueDeduped)    
+identical(getUniqueDeduped, vennlists$a5)
+
+
+
+# vennlists<- calculate.overlap(x = miRNA_det)
+# lapply(vennlists, length)
+# uniqueNEXTflex<-vennlists[which(vennlengths == 22)] #a4 which is 28th 4th
+# uniqueNEB<-vennlists[which(vennlengths == 95)] #a3 which is 29th 3rd
+# which(vennlengths == 3) # Illumina # not sure which think 30th which is a2 - it is! - 2nd
+# uniqueClontech<-vennlists[which(vennlengths == 18)] #a1 - the 31st  - first
+# which(vennlengths == 1) #NEXTflex_deduped # not sure which think 27th which is a5 - fifth
+
+#So the unique miRNAs are in the first five of the overlap output based on their order in the names of the list miRNA_det input
+```
+
+
+###
+
+Grab unique lists
+```{r}
+names(miRNA_det)
+vennlists<- calculate.overlap(x = miRNA_det)
+uniqueClontech <- vennlists$a1
+uniqueIllumina <- vennlists$a2
+uniqueNEB<- vennlists$a3
+uniqueNEXTflex <- vennlists$a4
+uniqueDeduped <- vennlists$a5
+kit_union_names <- vennlists$a31
+
+uniqueClontech<- seqs[which(names(seqs) %in% uniqueClontech),]
+uniqueIllumina<- seqs[which(names(seqs) %in% uniqueIllumina),]
+uniqueNEB<- seqs[which(names(seqs) %in% uniqueNEB),]
+uniqueNEXTflex<- seqs[which(names(seqs) %in% uniqueNEXTflex),]
+uniqueDeduped<- seqs[which(names(seqs) %in% uniqueDeduped),]
+kit_union <- seqs[which(names(seqs) %in% kit_union_names),]
+unique_seqs <-list(Clontech =uniqueClontech, Illumina =uniqueIllumina, NEB =uniqueNEB, NEXTFlex =uniqueNEXTflex)
+
+length(uniqueClontech)
+Biostrings::consensusString(uniqueClontech)
+length(uniqueIllumina)
+length(uniqueNEB)
+length(uniqueNEXTflex)
+length(uniqueDeduped)
+
+t.test(width(uniqueNEB), width(uniqueClontech))
+t.test(width(uniqueNEB), width(uniqueNEXTflex))
+t.test(width(uniqueNEXTflex), width(uniqueClontech))
+t.test(width(kit_union), width(uniqueClontech))
+t.test(width(kit_union), width(uniqueNEB)) #maybe sig.. nit with bonferroni
+t.test(width(kit_union), width(uniqueNEXTflex))
+
+
+
+GC_Clontech<-letterFrequency(uniqueClontech, letters = c("CG"), as.prob = TRUE)
+GC_Illumina<-letterFrequency(uniqueIllumina, letters = c("CG"), as.prob = TRUE)
+GC_NEB<-letterFrequency(uniqueNEB, letters = c("CG"), as.prob = TRUE)
+GC_NEXTflex<-letterFrequency(uniqueNEXTflex, letters = c("CG"), as.prob = TRUE)
+GC_Deduped<-letterFrequency(uniqueDeduped, letters = c("CG"), as.prob = TRUE)
+GC_kitUnion<-letterFrequency(kit_union, letters = c("CG"), as.prob = TRUE)
+
+GC_cont <- list(Clontech =GC_Clontech, Illumina =GC_Illumina, NEB =GC_NEB, NEXTflex = GC_NEXTflex, Deduped =GC_Deduped, Union =GC_kitUnion)
+
+cols = gg_color_hue(n)
+cols <-cols[1:6]
+boxplot(GC_cont, col = cols, main = 'GC content of unique sequences across kits')
+
+#bonferroni thresh = 0.0125
+t.test(GC_kitUnion, GC_NEB)
+t.test(GC_kitUnion, GC_NEXTflex)
+#t.test(GC_kitUnion, GC_Illumina)
+t.test(GC_kitUnion, GC_Clontech) ### significant! - high GC in Clontech
+
+```
+
+
+
+
+
+Ttests
+```{r, echo = FALSE, message = FALSE, eval = TRUE}
+library(dplyr)
+
+  test_names <- data.frame(combn(names(GC_cont), m= 2))
+
+get_test_results<- function(data,test_names) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+    #Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+    #Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+    #colnames(Kit1)<-c("error")
+    #colnames(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = FALSE)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x, tested_kits) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.thresh = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+}
+```
+
+
+
+
+General GC content
+```{r}
+library(ggplot2)
+get_seqs <- function(x){seqs[which(names(seqs) %in% x)]}
+seqs_det<-lapply(miRNA_det, get_seqs)
+names(seqs_det) <- names(split_kit_thresh)
+seqs_det <- append(seqs_det, kit_union)
+names(seqs_det)[6]<- c("Union")
+names(seqs_det)[5]<- c("Deduped")
+
+get_GC_content <- function(x) { letterFrequency(x, letters = c("CG"), as.prob = TRUE)}
+GC_kits<-lapply(seqs_det, get_GC_content)
+
+
+
+cols = gg_color_hue(n)
+cols <-cols[1:6]
+boxplot(GC_kits, col = cols, main = 'GC content of all miRNA detected across kits')
+
+
+get_lengths<- function(x) { width(x)}
+lengths_kits<-lapply(seqs_det, lengths)
+lengths_unique<-lapply(unique_seqs, lengths)
+lengths_unique<-append(lengths_unique, lengths_kits[6])
+names(lengths_unique)[5]<- c("Union")
+
+boxplot(lengths_kits, col = cols, main = 'Lengths of all miRNA detected across kits')
+boxplot(lengths_unique, col = cols, main = 'Lengths of uniquely detected across kits')
+#lapply(lengths_kits, make_hists)
+
+
+library(reshape2)
+lengths_melted<-melt(lengths_unique)
+ggplot(lengths_melted, aes(x = value)) + geom_histogram() + facet_wrap(~ L1)
+lengths_melted<-melt(lengths_kits)
+ggplot(lengths_melted, aes(x = value)) + geom_histogram() + facet_wrap(~ L1)
+
+```
+upset graph
+```{r}
+library(UpSetR)
+library(plyr)
+kit_union_names<-data.frame(union =kit_union_names)
+miRNA <-append(miRNA_det, kit_union_names)
+names(miRNA) <- names(seqs_det)
+miRNA_df <-lapply(miRNA, data.frame)
+miRNA_df_filled<- do.call(rbind.fill, miRNA_df)
+
+```
+
+
+```{r, eval =FALSE}
+test_names <- data.frame(combn(names(lengths_unique), m= 2))
+#test_names<-test_names[,which(test_names[1,] == "Union" | test_names[2,] == "Union")]
+
+get_test_results(data = lengths_unique, test_names = test_names)
+ttestStats_lengths_unique<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_lengths_unique)<-tested_kits
+ttestStats_lengths_unique
+```
+
+```{r}
+test_names <- data.frame(combn(names(GC_cont), m= 2))
+#test_names<-test_names[,which(test_names[1,] == "Union" | test_names[2,] == "Union")]
+
+
+get_test_results(data = GC_kits, test_names = test_names)
+ttestStats_GC_all<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_GC_all)<-tested_kits
+ttestStats_GC_all
+```
+
+
+#unique GC content
+```{r}
+test_names <- data.frame(combn(names(GC_cont), m= 2))
+#test_names<-test_names[,which(test_names[1,] == "Union" | test_names[2,] == "Union")]
+test_names<-test_names[,which(test_names[1,] != "Deduped" & test_names[2,] != "Deduped")]
+test_names<-test_names[,which(test_names[1,] != "Illumina" & test_names[2,] != "Illumina")]
+get_test_results(data = GC_cont, test_names = test_names)
+ttestStats_GC_unique<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_GC_unique)<-tested_kits
+ttestStats_GC_unique
+#thus the GC content is higher in Clontech compared to the union of all kits
+```
+
+
+distributions of detected reads
+```{r}
+get_widths <- function(x){plot(table(width(x)))}
+lapply(seqs_det, get_widths)
+unique_seqs<-unique_seqs[-grep("Illumina", names(unique_seqs))]
+lapply(unique_seqs, get_widths)
+```
+
+
+
+
+logos- all detected
+```{r}
+#This is what we are using https://omarwagih.github.io/ggseqlogo/
+#http://manuals.bioinformatics.ucr.edu/home/ht-seq#TOC-Position-Weight-Matrices-PWM-
+
+library(seqLogo)
+library(ggplot2)
+library(ggseqlogo)
+
+get22_seqs <- function(x) {x[which(width(x) == "22"),]}
+det22_seqs <- lapply(seqs_det, get22_seqs)
+Clontech_22<-data.frame(det22_seqs$Clontech)
+Illumina_22<-data.frame(det22_seqs$Illumina)
+NEB_22<-data.frame(det22_seqs$NEB)
+NEXTflex_22<-data.frame(det22_seqs$NEXTflex)
+Deduped_22<-data.frame(det22_seqs$Deduped)
+Union_22<-data.frame(det22_seqs$Union)
+
+the22_seqs <- list(Clontech_22, Illumina_22, NEB_22, NEXTflex_22, Deduped_22, Union_22)
+
+
+#options for methods
+#p1 = ggseqlogo( seqs_dna$MA0001.1, method = 'bits' )
+#p2 = ggseqlogo( seqs_dna$MA0001.1, method = 'prob' )
+
+
+p1 = ggseqlogo(Clontech_22$det22_seqs.Clontech, method = "bits")
+p2 = ggseqlogo(Illumina_22$det22_seqs.Illumina, method = "bits")
+p3 = ggseqlogo(NEB_22$det22_seqs.NEB, method = "bits")
+p4 = ggseqlogo(NEXTflex_22$det22_seqs.NEXTflex, method = "bits")
+p5 = ggseqlogo(Deduped_22$det22_seqs.Deduped, method = "bits")
+p6 = ggseqlogo(Union_22$det22_seqs.Union, method = "bits")
+
+gridExtra::grid.arrange(p1, p2, p3, p4)
+
+gridExtra::grid.arrange(p1, p2, p3, p4, p5, p6)
+
+#ggseqlogo(the22_seqs)
+#ggseqlogo(seqs_dna, ncol=2)
+#ggseqlogo(the22_seqs)
+
+
+get_freq<- function(x){letterFrequency(x,  as.prob=TRUE, letters = c("A", "U", "C", "G"))}
+freq_det_22seqs <-lapply(det22_seqs, get_freq)
+
+
+
+```
+logos- uniquely detected
+```{r, eval = FALSE}
+#This is what we are using https://omarwagih.github.io/ggseqlogo/
+library(seqLogo)
+library(ggplot2)
+library(ggseqlogo)
+
+unique22_seqs <- lapply(unique_seqs, get22_seqs)
+Clontech_22_unique<-data.frame(unique22_seqs$Clontech)
+#Illumina_22_unique<<-data.frame(unique22_seqs$Illumina)
+NEXTflex_22_unique<<-data.frame(unique22_seqs$NEXTFlex)
+NEB_22_unique<<-data.frame(unique22_seqs$NEB)
+
+unique22seqs <- list(Clontech = Clontech_22_unique$unique22_seqs.Clontech,NEXTflex = NEXTflex_22_unique$unique22_seqs.NEXTFlex,NEB =NEB_22_unique$unique22_seqs.NEB, Union = Union_22$det22_seqs.Union)
+
+ggseqlogo(unique22seqs, ncol=2, method="prob")
+ggseqlogo(unique22seqs, ncol=2, method="bit")
+
+
+  
+
+lapply(unique22_seqs, length)
+
+```
+
+
+stat tests on seq
+```{r, eval=FALSE, echo = FALSE}
+library(limma)
+library(plyr)
+library(dplyr)
+get_consensus <- function(x){ consensusMatrix(x, as.prob = TRUE, baseOnly = TRUE)}
+unique22Matrices<-lapply(unique22_seqs, get_consensus)
+kit22Matrices<-lapply(det22_seqs, get_consensus)
+
+remove_other <- function(x){x[-(grep("other", rownames(x))),]}
+kit22Matrices <- lapply(kit22Matrices, remove_other)
+
+df <- t(ldply((kit22Matrices), data.frame))
+colnames(df)<-df[1,]
+df <- df[-1,]
+base_names <- rep(c("A_", "C_", "G_", "U_"), 6)
+kitpd <- data.frame(names(det22_seqs))
+colnames(df)<-paste0(base_names, colnames(df))
+
+A_by_loc<-data.frame(df[,grep("A_", colnames(df))])
+C_by_loc<-data.frame(df[,grep("C_", colnames(df))])
+G_by_loc<-data.frame(df[,grep("G_", colnames(df))])
+U_by_loc<-data.frame(df[,grep("U_", colnames(df))])
+convert <-function(x){as.numeric(as.character(x))}
+A_by_loc<-data.frame(sapply(A_by_loc, convert))
+
+seq_model<-lm(as.matrix(A_by_loc)~ kitpd$names.det22_seqs.)# not any replicates for a given location... so can't use this... wonder if there is a way to do some sort of chisquare at each location
+
+#not sure how to deal with the fact that each base prob is extremely correlated to the other three base probablities. Not sure what to do here... I need a more raw dataframe of the counts for the sequences - could do a consensus for all the samples for a given kit... that doesn't seem quite right either...
+
+design <- model.matrix(~kitpd$names.det22_seqs.)
+f <- lmFit(A_by_loc, design)
+f <- eBayes(f)
+
+
+```
+
+
+```{r, eval = FALSE}
+library(seqinr)
+test <-consensus(matrix(uniqueNEB), method = profile, type = "RNA")
+
+
+word.list <- list(letters[1:4], letters[1:5], letters[1:2], letters[1:6])
+n.obs <- sapply(word.list, length)
+seq.max <- seq_len(max(n.obs))
+mat <- t(sapply(word.list, "[", i = seq.max))
+mt <-gsub("a", "A", mat)
+mt <-gsub("b", "C", mt)
+mt <-gsub("c", "C", mt)
+mt <-gsub("d", "G", mt)
+mt <-gsub("e", "U", mt)
+mt <-gsub("f", "A", mt)
+ (res <- consensus(phylip, method = "profile"))
+> bxc <- barplot(res, col = c("green", "blue", "orange", "white", "red"), border = NA,
++   space = 0, las = 2, ylab = "Base count",
++   main = "Profile of a DNA sequence alignment",
++   xlab = "sequence position", xaxs = "i")
+>   
+>   text(x = bxc, y = par("usr")[4],lab = res.thr, pos = 3, xpd = NA)
+>   text(x = bxc, y = par("usr")[1],lab = res.iup, pos = 1, xpd = NA)
+```
+
+
+
+I dont think this will work...dont have an error measurement...
+```{r, include =TRUE, eval=FALSE}
+#####Heatmap############
+library(pheatmap)
+library(Biostrings)
+
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+# 
+kit_seqs<-as.data.frame(seqs_det$Clontech)
+kit_seqs$name <-rownames(seqs)
+rownames(kit_seqs) <- NULL
+
+
+
+seqs_ordered<-as.character(kit_seqs$name[order(kit_seqs$x)], drop= FALSE)
+seqs_orderedb<-as.character(kit_seqs$x[order(kit_seqs$x)], drop= FALSE)
+#seqs_4_ordered <-strtrim(seqs_ordered, c(2))###uncomment to get first n bases and comment next line
+seqs_4_ordered <-lastStuff(str=seqs_ordered, 3)####uncomment to get last n bases
+error_ordered<-lapply(synth_error_pheat, function(x) x[order(kit_seqs$x)] )
+error_ordered<-data.frame(error_ordered)
+error_for_collapse<-data.frame(seq = seqs_4_ordered, error_ordered)
+aggdata <-aggregate(error_ordered, by=list(seqs_4_ordered), FUN=mean)
+errorM<-as.matrix(aggdata[,2:5])
+rownames(errorM)<-aggdata[,1]
+# 
+# 
+paletteLength <- 50
+myColor <- colorRampPalette(c("yellow", "white", "blue"))(paletteLength)
+myColor <- colorRampPalette(c("blue", "white", "red"))(paletteLength)
+# 
+myColor <- colorRampPalette(c("blue", "yellow", "red"))(paletteLength)
+# 
+#length(breaks) == length(paletteLength) + 1
+# # use floor and ceiling to deal with even/odd length pallettelengths
+#myBreaks <- c(seq(min(errorM), 0, length.out=ceiling(paletteLength/2) + 1), 
+#               seq(max(errorM)/paletteLength, max(errorM), length.out=floor(paletteLength/2)))
+
+#Plot the heatmap
+#pheatmap(errorM, color=myColor, breaks=myBreaks)
+# 
+pheatmap(errorM, cluster_rows=F, cluster_cols=T, main = "First_3")#this does not allow for reordering of the rows.
+pheatmap(errorM, main = "First_2")#this does not allow for reordering of the rows.
+# 
+# errorM_binary <- sign(errorM)
+# pheatmap(errorM_binary, cluster_rows=F, cluster_cols=T, main = "First_3")
+# 
+# pheatmap(errorM, cluster_rows=F, cluster_cols=T, main = "First_3")
+
+####HEATmap of length#######
+
+
+# library(pheatmap)
+# library(stringr)
+# #below is a function to just have the last n bases of sequences with an example
+# lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+# 
+ seqs<-as.data.frame(synth_seq)
+ seqs<-as.character(seqs$x)
+ lengths<-stringr::str_length(seqs)
+ seqs_ordered <-seqs[order(lengths)]
+ error_ordered<-lapply(synth_error_pheat, function(x) x[order(lengths)] )
+ error_ordered<-data.frame(error_ordered)
+ error_for_collapse<-data.frame(Length = lengths, error_ordered)
+ aggdata <-aggregate(error_for_collapse, by=list(lengths), FUN=mean)
+ errorM<-as.matrix(aggdata[,3:6])
+ rownames(errorM)<-aggdata[,1]
+# 
+ pheatmap(errorM, cluster_rows=F, cluster_cols=T, main = "Length")#this does not allow for reordering of the rows.
+```
+
+
+
+
+```
+

@@ -96,6 +96,8 @@ library(here)
 Pheno<- read.table(here("Brain_samples_missingClontech_batch2/Pheno_2.csv"), header = T, sep = ",")
 miR_counts <- read.table(here("Brain_samples_missingClontech_batch2/miR.Counts.csv"),header = T, sep = ",")
 
+
+
 miRNAtotal <-t(miR_counts[1,])
 miRNAtotal <- miRNAtotal[-1,]
 miRNAtotal<-data.frame(miRNAtotal)
@@ -141,7 +143,7 @@ dds<-DESeqDataSetFromMatrix(countData = miR_counts, colData = Pheno, design = ~ 
 dds <- estimateSizeFactors(dds)
 norm_miR<-data.frame(counts(dds, normalized = TRUE))
 
-
+#load(here("Complete_data/split_kit_1batch.rda"))
 get_det <-function(x){sum(x>10)}#determine number of miRNAs with greater than 10 reads
 detected <-lapply(norm_miR, get_det)
 detected <-data.frame(unlist(detected))

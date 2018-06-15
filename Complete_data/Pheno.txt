@@ -1,0 +1,101 @@
+File	Kit	Batch	startingAmt	TriplicateGroup	Triplicate
+newbatch_Clontech_trimmed.1_R1.fq	Clontech	Accur	1000	Clontech1000_Batch2	1
+newbatch_Clontech_trimmed.2_R1.fq	Clontech	Accur	1000	Clontech1000_Batch2	1
+Illumina_trimmed.11.fq	Illumina	Accur	1000	Illumina1000_Batch2	1
+NEB_trimmed.11.fq	NEB	Accur	1000	NEB1000_Batch2	1
+NEXT_trimmed.11.fq	NEXTflex	Accur	1000	NEXTflex1000_Batch2	1
+Deduped_lib_align_seed15_acc_11_bam2fastq.fq	Deduped	Accur	1000	Deduped1000_Batch2	1
+ Five_double_acc_11.fq	Fivepercent	Accur	1000	Fivepercent1000_Batch2	1
+ mm0_Clontech_trimmed.1_R1.fq	Clontech	Repro	100	Clontech100	1
+ mm0_Clontech_trimmed.2_R1.fq	Clontech	Repro	100	Clontech100	2
+ mm0_Clontech_trimmed.3_R1.fq	Clontech	Repro	100	Clontech100	3
+ mm0_Clontech_trimmed.4_R1.fq	Clontech	Repro	250	Clontech250	1
+ mm0_Clontech_trimmed.5_R1.fq	Clontech	Repro	250	Clontech250	2
+ mm0_Clontech_trimmed.6_R1.fq	Clontech	Repro	250	Clontech250	3
+ mm0_Clontech_trimmed.7_R1.fq	Clontech	Repro	500	Clontech500	1
+ mm0_Clontech_trimmed.8_R1.fq	Clontech	Repro	500	Clontech500	2
+ mm0_Clontech_trimmed.9_R1.fq	Clontech	Repro	500	Clontech500	3
+ mm0_Clontech_trimmed.10_R1.fq	Clontech	Repro	1000	Clontech1000_Batch1	1
+ mm0_Clontech_trimmed.11_R1.fq	Clontech	Repro	1000	Clontech1000_Batch1	2
+ mm0_Clontech_trimmed.12_R1.fq	Clontech	Repro	1000	Clontech1000_Batch1	3
+ mm0_Clontech_trimmed.13_R1.fq	Clontech	Repro	1500	Clontech1500	1
+ mm0_Clontech_trimmed.14_R1.fq	Clontech	Repro	1500	Clontech1500	2
+ mm0_Clontech_trimmed.15_R1.fq	Clontech	Repro	1500	Clontech1500	3
+ mm0_Clontech_trimmed.16_R1.fq	Clontech	Repro	2000	Clontech2000	1
+ mm0_Clontech_trimmed.17_R1.fq	Clontech	Repro	2000	Clontech2000	2
+ mm0_Clontech_trimmed.18_R1.fq	Clontech	Repro	2000	Clontech2000	3
+ mm0_Illumina_trimmed.1_R1.fq	Illumina	Repro	1000	Illumina1000_Batch1	1
+ mm0_Illumina_trimmed.2_R1.fq	Illumina	Repro	1000	Illumina1000_Batch1	2
+ mm0_Illumina_trimmed.3_R1.fq	Illumina	Repro	1000	Illumina1000_Batch1	3
+ mm0_Illumina_trimmed.4_R1.fq	Illumina	Repro	1500	Illumina1500	1
+ mm0_Illumina_trimmed.5_R1.fq	Illumina	Repro	1500	Illumina1500	2
+ mm0_Illumina_trimmed.6_R1.fq	Illumina	Repro	1500	Illumina1500	3
+ mm0_Illumina_trimmed.7_R1.fq	Illumina	Repro	2000	Illumina2000	1
+ mm0_Illumina_trimmed.8_R1.fq	Illumina	Repro	2000	Illumina2000	2
+ mm0_Illumina_trimmed.9_R1.fq	Illumina	Repro	2000	Illumina2000	3
+ mm0_NEB_trimmed.1_R1.fq	NEB	Repro	100	NEB100	1
+ mm0_NEB_trimmed.2_R1.fq	NEB	Repro	100	NEB100	2
+ mm0_NEB_trimmed.3_R1.fq	NEB	Repro	100	NEB100	3
+ mm0_NEB_trimmed.4_R1.fq	NEB	Repro	250	NEB250	1
+ mm0_NEB_trimmed.5_R1.fq	NEB	Repro	250	NEB250	2
+ mm0_NEB_trimmed.6_R1.fq	NEB	Repro	250	NEB250	3
+ mm0_NEB_trimmed.7_R1.fq	NEB	Repro	500	NEB500	1
+ mm0_NEB_trimmed.8_R1.fq	NEB	Repro	500	NEB500	2
+ mm0_NEB_trimmed.9_R1.fq	NEB	Repro	500	NEB500	3
+ mm0_NEB_trimmed.10_R1.fq	NEB	Repro	1000	NEB1000_Batch1	1
+ mm0_NEB_trimmed.11_R1.fq	NEB	Repro	1000	NEB1000_Batch1	2
+ mm0_NEB_trimmed.12_R1.fq	NEB	Repro	1000	NEB1000_Batch1	3
+ mm0_NEXT_trimmed.1_R1.fq	NEXTflex	Repro	100	NEXTflex100	1
+ mm0_NEXT_trimmed.2_R1.fq	NEXTflex	Repro	100	NEXTflex100	2
+ mm0_NEXT_trimmed.3_R1.fq	NEXTflex	Repro	100	NEXTflex100	3
+ mm0_NEXT_trimmed.4_R1.fq	NEXTflex	Repro	250	NEXTflex250	1
+ mm0_NEXT_trimmed.5_R1.fq	NEXTflex	Repro	250	NEXTflex250	2
+ mm0_NEXT_trimmed.6_R1.fq	NEXTflex	Repro	250	NEXTflex250	3
+ mm0_NEXT_trimmed.7_R1.fq	NEXTflex	Repro	500	NEXTflex500	1
+ mm0_NEXT_trimmed.8_R1.fq	NEXTflex	Repro	500	NEXTflex500	2
+ mm0_NEXT_trimmed.9_R1.fq	NEXTflex	Repro	500	NEXTflex500	3
+ mm0_NEXT_trimmed.10_R1.fq	NEXTflex	Repro	1000	NEXTflex1000_Batch1	1
+ mm0_NEXT_trimmed.11_R1.fq	NEXTflex	Repro	1000	NEXTflex1000_Batch1	2
+ mm0_NEXT_trimmed.12_R1.fq	NEXTflex	Repro	1000	NEXTflex1000_Batch1	3
+ mm0_NEXT_trimmed.13_R1.fq	NEXTflex	Repro	1500	NEXTflex1500	1
+ mm0_NEXT_trimmed.14_R1.fq	NEXTflex	Repro	1500	NEXTflex1500	2
+ mm0_NEXT_trimmed.15_R1.fq	NEXTflex	Repro	1500	NEXTflex1500	3
+ mm0_NEXT_trimmed.16_R1.fq	NEXTflex	Repro	2000	NEXTflex2000	1
+ mm0_NEXT_trimmed.17_R1.fq	NEXTflex	Repro	2000	NEXTflex2000	2
+ mm0_NEXT_trimmed.18_R1.fq	NEXTflex	Repro	2000	NEXTflex2000	3
+ directional_deduped_lib_align_seed15_1_bam2fastq.fq	Deduped	Repro	100	Deduped100	1
+ directional_deduped_lib_align_seed15_2_bam2fastq.fq	Deduped	Repro	100	Deduped100	2
+ directional_deduped_lib_align_seed15_3_bam2fastq.fq	Deduped	Repro	100	Deduped100	3
+ directional_deduped_lib_align_seed15_4_bam2fastq.fq	Deduped	Repro	250	Deduped250	1
+ directional_deduped_lib_align_seed15_5_bam2fastq.fq	Deduped	Repro	250	Deduped250	2
+ directional_deduped_lib_align_seed15_6_bam2fastq.fq	Deduped	Repro	250	Deduped250	3
+ directional_deduped_lib_align_seed15_7_bam2fastq.fq	Deduped	Repro	500	Deduped500	1
+ directional_deduped_lib_align_seed15_8_bam2fastq.fq	Deduped	Repro	500	Deduped500	2
+ directional_deduped_lib_align_seed15_9_bam2fastq.fq	Deduped	Repro	500	Deduped500	3
+ directional_deduped_lib_align_seed15_10_bam2fastq.fq	Deduped	Repro	1000	Deduped1000_Batch1	1
+ directional_deduped_lib_align_seed15_11_bam2fastq.fq	Deduped	Repro	1000	Deduped1000_Batch1	2
+ directional_deduped_lib_align_seed15_12_bam2fastq.fq	Deduped	Repro	1000	Deduped1000_Batch1	3
+ directional_deduped_lib_align_seed15_13_bam2fastq.fq	Deduped	Repro	1500	Deduped1500	1
+ directional_deduped_lib_align_seed15_14_bam2fastq.fq	Deduped	Repro	1500	Deduped1500	2
+ directional_deduped_lib_align_seed15_15_bam2fastq.fq	Deduped	Repro	1500	Deduped1500	3
+ directional_deduped_lib_align_seed15_16_bam2fastq.fq	Deduped	Repro	2000	Deduped2000	1
+ directional_deduped_lib_align_seed15_17_bam2fastq.fq	Deduped	Repro	2000	Deduped2000	2
+ directional_deduped_lib_align_seed15_18_bam2fastq.fq	Deduped	Repro	2000	Deduped2000	3
+Five_double_1.fq	Fivepercent	Repro	100	Fivepercent100	1
+Five_double_2.fq	Fivepercent	Repro	100	Fivepercent100	2
+Five_double_3.fq	Fivepercent	Repro	100	Fivepercent100	3
+Five_double_4.fq	Fivepercent	Repro	250	Fivepercent250	1
+Five_double_5.fq	Fivepercent	Repro	250	Fivepercent250	2
+Five_double_6.fq	Fivepercent	Repro	250	Fivepercent250	3
+Five_double_7.fq	Fivepercent	Repro	500	Fivepercent500	1
+Five_double_8.fq	Fivepercent	Repro	500	Fivepercent500	2
+Five_double_9.fq	Fivepercent	Repro	500	Fivepercent500	3
+Five_double_10.fq	Fivepercent	Repro	1000	Fivepercent1000_Batch1	1
+Five_double_11.fq	Fivepercent	Repro	1000	Fivepercent1000_Batch1	2
+Five_double_12.fq	Fivepercent	Repro	1000	Fivepercent1000_Batch1	3
+Five_double_13.fq	Fivepercent	Repro	1500	Fivepercent1500	1
+Five_double_14.fq	Fivepercent	Repro	1500	Fivepercent1500	2
+Five_double_15.fq	Fivepercent	Repro	1500	Fivepercent1500	3
+Five_double_16.fq	Fivepercent	Repro	2000	Fivepercent2000	1
+Five_double_17.fq	Fivepercent	Repro	2000	Fivepercent2000	2
+Five_double_18.fq	Fivepercent	Repro	2000	Fivepercent2000	3
