@@ -266,10 +266,10 @@ lapply(model_summary, glance)# only Deduped and Fivepercent are significant
 
 model_summary$Deduped
 split_amt <-list()
-for(i in unique(as.character(Det_data$Starting_Amount))) { 
-  split_amt[[i]] <- data.frame(Det_data[which(Det_data$Starting_Amount==i),])
+for(i in unique(as.character(isomiR_DATA$StartingAmt))) { 
+  split_amt[[i]] <- data.frame(isomiR_DATA[which(isomiR_DATA$StartingAmt==i),])
 } 
- run_model <-function(x){(lm(x[["miRNA"]]~x[["Kit"]]))}
+ run_model <-function(x){(lm(x[["total_isomiRs"]]~x[["Kit"]]))}
 model_stats<-lapply(split_amt,run_model)
 model_summary<-lapply(model_stats, summary)
 lapply(model_summary, glance)# all significant
