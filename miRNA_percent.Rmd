@@ -1,0 +1,51 @@
+---
+title: "Untitled"
+author: "Carrie Wright"
+date: "6/18/2018"
+output: html_document
+---
+
+
+```{r}
+library(XML)
+library(RCurl)
+library(jaffelab)
+report_url<-here("Complete_data/report.html")
+report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
+
+report <-report[1:9]
+report <-data.frame(report)
+report <-report[seq(from =1, to = nrow(report), by = 5),]
+total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
+report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads<-trimws(report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads)
+report$miRNAtotal<-ss(report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads, "/",1)
+report$miRNAtotal<-trimws(report$miRNAtotal)
+report$miRNAtotal<-as.numeric(report$miRNAtotal)
+report$percentmiRNA <-as.vector((report$miRNAtotal/total_reads)*100)
+report$percentnoncoding <-as.vector((as.numeric(as.character(report$NULL.Other.Noncoding.RNA.Reads))/total_reads)*100)
+report$percentmRNA<-as.vector((as.numeric(as.character(report$NULL.mRNA.Reads))/total_reads)*100)
+report$percenthairpin <-as.vector((as.numeric(as.character(report$NULL.Hairpin.Reads))/total_reads)*100)
+percentages <-report[grep("percent", colnames(report))]
+rownames(percentages) <- report$NULL.File.name.s.
+```
+
+
+###remove Deduped and Fivepercent - unfair becuase double-mapped and extra clontech
+```{r}
+Pheno <- read.table(here("Complete_data/Pheno.txt"), header = TRUE)
+report$Starting_amt <- Pheno$startingAmt
+report$Method <-Pheno$Kit
+report<-report[-grep("Five",report$NULL.File.name.s.),]
+report<-report[-grep("deduped",report$NULL.File.name.s.),]
+report <-report[-grep("newbatch_Clontech_trimmed.2_R1.fq",report$NULL.File.name.s.),]
+```
+
+###grab just important data to plot
+```{r}
+
+mirgedata<- data.frame(report$Method, report$Starting_amt, report$percentmiRNA)
+mirgedata$report.Starting_amt<-as.factor(report$Starting_amt)
+mirgedata<-melt(mirgedata)
+ggplot(data = mirgedata, aes(x = mirgedata$report.Method, y = value, col = report.Method)) +geom_boxplot()+ facet_grid(.~mirgedata$report.Starting_amt)
+```
+

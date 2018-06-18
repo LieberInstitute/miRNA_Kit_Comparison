@@ -9,28 +9,106 @@ output: html_document
 library("here")
 library("ggplot2")
 library("reshape2")
-percentages <- read.table(here("Percentages_other_RNAs"), sep = "\t", header = TRUE)
+percentages <- read.table(here("Other_RNA_DATA.csv"), sep = ",", header = TRUE)
 percent<-data.frame(t(percentages))
 RNAs<-percentages[-grep("File", colnames(percentages))]
 RNAs$Input_Amount <- factor(RNAs$Input_Amount)
-RNAs <-RNAs[-grep("Fivepercent", RNAs$Kit),]
 RNAs$Kit <-gsub("Five_double", "Fivepercent", RNAs$Kit)
+RNAs <-RNAs[-grep("Fivepercent", RNAs$Kit),]
+RNAs <-RNAs[-grep("Deduped", RNAs$Kit),]
 
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
 
+n = 6
+cols = gg_color_hue(n)
+cols<-cols[1:4]
 mRNA<-melt(RNAs)
-mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex","Deduped", "Fivepercent"))
+mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex"))
 
 ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_point() +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.)
 
-ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat = "identity", aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.)
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat = "identity", aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.)+scale_fill_manual(values=cols)+scale_color_manual(values=cols)
 
 ##The good one
-ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge", aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.) + ylim(0,100)
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge", aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~.) +scale_fill_manual(values=cols)+scale_color_manual(values=cols)
 
 RNAs <-RNAs[-grep("piRNAdb",colnames(RNAs))]
 RNAs <-RNAs[-grep("piRNAregRNA",colnames(RNAs))]
 RNAs <-RNAs[-grep("tRNA_UCSC",colnames(RNAs))]
 
+
+total_mapped<-data.frame(rowSums(RNAs[3:10]))
+colnames(RNAs[3:10])
+#total_mapped<-total_mapped + RNAs$miRNA
+RNAs$Perc_mapped <- total_mapped$rowSums.RNAs.3.11..
+```
+Just - miRNA - perhaps we should just use the report for this...
+```{r}
+mRNA<-melt(RNAs)
+mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex"))
+miRNA_data <- mRNA[grep("miRNA", mRNA$variable),]
+ggplot(miRNA_data, aes(x = Kit, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge",width = 1, aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 0, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+scale_fill_manual(values=cols)+scale_color_manual(values=cols)
+
+ggplot(miRNA_data, aes(x = Kit, y = value, color = Kit)) +geom_jitter(col = "black")+geom_boxplot(aes(y =value, fill = Kit, alpha = 0.7)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 0, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+scale_fill_manual(values=cols)+scale_color_manual(values=cols) +facet_grid(.~Input_Amount)
+
+ggplot(miRNA_data, aes(x = Input_Amount, y = value, color = Kit)) +geom_jitter(col = "black")+geom_boxplot(aes(y =value, fill = Kit, alpha = 0.7)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+scale_fill_manual(values=cols)+scale_color_manual(values=cols) +facet_grid(.~Kit)+geom_smooth(method = "lm", se=TRUE, aes(group=1)) +ggtitle("Percent of reads mapping to miRNA") +
+  labs(y="Percent of reads", x ="none")
+
+```
+Just other RNAs
+```{r}
+
+RNAs <-RNAs[-grep("miRNA", colnames(RNAs))]
+RNAs <-RNAs[-grep("hairpin", colnames(RNAs))]
+mRNA<-melt(RNAs)
+mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex","Deduped", "Fivepercent"))
+
+ggplot(mRNA, aes(x = Kit, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge",width = 1, aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 0, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(.~variable)+scale_fill_manual(values=cols)+scale_color_manual(values=cols)
+
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge",width = 1, aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 60,hjust = 1, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(.~Kit)+scale_fill_manual(values=cols)+scale_color_manual(values=cols)
+
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge",width = 1, aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 60,hjust = 1, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Kit~Input_Amount)+scale_fill_manual(values=cols)+scale_color_manual(values=cols) +ggtitle("Percent of reads mapping to other RNAs") +labs(y="Percent of reads", x ="none")
+
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge",width = 1, aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 60,hjust = 1, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Input_Amount~Kit)+scale_fill_manual(values=cols)+scale_color_manual(values=cols) +ggtitle("Percent of reads mapping to other RNAs") +labs(y="Percent of reads", x ="none")
+```
+
+Just1000ng - other RNAs
+```{r}
+RNAs <-RNAs[grep("1000", RNAs$Input_Amount),]
+RNAs <-RNAs[grep("1000", RNAs$Input_Amount),]
+RNAs <-RNAs[-grep("miRNA", colnames(RNAs))]
+RNAs <-RNAs[-grep("hairpin", colnames(RNAs))]
+mRNA<-melt(RNAs)
+mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex","Deduped", "Fivepercent"))
+
+ggplot(mRNA, aes(x = Kit, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge",width = 1, aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 0, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(.~variable)+scale_fill_manual(values=cols)+scale_color_manual(values=cols)
+ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge",width = 1, aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 60,hjust = 1, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(.~Kit)+scale_fill_manual(values=cols)+scale_color_manual(values=cols)
+```
+
+Dividing up
+
+```{r, eval = FALSE}
+library("here")
+library("ggplot2")
+library("reshape2")
+
+RNAs <-RNAs[grep("1000", RNAs$Input_Amount),]
+RNAs1<-data.frame(RNAs$Kit, RNAs$Input_Amount, RNAs$mRNA, RNAs$Mitochondria, RNAs$rRNA, RNAs$tRNA_hg19)
+colnames(RNAs1)<-(c("Method", "starting_amt", "mRNA", "Mito","rRNA", "tRNA"))
+mRNA<-melt(RNAs1)
+ggplot(mRNA, aes(x = variable, y = value, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =value, fill = Method)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(starting_amt~.)
+
+RNAs2<-cbind(RNAs$Kit, RNAs$Input_Amount, RNAs$mRNA, RNAs$Mitochondria, RNAs$rRNA, RNAs$tRNA_hg19)
+RNAs3
+mRNA<-melt(RNAs)
+mRNA$Kit <-factor(mRNA$Kit, levels =c("Clontech","Illumina", "NEB","NEXTflex","Deduped", "Fivepercent"))
+
+```
+
+```{r, eval = FALSE}
 RNAs <-RNAs[-grep("Deduped", RNAs$Kit),]
 RNAs <-RNAs[-grep("Fivepercent", RNAs$Kit),]
 
