@@ -179,7 +179,7 @@ Pheno$Kit<- factor(Pheno$Kit)
 dds<-DESeqDataSetFromMatrix(countData = iso_Raw, colData = Pheno, design = ~ Kit)
 dds <- estimateSizeFactors(dds)
 norm_miR<-data.frame(counts(dds, normalized = TRUE))
-save(norm_miR, file = here("IsomiR_data/norm_miR.rda"))
+save(norm_miR, file = here("Complete_data/IsomiR_data/norm_miR.rda"))
 ```
 
 Could do fancier normalization
