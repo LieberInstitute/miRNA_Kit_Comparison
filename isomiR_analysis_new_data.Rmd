@@ -231,7 +231,7 @@ isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NE
 #ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, fill = Kit)) +geom_boxplot()+facet_grid(StartingAmt~.) + geom_jitter(aes(color = Kit))
 #ggplot(data =isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, fill = Kit)) +geom_point(aes(x = StartingAmt, y = total_isomiRs))+facet_grid(.~Kit) + geom_jitter(aes(color = Kit))
 
-ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = StartingAmt)) + geom_jitter(aes(color = Kit))+ geom_boxplot(aes(fill = Kit)) + facet_grid(.~Kit) + scale_x_continuous(breaks=unique(isomiR_DATA$StartingAmt)) + theme(legend.position = "none", axis.text.x = element_text(size =14, angle = 60, hjust = 1), axis.text.y = element_text(size =14, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 20)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "isomiRNA Detection across kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))  
+ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = StartingAmt)) + geom_jitter(aes(color = Kit))+ geom_boxplot(aes(fill = Kit)) + facet_grid(.~Kit) + scale_x_continuous(breaks=unique(isomiR_DATA$StartingAmt)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =20, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs(y = " Uniquely Detected isomiRs", title = "isomiRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1, fill = Kit))  
 
 
 

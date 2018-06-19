@@ -55,7 +55,8 @@ norm_miR_counts <-data.frame(TMM$pseudo.counts)
 dim(norm_miR_counts)
 ```
 ```{r, eval = TRUE, echo = FALSE}
-Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
+#Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
+Pheno$startingAmt<-factor(Pheno$startingAmt)
 ###split the data by starting Amount
 split_Kit <- list() 
 for(i in Pheno$Kit) { 
