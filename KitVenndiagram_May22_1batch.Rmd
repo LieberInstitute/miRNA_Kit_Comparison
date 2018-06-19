@@ -161,7 +161,10 @@ Deduped<-as.vector(rownames(split_kit_thresh$Deduped))
 
 detected$det_Data.startingAmt <-gsub("starting_amt_", "",detected$det_Data.startingAmt)
 ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.startingAmt)
-ggplot(detected, aes(x =det_Data.startingAmt, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.kit) + theme(legend.position = "none") + labs( x= "Starting Amount", y = " Percentage of Inconsistently Detected miRNA Sequences", title = "Inconsistentcy of miRNA Detection across kits") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
+
+ggplot(detected, aes(x =det_Data.startingAmt, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Percentage of Inconsistently \n Detected miRNA Sequences", title = "Inconsistentcy of miRNA Detection Across Kits") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
+
+
 ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()
 
 
