@@ -9,8 +9,7 @@ output: html_document
 library(edgeR)
 library(here)
 
-#Pheno<- read.table(here("Brain_samples_missingClontech_batch2/Pheno_brain_full_May22.txt"), header = T)
-Pheno<- read.table(here("Brain_samples_missingClontech_batch2/Pheno_2.csv"), header = T, sep = ",")
+load(here("Complete_data/IsomiR_data/Pheno.rda"))
 #Pheno<- read.table(here("Brain_liberal_trimmed_Ns_kept_Data/Pheno.csv"), header = T, sep = ",")
 Pheno1000 <- Pheno[which(Pheno$startingAmt =="1000"),]
 
@@ -18,35 +17,40 @@ Pheno1000 <- Pheno[which(Pheno$startingAmt =="1000"),]
 #miR_counts<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/ReproData/miR.Counts.csv", header = TRUE, sep = ",")
 #miR_counts<-read.table(here("Brain_liberal_trimmed_Ns_kept_Data/miRge.1520646805/miR.Counts.csv"), header = TRUE, sep = ",")
 #miR_counts<-read.table(here("IsomiR_16lim_data/miR.Counts.csv"), header = TRUE, sep = ",")
-miR_counts<-read.table(here("Brain_samples_missingClontech_batch2/miR.Counts.csv"), header = TRUE, sep = ",")
+miR_counts<-read.table(here("Complete_data/miR.Counts.csv"), header = TRUE, sep = ",")
 
 rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
 miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
 miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
 miR_counts<-miR_counts[-1,]#remove total miRNA counts row
+miR_counts<-miR_counts[,-2]#remove extra Clontech sample
 
 colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
-colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
+#colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
+colnames(miR_counts)<-gsub("Five_double", "Fivepercent", colnames(miR_counts))
 
-Pheno1000$File<-gsub("NEXTflex_deduped", "Deduped", Pheno1000$File)
+Pheno1000$Kit<-gsub("Five_double", "Fivepercent", Pheno1000$Kit)
+Pheno1000$File<-gsub("Five_double", "Fivepercent", Pheno1000$File)
+
+Pheno1000$File<-gsub("directional_deduped", "Deduped", Pheno1000$File)
 Pheno1000$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno1000$Kit)
-Pheno1000$TriplicateGroup<-gsub("NEXTflex_deduped", "Deduped", Pheno1000$TriplicateGroup)
-miR_1000_raw <- data.frame(miR_counts[which(Pheno$startingAmt == "1000")])
+Pheno1000$TriplicateGroup<-gsub("directional_deduped", "Deduped", Pheno1000$TriplicateGroup)
+miR_1000_raw <- data.frame(miR_counts[,which(Pheno$startingAmt == "1000")])
  
-Pheno1000$File <- colnames(miR_1000_raw)
+#Pheno1000$File <- colnames(miR_1000_raw)
 identical(as.character(Pheno1000$File), colnames(miR_1000_raw)) ###Check that these match 
 
 miR_RPMs<- as.matrix(cpm(miR_1000_raw)) #from the edgeR package
-load(here("miRNA_hsa_GC.rda"))#this does not appear to be in the same order as miR_1000_raw... think this is in part because they have different lengths
-load(here("miRNA_hsa_lengths.rda"))
-load(here("UnionInfo.rda"))
+#load(here("miRNA_hsa_GC.rda"))#this does not appear to be in the same order as miR_1000_raw... think this is in part because they have different lengths
+#load(here("miRNA_hsa_lengths.rda"))
+load(here("hsa_miRNA_info.rda"))
 #load("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/UnionInfo.rda")
 ```
 
 
 ###TMM Normalization
 
-```{r, eval= TRUE, echo =FALSE}
+```{r, eval= FALSE, echo =FALSE}
 #library(tweeDEseq)
 #miR_1000_TMM<-data.frame(normalizeCounts(miR_1000_raw)
 #dim(norm_miR_1000)
@@ -64,7 +68,7 @@ dim(norm_miR_1000)
 
 
 ###DESeq2
-```{r, eval=FALSE,warning=FALSE, message=FALSE, echo =FALSE}
+```{r, eval=TRUE,warning=FALSE, message=FALSE, echo =FALSE}
 library(DESeq2)
 dds<-DESeqDataSetFromMatrix(countData = miR_1000_raw, colData = Pheno1000, design = ~ Kit)
 dds <- estimateSizeFactors(dds)
@@ -192,7 +196,7 @@ split_kit_thresh$Illumina<-split_kit$Illumina[thresh$Illumina,]
 split_kit_thresh$NEB<-split_kit$NEB[thresh$NEB,]
 split_kit_thresh$NEXTflex<-split_kit$NEXTflex[thresh$NEXTflex,]
 split_kit_thresh$Deduped<-split_kit$Deduped[thresh$Deduped,]
-split_kit_thresh$Five_double<-split_kit$Five_double[thresh$Five_double,]
+split_kit_thresh$Fivepercent<-split_kit$Fivepercent[thresh$Fivepercent,]
 
 
 thresh<-lapply(split_batch, genefilt_fun)
@@ -209,8 +213,8 @@ split_batch_thresh$NEXTflex1000_Batch1<-split_batch$NEXTflex1000_Batch1[thresh$N
 split_batch_thresh$NEXTflex1000_Batch2<-split_batch$NEXTflex1000_Batch2[thresh$NEXTflex1000_Batch2,]
 split_batch_thresh$Deduped1000_Batch1<-split_batch$Deduped1000_Batch1[thresh$Deduped1000_Batch1,]
 split_batch_thresh$Deduped1000_Batch2<-split_batch$Deduped1000_Batch2[thresh$Deduped1000_Batch2,]
-split_batch_thresh$Five_double1000_Batch1<-split_batch$Five_double1000_Batch1[thresh$Five_double1000_Batch1,]
-split_batch_thresh$Five_double1000_Batch2<-split_batch$Five_double1000_Batch2[thresh$Five_double1000_Batch2,]
+split_batch_thresh$Fivepercent1000_Batch1<-split_batch$Fivepercent1000_Batch1[thresh$Fivepercent1000_Batch1,]
+split_batch_thresh$Fivepercent1000_Batch2<-split_batch$Fivepercent1000_Batch2[thresh$Fivepercent1000_Batch2,]
 
 split_batch_thresh_batch1 <- split_batch_thresh[grep("Batch1", names(split_batch_thresh))]
 split_batch_thresh_batch2 <- split_batch_thresh[grep("Batch2", names(split_batch_thresh))]
@@ -243,7 +247,7 @@ detected_amounts_batch2
 ```{r, eval=TRUE, echo = FALSE}
 library(genefilter)
 #poverafun <- genefilter::pOverA(p = .5, A = 529)# at least 529 reads for 50% of samples
-poverafun <- genefilter::pOverA(p = 1, A = 10)#at least one raw read in all samples #379
+poverafun <- genefilter::pOverA(p = 1, A = 1)#at least one raw read in all samples #379
 #poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 raw reads in all samples #292
 #poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 raw reads in all samples #125
 
@@ -274,7 +278,7 @@ single <- function(kit) {
   dat<-data.frame(dat)
   #dat <- Counts[, grep(kit, (colnames(Counts)))]
   #dat<- dat[which(rownames(dat) %in% Names_10[[kit]][1:length(Names_10[[kit]])]),] #just need to select the right list based on order
-  p <- Pheno1000[grep(kit, (Pheno1000[, 1])), ]
+  p <- Pheno1000[grep(kit, (Pheno1000[, 2])), ]
   design <- model.matrix(~p$Batch)
   data_s <<- log2(dat + 1)
   f <- lmFit(data_s, design)
@@ -283,6 +287,7 @@ single <- function(kit) {
 ```
 
 ```{r}
+kits<-as.character(unique(Pheno$Kit))
 fits <-lapply(kits, single)
 names(fits) <-kits
 
@@ -294,8 +299,7 @@ Evaluate Batch P values
 ##########pvalues etc.#####
 pval_single <-list()
 pval_single<-lapply(fits, function(f) { f$p.value[, 2] })
-#Clontech not ready 
-pval_single<- pval_single[-grep("Clontech", names(pval_single))]
+
 pval_df_single <-lapply(pval_single, data.frame)
 qval_single <- sapply(pval_single, p.adjust, method = 'fdr')
 qval_df_single <-lapply(qval_single, data.frame)
@@ -309,7 +313,7 @@ qval_df_single <-lapply(qval_single, data.frame)
 #qval_df_single <- as.data.frame(sapply(pval_df_single[[]], p.adjust, method = 'fdr'))
 raw_table<-sapply(qval_df_single, function(x) { table(x > 0.05 )}) # TRUE = not sig accross batch is true
 raw_table
-#percent_table_noBatcheffect<-(raw_table[which(rownames(raw_table) == "TRUE"),] / colSums(raw_table))*100 # fIve_double had now batch effects....
+percent_table_noBatcheffect<-(raw_table[which(rownames(raw_table) == "TRUE"),] / colSums(raw_table))*100 # fIve_double had now batch effects....
 percent_table_Batcheffect<-(raw_table[which(rownames(raw_table) == "FALSE"),] / colSums(raw_table))*100
 #round(sapply(qval_df_single, function(x) { table(x > 0.05 )}) / nrow(qval_df_single) * 100, 2)
 
@@ -357,10 +361,9 @@ get_ttestStats<- function(x, tested_kits) {
 ```{r}
 ### in this case... a lower t is worse... because we are using the raw qvals for batch effect significance
 ```
-###!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!FIX HERE FOR CLONTECH
+
 ```{r, eval = FALSE}
 #get_test_names(qval_df_single, eval = FALSE)
-kits <-kits[1:5]
 test_names <- data.frame(combn(kits, m= 2))
 get_test_results(data = qval_df_single, test_names = test_names, pairedvalue = FALSE)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
@@ -406,17 +409,15 @@ Accross Batch Error Plot
 ```{r, eval=TRUE}
 library(ggplot2)
 library(reshape2)
-Names_thresh<-intersect(intersect(intersect(intersect(rownames(split_kit_thresh[[2]]), rownames(split_kit_thresh[[3]])), rownames(split_kit_thresh[[4]])), rownames(split_kit_thresh[[5]])), rownames(split_kit_thresh[[6]]))
 
-#Names_thresh<-intersect(intersect(intersect(intersect(rownames(split_kit_thresh[[1]]), rownames(split_kit_thresh[[2]])), rownames(split_kit_thresh[[3]])), rownames(split_kit_thresh[[4]])), rownames(split_kit_thresh[[5]]))
+Names_thresh<-intersect(intersect(intersect(intersect(intersect(rownames(split_kit_thresh[[1]]), rownames(split_kit_thresh[[2]])), rownames(split_kit_thresh[[3]])), rownames(split_kit_thresh[[4]])), rownames(split_kit_thresh[[5]])), rownames(split_kit_thresh[[6]]))
 
 finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
 
 qvals <- lapply(qval_df_single, finding_rows)  
 qvals <- data.frame(qvals)
-colnames(qvals) <-c("Illumina", "NEB", "NEXTflex", "Deduped", "Five_double")
 
-#colnames(qvals) <-c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped")
+colnames(qvals) <-c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
 
 qvals_raw <-qvals
 
@@ -538,13 +539,13 @@ lapply(qvals, range)
 #hsa-miR-9-5p has high error - it is highly expressed... is that why?
 ```
 
-####FIX for CLONTECH
+
 Check relationship of error and expression
 ```{r}
 library(gsubfn)
 exp_avgs <- lapply(split_kit_thresh, rowMeans)
 exp_avgs <-lapply(exp_avgs, data.frame)
-exp_avgs <- exp_avgs[2:6] #### delete when clontech is added
+
 
 expression_df <- data.frame(lapply(exp_avgs, finding_rows))
 colnames(expression_df) <-names(exp_avgs)
@@ -553,9 +554,9 @@ expression_df<-log2(expression_df)
 
 alltogether<-cbind(qvals_raw, expression_df)
 names_kits <-colnames(alltogether)
-colnames(alltogether)<-paste0(names(alltogether),c(rep("_rank", 5), rep("_exp", 5)))
+colnames(alltogether)<-paste0(names(alltogether),c(rep("_rank", 6), rep("_exp", 6)))
 
-alltogether <-alltogether[,c(1,6,2,7,3,8,4,9,5,10)]
+#alltogether <-alltogether[,c(1,6,2,7,3,8,4,9,5,10)]
 alltogether$miRNA <- rownames(alltogether)
 alldata <-melt(alltogether)
 #alldata$kit <- alldata$variable
@@ -604,7 +605,7 @@ get_corStats<- function(x, tested_kits) {
 }
 
 test_names <- data.frame(names(split_kit_thresh))
-get_cor_results(data1 = expression_df, data2 = qvals_raw, test_names = test_names$names.split_kit_thresh.[2:6])
+get_cor_results(data1 = expression_df, data2 = qvals_raw, test_names = test_names$names.split_kit_thresh.)
 #get_cor_results(data1 = expression_df, data2 = qvals_raw, test_names = test_names$names.split_kit_thresh.)
 
 
@@ -616,7 +617,7 @@ cor_withinerror_avgexp
 ###
 
 make_exp_plot<-function(alldata) {
-alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent"))
   plot1002<<-ggplot(data = alldata, aes(x = expression, y =rank , color= Kit)) +geom_point(aes(color = Kit))+
   theme(axis.title.x = element_text(size =20), 
         plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
@@ -630,27 +631,27 @@ alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTfl
 make_exp_plot(alldata = alldata)
 
 ```
-#### FIX for CLONTECH
+
 Using rank
 ```{r, eval =FALSE}
 library(gsubfn)
 exp_avgs <- lapply(split_kit_thresh, rowMeans)
 exp_avgs <-lapply(exp_avgs, data.frame)
-exp_avgs <- exp_avgs[2:6] #### delete when clontech is added
+
 expression_df <- data.frame(lapply(exp_avgs, finding_rows))
 
 colnames(expression_df) <-names(exp_avgs)
 identical(rownames(expression_df), ranks_number$miRNA)
 expression_df<-log2(expression_df)
 rownames(ranks_number) <-ranks_number$miRNA
-ranks_number <- ranks_number[,-6]
+#ranks_number <- ranks_number[,-6]
 #colnames(ranks_number)<-paste0(colnames(ranks_number), "_rank")
 #colnames(expression_df)<-paste0(colnames(expression_df), "_exp")
 alltogether<-cbind(ranks_number, expression_df)
 names_kits <-colnames(alltogether)
-colnames(alltogether)<-paste0(names(alltogether),c(rep("_rank", 5), rep("_exp", 5)))
+colnames(alltogether)<-paste0(names(alltogether),c(rep("_rank", 6), rep("_exp", 6)))
 
-alltogether <-alltogether[,c(1,6,2,7,3,8,4,9,5,10)]
+#alltogether <-alltogether[,c(1,6,2,7,3,8,4,9,5,10)]
 alltogether$miRNA <- rownames(alltogether)
 alldata <-melt(alltogether)
 #alldata$kit <- alldata$variable
@@ -699,9 +700,8 @@ get_corStats<- function(x, tested_kits) {
 }
 
 test_names <- data.frame(names(split_kit_thresh))
-get_cor_results(data1 = expression_df, data2 = ranks_number, test_names = test_names$names.split_kit_thresh.[2:6]) # go with below with clontech
 
-#get_cor_results(data1 = expression_df, data2 = ranks_number, test_names = test_names$names.split_kit_thresh.)
+get_cor_results(data1 = expression_df, data2 = ranks_number, test_names = test_names$names.split_kit_thresh.)
 
 cor_withinerror_avgexp<-data.frame(lapply(corresults, get_corStats, tested_kits = tested_kits))
 colnames(cor_withinerror_avgexp)<-tested_kits
@@ -711,7 +711,7 @@ cor_withinerror_avgexp
 ###
 
 make_exp_plot<-function(alldata) {
-alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+alldata$Kit <- factor(alldata$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent"))
   plot1002<<-ggplot(data = alldata, aes(x = rank, y = expression, color= Kit)) +geom_point(aes(color = Kit))+
   theme(axis.title.x = element_text(size =20), 
         plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
@@ -728,7 +728,7 @@ make_exp_plot(alldata = alldata)
 ```{r, eval =FALSE}
 #GC content and length association with error and expression...
 library(plotly)
-head(UnionInfo)
+load(here("hsa_miRNA_info.rda"))
 UnionInfo <-UnionInfo[order(rownames(UnionInfo)),]
 colnames(UnionInfo)[1] <-"GC_Content"
 UnionInfo_longer<-do.call("rbind", replicate(5, UnionInfo, simplify = FALSE))
@@ -851,7 +851,7 @@ Within_error_df <- melted_errordata_1
 Within_error_df$variable<-gsub("1000_Batch1", "", Within_error_df$variable)
 
 make_plot <- function(Within_error_df) {
-    Within_error_df$variable <- factor(Within_error_df$variable, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+    Within_error_df$variable <- factor(Within_error_df$variable, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent"))
   plot1000<<-ggplot(data = melt(Within_error_df), aes(x = variable, y = value, color= variable)) +geom_jitter(aes(color = variable, alpha =.7)) +
   theme(axis.title.x = element_text(size =0), 
         plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
