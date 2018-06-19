@@ -108,8 +108,120 @@ detected <-lapply(norm_miR_counts, get_det)
 detected <-data.frame(unlist(detected))
 det_Data <- cbind(detected, Pheno$startingAmt, Pheno$Kit)
 colnames(det_Data)<- c("det_indv_thresh", "startingAmt", "kit")
+```
+
+filter across
+```{r}
+Pheno$startingAmt <-factor(Pheno$startingAmt)
+split_kit_isoData <- list()
+for(i in unique(Pheno$startingAmt)) {
+  for(kit in unique(Pheno$Kit)){
+  split_kit_isoData[[i]][[kit]] <- data.frame(norm_miR_counts[which(Pheno$startingAmt == as.character(i) & Pheno$Kit == as.character(kit))])}
+}
+
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 100 normalized reads in all samples of the set... 
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+
+thresh <-list()
+for(amt in names(split_kit_isoData)){
+thresh[[amt]]<-lapply(split_kit_isoData[[as.character(amt)]], genefilt_fun)}
+
+test <-split_kit_isoData$`100`$Clontech[thresh$`100`$Clontech,]
+
+split_amt_thresh <-list()
+for(amt in names(split_kit_isoData)){
+for(kit in names(split_kit_isoData[[amt]])){
+ split_amt_thresh[[amt]][[kit]]<- split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],]}
+}
+
+thresh_number <- list()
+for(amt in names(split_kit_isoData)){
+for(kit in names(split_kit_isoData[[amt]])){
+thresh_number[[amt]][[kit]]<- dim(split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],])[1]}
+}
+
+thresh_number <-data.frame(thresh_number)
+colnames(thresh_number) <-c("100", "250", "500", "1000", "1500", "2000")
+thresh_number$kit <- rownames(thresh_number)
+thresh_number <-melt(thresh_number)
+thresh_number$variable <-as.numeric(as.character(thresh_number$variable))
+thresh_number<-thresh_number[-which(thresh_number$value =="0"),]
+thresh_number$kit <- factor(thresh_number$kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+```
+How consistent are the results...
+```{r}
+
+library(genefilter)
+library(VennDiagram)
+library(reshape2)
+library(ggplot2)
+
+#filter across triplicates
+
+thresh_number <- list()
+for(amt in names(split_kit_isoData)){
+for(kit in names(split_kit_isoData[[amt]])){
+thresh_number[[amt]][[kit]]<- dim(split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],])[1]}
+}
+
+thresh_number <-data.frame(thresh_number)
+colnames(thresh_number) <-c("100", "250", "500", "1000", "1500", "2000")
+thresh_number$kit <- rownames(thresh_number)
+to_repeat <-function(x) { rep(x,3)}
+thresh_kits <-data.frame(t(thresh_number))
+Clontech <-data.frame(t=unlist(lapply(thresh_kits$Clontech[1:6], to_repeat)))
+Illumina<-data.frame(t=unlist(lapply(thresh_kits$Illumina[4:6], to_repeat)))
+NEB<-data.frame(t=unlist(lapply(thresh_kits$NEB[1:4], to_repeat)))
+NEXTflex<-data.frame(t=unlist(lapply(thresh_kits$NEXTflex[1:6], to_repeat)))
+Deduped<-data.frame(t=unlist(lapply(thresh_kits$Deduped[1:6], to_repeat)))
+Fivepercent<- data.frame(t=unlist(lapply(thresh_kits$Fivepercent[1:6], to_repeat)))
+
+thresh_across_amts<-rbind(Clontech, Illumina, NEB, NEXTflex, Deduped, Fivepercent)
 
 
+det_Data$det_across_thresh<-thresh_across_amts$t
+det_Data$not_consistent <- ((det_Data$det_indv_thresh - as.numeric(as.character(det_Data$det_across_thresh)))/det_Data$det_indv_thresh)*100
+detected <-data.frame(det_Data$kit, det_Data$startingAmt, det_Data$not_consistent)
+
+detected$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
+detected$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("100", "250", "500", "1000", "1500","2000"))
+
+
+
+detected$det_Data.startingAmt <-gsub("starting_amt_", "",detected$det_Data.startingAmt)
+ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.startingAmt)
+
+ggplot(detected, aes(x =det_Data.startingAmt, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Percentage of Inconsistently \n Detected miRNA Sequences", title = "Inconsistentcy of miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))
+
+
+ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()
+
+
+
+
+
+summary(lm(det_Data$not_consistent~ det_Data$kit)) #sig difference in det inconsisentency across methods
+#vp_alpha <- venn.diagram(miRNA_det, fill = c("red", "white", "blue", "green"), alpha = 0.5, filename = NULL)
+summary(lm(det_Data$not_consistent~ det_Data$startingAmt)) #sig difference in det inconsisentency across methods
+Clontech <- det_Data[which(det_Data$kit == "Clontech"),]
+summary(lm(Clontech$not_consistent~Clontech$startingAmt))#F-statistic: 4.128 on 1 and 16 DF,  p-value: 0.05913
+NEB<- det_Data[which(det_Data$kit == "NEB"),]
+summary(lm(NEB$not_consistent~NEB$startingAmt))
+Deduped<- det_Data[which(det_Data$kit == "Deduped"),]
+summary(lm(Deduped$not_consistent~Deduped$startingAmt))#F-statistic: 32.44 on 1 and 16 DF,  p-value: 3.313e-05
+Fivepercent<- det_Data[which(det_Data$kit == "Fivepercent"),]
+summary(lm(Fivepercent$not_consistent~Fivepercent$startingAmt))#F-statistic: 11.86 on 1 and 16 DF,  p-value: 0.003334
+#grid.draw(vp_alpha);
+#venn.plot <- venn.diagram(
+# x = miRNA_det,
+#  filename = NULL
+#)
+#grid.draw(venn.plot)
+```
+
+
+```{r}
 library(genefilter)
 library(VennDiagram)
 library(reshape2)
