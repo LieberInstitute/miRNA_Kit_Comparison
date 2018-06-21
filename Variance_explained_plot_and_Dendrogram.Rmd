@@ -31,10 +31,10 @@ Pheno<- Pheno[-2,]
 miR_counts<- miR_counts[,-2]
 
 #remove Fivepercent
-Pheno<- Pheno[1:81,]
-miR_counts<-miR_counts[,1:81]
-Pheno<- Pheno[-6,]
-miR_counts<-miR_counts[,-6]
+# Pheno<- Pheno[1:81,]
+# miR_counts<-miR_counts[,1:81]
+# Pheno<- Pheno[-6,]
+# miR_counts<-miR_counts[,-6]
 # #remove Deduped
 #   Pheno<- Pheno[1:62,]
 # miR_counts<-miR_counts[,1:62]
@@ -106,12 +106,90 @@ plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential 
 ```
 
 ###Dendrogram to see how data clusters after normalization of counts
-```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
+library(rafalib)
+library(dendextend)
+library(reshape2)
+library(here)
+
+miRNAc <- hclust(dist(t(yGene)))
+pdD<-Pheno
+pdD$Kit<-as.factor(pdD$Kit)
+pdD$TriplicateGroup<-as.factor(pdD$TriplicateGroup)
+
+par(mar=c(16,2,3,0))
+#bottom, left, top, right
+colors<-as.numeric(pdD$Kit)
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 6
+cols = gg_color_hue(n)
+# repeat_colors <-function(x){rep(x,6)}
+# cols2 <- lapply(cols, repeat_colors)
+# cols2<-unlist(cols2)
+# cols2 <-cols2[order(miRNAc$order)]
+
+cols2<-gsub("Clontech","#F8766D" ,pdD$Kit)
+cols2<-gsub("Illumina","#B79F00" ,cols2)
+cols2<-gsub("NEB","#00BA38" ,cols2)
+cols2<-gsub("NEXTflex","#00BFC4" ,cols2)
+cols2<-gsub("Deduped","#619CFF" ,cols2)
+cols2<-gsub("Fivepercent","#F564E3" ,cols2)
+
+Pheno<-read.table(here("Pheno_Dendrogram.csv"), header =TRUE, sep = ",")
+png(here("Dendrogram.png"), width = 1000, height = 800)
+myplclust(miRNAc, labels=Pheno$Groups,lab.col=(cols2), main = "Counts Generally Cluster by Method", cex =1.5)
+dev.off()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+###Dendrogram to see how data clusters with just 1000ng
+```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
 library(rafalib)
 library(dendextend)
 library(reshape2)
 
+#just
+# Pheno<- Pheno[which(Pheno$startingAmt =="1000"),]
+# miR_counts<-miR_counts[which(Pheno$startingAmt =="1000")]
 
+
+# #remove Deduped
+Pheno<- Pheno[1:62,]
+ miR_counts<-miR_counts[,1:62]
+ Pheno<- Pheno[-5,]
+ miR_counts<-miR_counts[,-5]
+ 
+ 
+
+library(DESeq2)
+dds<-DESeqDataSetFromMatrix(countData = miR_counts, colData = Pheno, design = ~ Kit)
+dds <- estimateSizeFactors(dds)
+norm_miR_counts<-data.frame(counts(dds, normalized = TRUE))
+dim(norm_miR_counts)
+
+poverafun <- genefilter::pOverA(p = 1, A = 1)#at least one raw read in all samples
+
+ffun <- filterfun(poverafun)
+index <- genefilter(miR_counts, ffun)
+thresh_miR_counts <- norm_miR_counts[index,]
+dim(thresh_miR_counts)
+thresh_miR_counts<-sapply(thresh_miR_counts, log2)# log2 transformation
+yGene <-as.matrix(thresh_miR_counts)
 miRNAc <- hclust(dist(t(yGene)))
 pdD<-Pheno
 pdD$Kit<-as.factor(pdD$Kit)
@@ -141,25 +219,29 @@ myplclust(miRNAc, labels=pdD$TriplicateGroup,lab.col=(cols2), main = "Counts clu
 
 ```
 
+```{r}
+#use all data
+ Pheno<- read.table(here("Complete_data/Pheno.txt"), header = TRUE)
+miR_counts<-read.table(here("Complete_data/miR.Counts.csv"), header = TRUE, sep = ",")
 
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
 
+colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
+colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+miR_counts<-miR_counts[-1,]#remove total miRNA counts row
 
-
-
-
-
-
-
-
-
-###Dendrogram to see how data clusters with just 1000ng
-```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
-library(rafalib)
-library(dendextend)
-library(reshape2)
-
-Pheno<- Pheno[which(Pheno$startingAmt =="1000"),]
-miR_counts<-miR_counts[which(Pheno$startingAmt =="1000")]
+Pheno$File<-gsub("NEXTflex_deduped", "Deduped", Pheno$File)
+Pheno$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno$Kit)
+Pheno$TriplicateGroup<-gsub("NEXTflex_deduped", "Deduped", Pheno$TriplicateGroup)
+Pheno$miRNAtotal <-miRNAtotal
+ 
+identical(as.character(Pheno$File), colnames(data.frame(miR_counts))) ###Check that these match 
+identical(rownames(miRNAtotal), Pheno$File)
+#remove extra samples
+Pheno<- Pheno[-2,]
+miR_counts<- miR_counts[,-2]
 
 library(DESeq2)
 dds<-DESeqDataSetFromMatrix(countData = miR_counts, colData = Pheno, design = ~ Kit)
@@ -199,10 +281,11 @@ cols2<-gsub("Illumina","#B79F00" ,cols2)
 cols2<-gsub("NEB","#00BA38" ,cols2)
 cols2<-gsub("NEXTflex","#00BFC4" ,cols2)
 cols2<-gsub("Deduped","#619CFF" ,cols2)
-
+cols2<-gsub("Fivepercent","#F564E3" ,cols2)
 myplclust(miRNAc, labels=pdD$TriplicateGroup,lab.col=(cols2), main = "Counts cluster by library prep kit")
 
 ```
+
 
 
 
