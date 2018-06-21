@@ -139,8 +139,9 @@ library(RCurl)
 ### comparison of error for each kit for given starting amount
 ##Split the data
 ```{r}
-
+Pheno$raw_start <-Pheno$startingAmt
 Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
+
 ###split the data by starting Amount
 split_startingAmt <- list() 
 for(i in Pheno$startingAmt) { 
@@ -281,6 +282,8 @@ ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +
 ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +facet_grid(.~Var2)+stat_smooth(aes(Var1, value), method = "loess") + scale_x_continuous(breaks=unique(detected$Var1)) + theme(legend.position = "none") + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits")
 
 ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_line() +facet_grid(.~Var2) + scale_x_continuous(breaks=unique(detected$Var1)) + theme(legend.position = "none") + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "miRNA Detection across kits")
+
+ggplot(data = detected, aes(x = Var1, y = value, color = Var2)) + geom_point() +facet_grid(.~Var2)+stat_smooth(aes(Var1, value), method = "loess", sd = TRUE)
 ```
 
 
@@ -424,6 +427,7 @@ library(dplyr)
 
     errorData <-list()
     errordata <-data.frame()
+    
 get_error<- function(data) {
   for(i in names(data)){
   data_kit <-data[which(names(data) ==i)]
@@ -442,6 +446,71 @@ get_error<- function(data) {
 ```
 
 Higher t is worse = higher error
+###Overall Error
+
+```{r, warning=FALSE, message=FALSE}
+errorData_all <-list()
+
+get_error(data = split_amt_thresh$starting_amt_100)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_all[[1]] <-lapply(mean_errors_1, data.frame)
+
+get_error(data = split_amt_thresh$starting_amt_250)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_all[[2]] <-lapply(mean_errors_1, data.frame)
+
+get_error(data = split_amt_thresh$starting_amt_500)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_all[[3]] <-lapply(mean_errors_1, data.frame)
+
+get_error(data = split_amt_thresh$starting_amt_1000)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_all[[4]] <-lapply(mean_errors_1, data.frame)
+
+errorData <-NULL
+get_error(data = split_amt_thresh$starting_amt_1500)
+mean_errors_1500 <- lapply(errorData, rowMeans)
+errorData_all[[5]] <-lapply(mean_errors_1500, data.frame)
+
+errorData <-NULL
+get_error(data = split_amt_thresh$starting_amt_2000)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_all[[6]] <-lapply(mean_errors_1, data.frame)
+
+names(errorData_all)<- unique(Pheno$raw_start)
+
+errorAll <-melt(errorData_all)
+names(errorAll)<- c("variable", "value"  ,  "Method"   ,    "Starting_Amount" )
+errorAll$Method<-factor(errorAll$Method, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+errorAll$Starting_Amount<-factor(errorAll$Starting_Amount, levels = c("100", "250", "500", "1000", "1500", "2000"))
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 6
+cols = gg_color_hue(n)
+
+ggplot(errorAll, aes(x = Starting_Amount, y = value))+ geom_jitter(aes(col = Method))+ geom_boxplot(outlier.shape = NA, varwidth = TRUE, notch = TRUE) + facet_grid(.~Method)+  ggtitle(label = "Inconsistency Across Triplicates")+ 
+      theme(axis.title.x = element_text(size =0), 
+            plot.title = element_text(size = 20, face = "bold"), 
+            axis.text.x = element_text(size = 20, angle = 60, hjust = 1),
+            axis.text.y = element_text(size = 20), 
+            axis.title.y = element_text(size =15),
+            legend.position= "none") +scale_color_manual(values =cols)+ geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1, fill = Method))
+
+
+ggplot(errorAll, aes(x = Method, y = value))+ geom_jitter(aes(col = Method))+ geom_boxplot(outlier.shape = NA, varwidth = TRUE, notch = TRUE) + facet_grid(Starting_Amount~.)+  ggtitle(label = "Inconsistency Across Triplicates")+ 
+      theme(axis.title.x = element_text(size =0), 
+            plot.title = element_text(size = 20, face = "bold"), 
+            axis.text.x = element_text(size = 20, angle = 60, hjust = 1),
+            axis.text.y = element_text(size = 20), 
+            axis.title.y = element_text(size =15),
+            legend.position= "none") +scale_color_manual(values =cols)
+```
+
+
 
 ###Within Error Batch 100ng
 ```{r}
@@ -489,10 +558,10 @@ make_plot <- function(Within_error_df) {
     Within_error_df$L1 <- factor(Within_error_df$L1, levels =c("Clontech","NEB","NEXTflex","Deduped", "Fivepercent"))
   plot1000<<-ggplot(data = melt(Within_error_df), aes(x = L1, y = value, color= L1)) +geom_jitter(aes(color = L1, alpha =.7)) +
   theme(axis.title.x = element_text(size =0), 
-        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10), 
-        axis.title.y = element_text(size =18))
+        plot.title = element_text(size = 16, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 18), 
+        axis.title.y = element_text(size =15))
 }
 make_plot(Within_error_df = Within_error_df)
 
@@ -536,11 +605,11 @@ Within_error_df$variable<-gsub("1000_Batch1", "", Within_error_df$variable)
 make_plot <- function(Within_error_df) {
     Within_error_df$L1 <- factor(Within_error_df$L1, levels =c("Clontech","NEB","NEXTflex","Deduped", "Fivepercent"))
   plot1000<<-ggplot(data = melt(Within_error_df), aes(x = L1, y = value, color= L1)) +geom_jitter(aes(color = L1, alpha =.7)) +
-  theme(axis.title.x = element_text(size =0), 
-        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10), 
-        axis.title.y = element_text(size =18))
+    theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 16, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 18), 
+        axis.title.y = element_text(size =15))
 }
 make_plot(Within_error_df = Within_error_df)
 
@@ -589,11 +658,11 @@ Within_error_df$variable<-gsub("1000_Batch1", "", Within_error_df$L1)
 make_plot <- function(Within_error_df) {
     Within_error_df$L1 <- factor(Within_error_df$L1, levels =c("Clontech","NEB","NEXTflex","Deduped", "Fivepercent"))
   plot1000<<-ggplot(data = melt(Within_error_df), aes(x = L1, y = value, color= L1)) +geom_jitter(aes(color = variable, alpha =.7)) +
-  theme(axis.title.x = element_text(size =0), 
-        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10), 
-        axis.title.y = element_text(size =18))
+    theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 16, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 18), 
+        axis.title.y = element_text(size =15))
 }
 make_plot(Within_error_df = Within_error_df)
 
