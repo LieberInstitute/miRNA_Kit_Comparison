@@ -426,7 +426,8 @@ colnames(det_Data)<- c("det_indv_thresh", "startingAmt", "kit")
 
 #filter across triplicates
 to_repeat <-function(x) { rep(x,3)}
-thresh_kits <-data.frame(t(thresh_number))
+thresh_kits <-data.frame(thresh_number)
+thresh_kits <-spread(thresh_kits, kit, value)
 Clontech <-data.frame(t=unlist(lapply(thresh_kits$Clontech[1:6], to_repeat)))
 Illumina<-data.frame(t=unlist(lapply(thresh_kits$Illumina[4:6], to_repeat)))
 NEB<-data.frame(t=unlist(lapply(thresh_kits$NEB[1:4], to_repeat)))
@@ -485,6 +486,26 @@ summary(lm(Fivepercent$not_consistent~Fivepercent$startingAmt))#F-statistic: 11.
 #grid.draw(venn.plot)
 ```
 
+```{r}
+head(det_Data)
+
+across <- data.frame(det_Data$kit, det_Data$startingAmt, det_Data$det_across_thresh)
+raw_det<- data.frame(det_Data$kit, det_Data$startingAmt, det_Data$det_indv_thresh)
+#across<-across[seq(from =1, t = length(det_Data$det_indv_thresh) , by = 3),]
+across$det_Data.det_across_thresh<-as.numeric(as.character(across$det_Data.det_across_thresh))
+
+across$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
+across$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("100", "250", "500", "1000", "1500","2000"))
+
+raw_det$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
+raw_det$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("100", "250", "500", "1000", "1500","2000"))
+
+ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter(aes(color = det_Data.kit))+ facet_grid(.~det_Data.kit, scales="free") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1.0001, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
+
+ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =10, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected isomiRNA Sequences", title = " isomiRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
+
+ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + facet_grid(.~det_Data.kit,scales="free") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =10, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected isomiRNA Sequences", title = " isomiRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
+```
 
 
 X1) number of identified isomirs - can see on first plot

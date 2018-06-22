@@ -112,6 +112,8 @@ colnames(det_Data)<- c("det_indv_thresh", "startingAmt", "kit")
 
 filter across
 ```{r}
+library(genefilter)
+library(reshape2)
 Pheno$startingAmt <-factor(Pheno$startingAmt)
 split_kit_isoData <- list()
 for(i in unique(Pheno$startingAmt)) {
@@ -218,6 +220,28 @@ summary(lm(Fivepercent$not_consistent~Fivepercent$startingAmt))#F-statistic: 11.
 #  filename = NULL
 #)
 #grid.draw(venn.plot)
+
+
+
+```
+
+```{r}
+head(det_Data)
+
+across <- data.frame(det_Data$kit, det_Data$startingAmt, det_Data$det_across_thresh)
+raw_det<- data.frame(det_Data$kit, det_Data$startingAmt, det_Data$det_indv_thresh)
+#across<-across[seq(from =1, t = length(det_Data$det_indv_thresh) , by = 3),]
+across$det_Data.det_across_thresh<-as.numeric(as.character(across$det_Data.det_across_thresh))
+
+across$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
+across$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("100", "250", "500", "1000", "1500","2000"))
+
+raw_det$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
+raw_det$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("100", "250", "500", "1000", "1500","2000"))
+
+ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter(aes(color = det_Data.kit))+ facet_grid(.~det_Data.kit, scales="free") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1.0001, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
+
+ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + facet_grid(.~det_Data.kit, scales="free") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
 ```
 
 
