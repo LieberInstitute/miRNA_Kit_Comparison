@@ -349,7 +349,7 @@ yGene <-as.matrix(Error$NEXTflex)
 
 varCompAnalysis = apply(t(yGene),1,function(y) {
   if(runif(1) < 1e-4) cat(".")
-  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT +avg_Express$NEXTflex , data=NEXTflexh_pd)
+  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT +avg_Express$NEXTflex , data=NEXTflex_pd)
   full = anova(fit)
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
@@ -384,6 +384,12 @@ varCompAnalysis = apply(t(yGene),1,function(y) {
 
 varexpFivepercent<-do.call(rbind, lapply(varCompAnalysis, data.frame))
 
+
+
+
+
+
+
 ###NOT sure I need below
 labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
 colnames(labels_varexp)<-c("Kit", "variable")
@@ -415,6 +421,9 @@ rank_Table <-sapply((-1*var_Table), rank )
 
 ```{r, eval=FALSE}
 library(pheatmap)
+
+###somehow need to bind all the varexpdataframes... first make a list of them 
+varCompAnalysis <-list(varexpclontech, varexpIllumina, varexpNEB, varexpNEXTflex, varexpDeduped, varexpFivepercent)
 varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
 varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
 colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
