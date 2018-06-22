@@ -336,7 +336,7 @@ cols <-c(cols[1], cols[3:6])
 
 vp_100 <- venn.diagram(miRNA_det_100, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15, .25))
 vp_250 <- venn.diagram(miRNA_det_250, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15, .25))
-vp_500 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.15, .15, .25))
+vp_500 <- venn.diagram(miRNA_det_500, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.25, .25, .25))
 n=5
 cols = gg_color_hue(n)
 vp_1000 <- venn.diagram(miRNA_det_1000[1:5], fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.25,.25,.25, .25, .25))
@@ -479,6 +479,14 @@ errorData_all[[6]] <-lapply(mean_errors_1, data.frame)
 
 names(errorData_all)<- unique(Pheno$raw_start)
 
+
+Names_thresh <-list()
+get_names_thresh<-function(data) {
+Names_thresh<<-intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]])))}
+get_names_thresh(data = split_amt_thresh)
+
+#finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
+#errorData_test <- lapply(errorData_test, finding_rows)  
 errorAll <-melt(errorData_all)
 names(errorAll)<- c("variable", "value"  ,  "Method"   ,    "Starting_Amount" )
 errorAll$Method<-factor(errorAll$Method, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
@@ -492,26 +500,173 @@ gg_color_hue <- function(n) {
 n = 6
 cols = gg_color_hue(n)
 
-ggplot(errorAll, aes(x = Starting_Amount, y = value))+ geom_jitter(aes(col = Method))+ geom_boxplot(outlier.shape = NA, varwidth = TRUE, notch = TRUE) + facet_grid(.~Method)+  ggtitle(label = "Inconsistency Across Triplicates")+ 
+boxplotwidth <- data.frame(width =c(rep(1,6), rep(.3,3), rep(.5, 4), rep(1, 18)))
+ggplot(errorAll, aes(x = Starting_Amount, y = value))+ geom_jitter(width = .3, size = 2, aes(col = Method))+ geom_boxplot(outlier.shape = NA, varwidth = FALSE, notch = FALSE) + facet_grid(.~Method, scales = "free")+  ggtitle(label = "Inconsistency Across Triplicates")+ labs( x= "Starting Amount", y = " Error from the Mean of Triplicates")+
       theme(axis.title.x = element_text(size =0), 
-            plot.title = element_text(size = 20, face = "bold"), 
-            axis.text.x = element_text(size = 20, angle = 60, hjust = 1),
-            axis.text.y = element_text(size = 20), 
-            axis.title.y = element_text(size =15),
-            legend.position= "none") +scale_color_manual(values =cols)+ geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1, fill = Method))
+            plot.title = element_text(size = 20, face = "bold"),
+            strip.text = element_text(size = 14),
+            axis.text.x = element_text(size = 15, angle = 60, hjust = 1),
+            axis.text.y = element_text(size = 18), 
+            axis.title.y = element_text(size =18),
+            legend.position= "none")  +scale_color_manual(values =cols)+ geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1, fill = Method))
+
+```
+
+#### variance of within error
+```{r}
+
+library(ggplot2)
+yGene<-as.matrix(log2(miRge_synth+1))
+yGene <-as.matrix(errorData_toplot)
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last <- data.frame(x =lastStuff(str=seqs$RNA, 1))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first <-data.frame(x =strtrim(seqs$RNA, c(1)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_two <- data.frame(x =lastStuff(str=seqs$RNA, 2))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_two <-data.frame(x =strtrim(seqs$RNA, c(2)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_three<- data.frame(x =lastStuff(str=seqs$RNA, 3))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_three <-data.frame(x =strtrim(seqs$RNA, c(3)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_four <- data.frame(x =lastStuff(str=seqs$RNA, 4))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_four <-data.frame(x =strtrim(seqs$RNA, c(4)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+#seqs$FoldG<-errorFoldG$FoldG
+pd<-seqs
+pd$First_base <-seqs_first$x
+pd$First_2_bases <-seqs_first_two$x
+pd$First_3_bases <-seqs_first_three$x
+pd$First_4_bases <-seqs_first_four$x
+pd$Last_base <-seqs_last$x
+pd$Last_2_bases <-seqs_last_two$x
+pd$Last_3_bases <-seqs_last_three$x
+pd$Last_4_bases <-seqs_last_four$x
+pd$TTTT <- TTTT
+pd$CCCC <- CCCC
+pd$GGGG <- GGGG
+pd$AAAA <- AAAA
+pd$rep <- (TTTT+ CCCC+ GGGG+ AAAA)
+pd$duplets <-duplets
+pd$anyT <- anyT
+pd$anyC <-anyC
+pd$anyG <- anyG
+pd$anyA <- anyA
+
+#modFull = model.matrix(~GC + length +FoldG + First_base + Last_base +TTTT + CCCC + GGGG +AAAA, data=pd)
 
 
-ggplot(errorAll, aes(x = Method, y = value))+ geom_jitter(aes(col = Method))+ geom_boxplot(outlier.shape = NA, varwidth = TRUE, notch = TRUE) + facet_grid(Starting_Amount~.)+  ggtitle(label = "Inconsistency Across Triplicates")+ 
-      theme(axis.title.x = element_text(size =0), 
-            plot.title = element_text(size = 20, face = "bold"), 
-            axis.text.x = element_text(size = 20, angle = 60, hjust = 1),
-            axis.text.y = element_text(size = 20), 
-            axis.title.y = element_text(size =15),
-            legend.position= "none") +scale_color_manual(values =cols)
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT, data=pd)
+  full = anova(fit)
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("Kit", "variable")
+#colnames(labels_varexp)<-c("variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+#VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "duplets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
+VarExp$KitF <- factor(VarExp$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp)) + geom_boxplot(aes(fill = "black"), notch = TRUE, outlier.shape=NA) +facet_grid(~KitF)
+plotfull +ggtitle("Percent of Variance Explained by Influential Factors") +
+  labs(y="Percent of Variance Explained", x ="none") + 
+  scale_fill_manual(values = c("black"))+
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 90, face = "bold"), axis.text.x=element_text(size = 10, angle = 20, face = "bold", colour = "black"),
+        axis.title.y=element_text(size=20), plot.title = element_text(size = 30, face = "bold"))
+
+variance <- lapply(log2(miRge_synth+1), var)
+boxplot(variance)
+expression <-log2(miRge_synth+1)
+#if F is greater than one its worse for first kit
+#get_test_names(expression)
+# #get_var_results <-function(data,test_names) {
+#   tresults<<-list()
+#   tested_names1<<-list()
+#   tested_names2<<-list()
+#   for(i in names(test_names)){
+#     #tested_names[[i]]<<-(test_names[i][,1])
+#     Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+#     Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+#     tested_names1[[i]]<<-colnames(Kit1)
+#     tested_names2[[i]]<<-colnames(Kit2)
+#     colnames(Kit1)<-c("error")
+#     colnames(Kit2)<-c("error")
+#     tresults[[i]]<<-var.test(x=Kit1$error, y=Kit2$error) ### may have messed things up adding paired = TRUE previously had more ))
+#     tested_kits <<-paste0(tested_names1, "&", tested_names2)
+#   }
+# }
+# get_var_results(data =expression, test_names = test_names)
+# varStats<-data.frame(lapply(tresults, get_ttestStats))
+# colnames(varStats)<-tested_kits
+# varStats
+
+VarExp[which(VarExp$variable == "First_base"),]
+VarExp[which(VarExp$variable == "Last_base"),]
+VarExp[grep("First", VarExp$variable),]
+VarExp[grep("Last", VarExp$variable),]
+
+#pheatmap(VarExp)
+
+var_Table <-read.table(here("Var_exp_Table"))
+rank_Table <-sapply((-1*var_Table), rank )
 ```
 
 
+```{r, eval=FALSE}
+library(pheatmap)
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
 
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp_PctExp<-var_Table#####################using full varaince info
+varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
+#varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
+#varexp_PctExp<- varexp_PctExp[-grep("First_4_bases",rownames(varexp_PctExp)),]
+
+pheatmap(varexp_PctExp, main = "Percent of sequence detection variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
+myBreaks<-seq(to=round(max(varexp_PctExp))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
+myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+#myColor<-c(myColorbelow, myColorabove)
+pheatmap(varexp_PctExp, breaks = myBreaks, color = myColor, cluster_rows = FALSE, cluster_cols = FALSE, main ="Contribution of factors to sequence detection variance")
+
+
+####weighted by overall variance by multiplying by kit variance and dividing by mean of all kit variance
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp_PctExp2<-var_Table
+varexp_PctExp2<-((varexp_PctExp2*variance)/mean(unlist(variance)))
+varexp_PctExp2<- varexp_PctExp2[-grep("Residuals",rownames(varexp_PctExp2)),]
+#varexp_PctExp2<- varexp_PctExp2[-grep("Last_4_bases",rownames(varexp_PctExp2)),]
+#varexp_PctExp2<- varexp_PctExp2[-grep("First_4_bases",rownames(varexp_PctExp2)),]
+pheatmap(varexp_PctExp2, cluster_cols = FALSE, main = "Percent of sequence detection variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE)
+myBreaks<-seq(to=round(max(varexp_PctExp2)+2), from = min(varexp_PctExp2), length.out = paletteLength*(max(varexp_PctExp2))/2)
+myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+pheatmap(varexp_PctExp2, breaks = myBreaks, color = myColor, main = "Contribution of factors to sequence detection variance \n weighted by overall variance for each kit", cluster_cols = FALSE, cluster_rows = FALSE)
+```
+```
+######################################
 ###Within Error Batch 100ng
 ```{r}
 kits <-names(split_amt_thresh$starting_amt_100)
