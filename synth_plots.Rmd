@@ -86,12 +86,12 @@ library(ggsignif)
 my_comparisons <- list( c("Clontech", "Illumina"), c("Illumina", "NEB"), c("NEB", "NEXTflex"), c("Fivepercent", "Deduped"), c("NEXTflex", "Fivepercent"),c("Clontech", "NEXTflex"))
 
 #synth is created in the my_scale function based on which data is selected as synthDATA in the above chunk
-plot1000<-ggplot(data = synth, aes(x = variable, y = value, color= variable, label = miRNA))+geom_jitter(aes(fill = variable, alpha = 1)) +geom_boxplot( outlier.shape = NA)+
+plot1000<-ggplot(data = synth, aes(x = variable, y = value, color= variable, label = miRNA))+geom_jitter(aes(fill = variable, alpha = 1)) +geom_boxplot( outlier.shape = NA, notch = TRUE, color = "black")+
   labs(y = "Error from the mean")+
    theme(axis.title.x = element_text(size =0), 
         plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10), 
+        axis.text.x = element_text(size = 15, colour = "Black", angle = 45, hjust = 0.7),
+        axis.text.y = element_text(size = 15), 
         axis.title.y = element_text(size =18))
 
 
@@ -100,7 +100,7 @@ plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from th
 my_comparisons <- list( c("Clontech", "Illumina"), c("NEB", "NEXTflex"), c("NEXTflex", "Deduped"), c("Deduped", "Fivepercent"))
 
 plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +geom_signif(comparisons = my_comparisons, annotations=c("***", "***","***", "***"), tip_length = .02, y_position = c(16,18, 16, 18), color = c("black"))
-
+plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," )
 #interesting mistkae
 #plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +   geom_text(
  #   aes(label = value, y = value + 0.05),
@@ -607,12 +607,12 @@ colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "
 varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
 varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
 colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
-varexp_PctExp<-var_Table
+varexp_PctExp<-var_Table#####################using full varaince info
 varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
 #varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
 #varexp_PctExp<- varexp_PctExp[-grep("First_4_bases",rownames(varexp_PctExp)),]
 
-pheatmap(varexp_PctExp, main = "varexp", cluster_cols = FALSE, cluster_rows = FALSE)
+pheatmap(varexp_PctExp, main = "Percent of sequence detection variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
 myBreaks<-seq(to=round(max(varexp_PctExp))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
 myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
 #myColor<-c(myColorbelow, myColorabove)
@@ -641,7 +641,7 @@ varexp_PctExp2<-((varexp_PctExp2*variance)/mean(unlist(variance)))
 varexp_PctExp2<- varexp_PctExp2[-grep("Residuals",rownames(varexp_PctExp2)),]
 #varexp_PctExp2<- varexp_PctExp2[-grep("Last_4_bases",rownames(varexp_PctExp2)),]
 #varexp_PctExp2<- varexp_PctExp2[-grep("First_4_bases",rownames(varexp_PctExp2)),]
-pheatmap(varexp_PctExp2, cluster_cols = FALSE, main = "Contribution of factors to sequence detection variance \n weighted by overall variance for each kit", cluster_rows = FALSE)
+pheatmap(varexp_PctExp2, cluster_cols = FALSE, main = "Percent of sequence detection variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE)
 myBreaks<-seq(to=round(max(varexp_PctExp2)+2), from = min(varexp_PctExp2), length.out = paletteLength*(max(varexp_PctExp2))/2)
 myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
 pheatmap(varexp_PctExp2, breaks = myBreaks, color = myColor, main = "Contribution of factors to sequence detection variance \n weighted by overall variance for each kit", cluster_cols = FALSE, cluster_rows = FALSE)
@@ -779,7 +779,7 @@ varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
 colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
 varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
 #varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
-pheatmap(varexp_PctExp, main = "varexp", cluster_cols = FALSE, cluster_rows = FALSE)
+pheatmap(varexp_PctExp, cluster_cols = FALSE, cluster_rows = FALSE,main ="Percent of sequence detection variance explained")
 myBreaks<-seq(to=round(max(varexp_PctExp))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
 myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
 #myColor<-c(myColorbelow, myColorabove)
@@ -806,7 +806,7 @@ colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "
 varexp_PctExp2<-((varexp_PctExp*variance)/mean(unlist(variance)))
 varexp_PctExp2<- varexp_PctExp2[-grep("Residuals",rownames(varexp_PctExp)),]
 #varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
-pheatmap(varexp_PctExp2, main = "varexp", cluster_cols = FALSE)
+pheatmap(varexp_PctExp2, cluster_cols = FALSE, cluster_rows = FALSE,main = "Percent of sequence detection variance explained \n weighted by overall varaince for each kit")
 myBreaks<-seq(to=round(max(varexp_PctExp2)+2), from = min(varexp_PctExp2), length.out = paletteLength*(max(varexp_PctExp2))/10)
 myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
 pheatmap(varexp_PctExp2, breaks = myBreaks, color = myColor, main = "Contribution of factors to sequence detection variance \n weighted by overall variance for each kit", cluster_cols = FALSE, cluster_rows = FALSE)
@@ -859,13 +859,13 @@ vplot <- ggplot(data=melt(Variance), aes(x=Var2, y=value, fill = Var2)) +
        geom_bar(position="dodge",stat="identity") +
        ylab("Variance") + 
        xlab(" ")+
-       ggtitle("Variance of Synthetic miRNA Detection")
+       ggtitle("Variance of Synthetic miRNA Detection")+
 theme(axis.title.x = element_text(size =0), 
         plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10), 
+        axis.text.x = element_text(size = 18, angle =45, color = "black", vjust = 0.6),
+        axis.text.y = element_text(size = 20), 
         axis.title.y = element_text(size =18))
 
-vplot    +  theme(legend.position = "none") + geom_text(aes(label = (round(value, digits =2)), size = 3, hjust = 0.5, vjust = 3) )
+vplot    +  theme(legend.position = "none") + geom_text(aes(label = (round(value, digits =2)), size = 5, hjust = 0.5, vjust = 1.5) )
 
 ```

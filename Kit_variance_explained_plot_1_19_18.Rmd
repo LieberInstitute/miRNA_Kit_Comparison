@@ -1,0 +1,232 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+load the data
+```{r, eval=TRUE, echo=FALSE}
+library(edgeR)
+Pheno<- read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/Pheno_repro_full_1_16_18_ns_kept", header = T)
+
+#miR_counts<-read.table("/home/carrie/miRge/miRge-master/Keeping_Ns_Repro_Analysis/miR.Counts.csv", header = TRUE, sep = ",") #original location
+miR_counts<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/ReproData/miR.Counts.csv", header = TRUE, sep = ",")
+
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+
+colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
+colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+miR_counts<-miR_counts[-1,]#remove total miRNA counts row
+
+Pheno$File<-gsub("NEXTflex_deduped", "Deduped", Pheno$File)
+Pheno$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno$Kit)
+Pheno$TriplicateGroup<-gsub("NEXTflex_deduped", "Deduped", Pheno$TriplicateGroup)
+Pheno$miRNAtotal <-miRNAtotal
+ 
+identical(as.character(Pheno$File), colnames(data.frame(miR_counts))) ###Check that these match 
+identical(rownames(miRNAtotal), Pheno$File)
+```
+
+###TMM Normalization
+
+```{r, eval= FALSE, echo =FALSE}
+#library(tweeDEseq)
+#miR_1000_TMM<-data.frame(normalizeCounts(miR_1000_raw)
+#dim(norm_miR_1000)
+#or
+library(edgeR)
+group <-Pheno$Kit
+d<-DGEList(counts = miR_counts, group = group)
+miR_1000_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
+TMM <-estimateCommonDisp(miR_1000_TMM_edgeR_factors)
+norm_miR_counts <-data.frame(TMM$pseudo.counts)
+dim(norm_miR_counts)
+```
+
+###DESeq2
+```{r, eval=TRUE,warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+dds<-DESeqDataSetFromMatrix(countData = miR_counts, colData = Pheno, design = ~ Kit)
+dds <- estimateSizeFactors(dds)
+norm_miR_counts<-data.frame(counts(dds, normalized = TRUE))
+dim(norm_miR_counts)
+```
+
+###genefilter
+```{r, eval=TRUE, echo = FALSE}
+library(genefilter)
+#poverafun <- genefilter::pOverA(p = .5, A = 529)# at least 529 reads for 50% of samples
+poverafun <- genefilter::pOverA(p = 1, A = 1)#at least one raw read in all samples #379
+#poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 raw reads in all samples #292
+#poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 raw reads in all samples #125
+
+ffun <- filterfun(poverafun)
+index <- genefilter(miR_counts, ffun)
+thresh_miR_counts <- norm_miR_counts[index,]
+dim(thresh_miR_counts)
+```
+
+#variance explained plot
+```{r}
+library(ggplot2)
+yGene<-as.matrix(log2(thresh_miR_counts +1))
+pd<-Pheno
+colnames(pd)<-c("File", "Batch", "Kit", "Starting_Amount", "TriplicateGroup", "Triplicate" ,  "Total_miRNA_Mapped_Reads")
+modFull = model.matrix(~Kit + Starting_Amount +Total_miRNA_Mapped_Reads, data=pd)
+
+varCompAnalysis = apply(yGene,1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~ Kit + Starting_Amount +Total_miRNA_Mapped_Reads + Batch, data=pd)
+  full = anova(fit)
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("miRNA", "variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+VarExp$variable <- factor(VarExp$variable,
+                          levels = c('Kit','Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp)) + geom_boxplot(aes(fill = "black"), notch = TRUE, outlier.shape=NA)
+plotfull +ggtitle("Percent of Variance Explained by Influential Factors") +
+  labs(y="Percent of Variance Explained", x ="none") + 
+  scale_fill_manual(values = c("black"))+
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 20, face = "bold", colour = "black"),
+        axis.title.y=element_text(size=20), plot.title = element_text(size = 30, face = "bold"))
+```
+```{r}
+####################################venndiagram##################################
+library(VennDiagram)
+library(venneuler)
+```
+
+
+```{r}
+###split the data by kit
+split_kit <- list() 
+for(i in Pheno$Kit) { 
+  split_kit[[i]] <- data.frame(miR_counts[which(Pheno$Kit==i)]) #raw counts
+} 
+
+```
+
+
+```{r}
+###genefilter
+library(genefilter)
+library(VennDiagram)
+#library(venneuler)
+#poverafun <- genefilter::pOverA(p = .5, A = 529)# at least 529 reads for 50% of samples
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 100 normalized reads in all samples of the set... 
+#poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 raw reads in all samples #292
+#poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 raw reads in all samples #125
+
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+thresh<-lapply(split_kit, genefilt_fun)
+
+split_kit_thresh <-list()
+split_kit_thresh$Clontech<-split_kit$Clontech[thresh$Clontech,]
+split_kit_thresh$NEB<-split_kit$NEB[thresh$NEB,]
+split_kit_thresh$NEXTflex<-split_kit$NEXTflex[thresh$NEXTflex,]
+split_kit_thresh$Illumina<-split_kit$Illumina[thresh$Illumina,]
+split_kit_thresh$NEXTflex_deduped<-split_kit$NEXTflex_deduped[thresh$NEXTflex_deduped,]
+
+length(split_kit_thresh$Clontech)
+length(split_kit_thresh$Illumina)
+length(split_kit_thresh$NEB)
+length(split_kit_thresh$NEXTflex)
+length(split_kit_thresh$NEXTflex_deduped)
+
+
+#doesn't include overlaps and greater than 4 expression value
+Clontech<-as.vector(rownames(split_kit_thresh$Clontech))
+Illumina<-as.vector(rownames(split_kit_thresh$Illumina))
+NEB<-as.vector(rownames(split_kit_thresh$NEB))
+NEXTflex<-as.vector(rownames(split_kit_thresh$NEXTflex))
+NEXTflex_deduped<-as.vector(rownames(split_kit_thresh$NEXTflex_deduped))
+
+
+
+#miRNA_det<-list("Clontech" = Clontech, "Illumina" = Illumina, "NEB" = NEB, "NextFlex" =NEXTflex)
+
+miRNA_det<-list("Clontech\n(N=432)" = Clontech, "Illumina\n(N=433)" = Illumina, "NEB\n(N=593)" = NEB, "NextFlex\n(N=470)" =NEXTflex, "NEXTflex_deduped\n(N=444)" = NEXTflex_deduped)
+
+synthoverlap<- calculate.overlap(x = miRNA_det)
+
+#vp_alpha <- venn.diagram(miRNA_det, fill = c("red", "white", "blue", "green"), alpha = 0.5, filename = NULL)
+
+#grid.draw(vp_alpha);
+#venn.plot <- venn.diagram(
+# x = miRNA_det,
+#  filename = NULL
+#)
+#grid.draw(venn.plot)
+```
+
+```{r}
+head(vp_alpha)
+grid.draw(vp_alpha) #sometimes works...
+grid.draw(vp_alpha);
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 5
+cols = gg_color_hue(n)
+cols <-cols[1:5]
+vp_alpha <- venn.diagram(miRNA_det, fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.3,.3,.3, .3, .3))
+
+
+grid.draw(vp_alpha);
+
+#dev.new(width = 4, height = 4)
+#plot(1:n, pch = 16, cex = 2, col = cols)
+```
+#####
+
+
+
+```{r}
+# test<- venneuler(testdata)
+
+# grid.draw(vennsynthmiRNA)
+MyVenn <- venneuler(c(Clontech=length(clontech),Illumina=length(Illumina),NEB=length(NEB),NextFlex=length(NEXT),
+                      "Clontech&Illumina"=length(intersect(clontech, Illumina)),
+                      "Clontech&NEB"=length(intersect(clontech, NEB)), 
+                      "Clontech&NextFlex"=length(intersect(clontech, NEXT)), 
+                      "Clontech&NEB&NextFlex"=length(intersect(intersect(clontech,NEB), NEXT)),
+                      "Clontech&Illumina&NEB"=length(intersect(intersect(clontech, Illumina), NEB)), 
+                      "Clontech&Illumina&NextFlex"=length(intersect(intersect(clontech, Illumina), NEXT)),
+                      "Clontech&Illumina&NextFlex&NEB"=length(intersect(intersect(clontech, Illumina), (intersect(NEB, NEXT)))),
+                      "Illumina&NEB"=length(intersect(Illumina, NEB)), 
+                      "Illumina&NextFlex"= length(intersect(Illumina, NEXT)),
+                      "NEB&NextFlex"=length(intersect(NEB,NEXT)),
+                      "NEB&NextFlex&Illumina"=length(intersect(intersect(NEB, NEXT), Illumina))))
+plot(MyVenn)
+
+# MyVenn <- venneuler(c(Clontech=21,Illumina=0,NEB=2,NextFlex=2,"Clontech&Illumina"=4,
+#                       "Clontech&NEB"=7, "Clontech&NextFlex"=9, "Clontech&NEB&NextFlex"=25, "Clontech&Illumina&NEB"=3, "Clontech&Illumina&NextFlex"=32, 
+#                       "Illumina&NEB"=0, "Illumina&NextFlex"=1,"NEB&NextFlex&Illumina"=0,
+#                       "NEB&NextFlex"=0))
+# plot(MyVenn)
+extractDiff <- function(P){
+  sampleset = sample(nrow(P), 15, replace=FALSE) #select the first 15 rows, note replace=FALSE
+  subA <- P[sampleset, ] # takes the 15 selected rows
+  subB <- P[-sampleset, ] # takes the remaining rows in the set
+  meanA <- mean(subA$val)
+  meanB <- mean(subB$val)
+  diff <- abs(meanA-meanB)
+  outdf <- c(mA = meanA, mB= meanB, diffAB = diff)
+  return(outdf)
+}
+
+```
+
