@@ -14,8 +14,10 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library(edgeR)
 library(here)
 
-load(here("Complete_data/IsomiR_data/Pheno.rda"))
+#load(here("Complete_data/IsomiR_data/Pheno.rda"))
+Pheno <- read.table(here("Complete_data/Pheno.txt"), header = TRUE)
 Pheno1000 <- Pheno[which(Pheno$startingAmt =="1000"),]
+Pheno1000<- Pheno[-2,]
 miR_counts<-read.table(here("Complete_data/miR.Counts.csv"), header = TRUE, sep = ",")
 
 rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
