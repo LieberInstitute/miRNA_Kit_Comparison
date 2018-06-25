@@ -303,7 +303,7 @@ Fivepercent_pd<-cbind(pd, avg_Express$Fivepercent)
 ####
 run for each kit
 ```{r}
-
+library(car)
 #overall variance of error
 variance <- lapply(Error, var)
 boxplot(variance) # interesting the variance in error is really low for deduped - meaning error is more consistent across sequences
@@ -496,11 +496,11 @@ ggplot(exp_error, aes(x = Expression, y = Error, col = Kit)) + geom_point()+ sta
 
 
 
-#First 4 bases
+#First 2 bases
 ```{r}
-
-errorFirst<-data.frame(First_4_bases =pd$First_4_bases, Error)
-aggdata <-aggregate(errorFirst[-1], by=list(errorFirst$First_4_bases), FUN=mean)
+library(pheatmap)
+errorFirst<-data.frame(First_2_bases =pd$First_2_bases, Error)
+aggdata <-aggregate(errorFirst[-1], by=list(errorFirst$First_2_bases), FUN=mean)
 rownames(aggdata) <- aggdata$Group.1
 aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
 
