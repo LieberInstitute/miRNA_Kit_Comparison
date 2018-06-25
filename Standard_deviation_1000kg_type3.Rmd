@@ -1,0 +1,684 @@
+---
+title: "SD"
+author: "Carrie Wright"
+date: "6/20/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+```{r, eval=TRUE, echo=FALSE}
+library(edgeR)
+library(here)
+
+load(here("Complete_data/IsomiR_data/Pheno.rda"))
+Pheno1000 <- Pheno[which(Pheno$startingAmt =="1000"),]
+miR_counts<-read.table(here("Complete_data/miR.Counts.csv"), header = TRUE, sep = ",")
+
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+miR_counts<-miR_counts[-1,]#remove total miRNA counts row
+miR_counts<-miR_counts[,-2]#remove extra Clontech sample
+
+colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
+colnames(miR_counts)<-gsub("Five_double", "Fivepercent", colnames(miR_counts))
+
+Pheno1000$Kit<-gsub("Five_double", "Fivepercent", Pheno1000$Kit)
+Pheno1000$File<-gsub("Five_double", "Fivepercent", Pheno1000$File)
+
+Pheno1000$File<-gsub("directional_deduped", "Deduped", Pheno1000$File)
+Pheno1000$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno1000$Kit)
+Pheno1000$TriplicateGroup<-gsub("directional_deduped", "Deduped", Pheno1000$TriplicateGroup)
+miR_1000_raw <- data.frame(miR_counts[,which(Pheno$startingAmt == "1000")])
+ 
+load(here("hsa_miRNA_info.rda"))
+
+```
+
+
+###DESeq2
+```{r, eval=TRUE,warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+dds<-DESeqDataSetFromMatrix(countData = miR_1000_raw, colData = Pheno1000, design = ~ File)
+dds <- estimateSizeFactors(dds)
+norm_miR_1000<-data.frame(counts(dds, normalized = TRUE))
+dim(norm_miR_1000)
+```
+
+```{r}
+###split the data by kit
+split_kit <- list() 
+for(i in Pheno1000$Kit) { 
+  split_kit[[i]] <- data.frame(norm_miR_1000[which(Pheno1000$Kit==i)])
+} 
+str(split_kit)
+```
+
+
+
+
+
+```{r}
+###genefilter
+library(genefilter)
+
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 normalized reads in all samples of the set... 
+ffun <- filterfun(poverafun)
+genefilt_fun<- function(x){genefilter(x, ffun)}
+thresh<-lapply(split_kit, genefilt_fun)
+
+split_kit_thresh <-list()
+split_kit_thresh$Clontech<-split_kit$Clontech[thresh$Clontech,]
+split_kit_thresh$Illumina<-split_kit$Illumina[thresh$Illumina,]
+split_kit_thresh$NEB<-split_kit$NEB[thresh$NEB,]
+split_kit_thresh$NEXTflex<-split_kit$NEXTflex[thresh$NEXTflex,]
+split_kit_thresh$Deduped<-split_kit$Deduped[thresh$Deduped,]
+split_kit_thresh$Fivepercent<-split_kit$Fivepercent[thresh$Fivepercent,]
+
+Names_thresh<-intersect(intersect(intersect(intersect(intersect(rownames(split_kit_thresh[[1]]), rownames(split_kit_thresh[[2]])), rownames(split_kit_thresh[[3]])), rownames(split_kit_thresh[[4]])), rownames(split_kit_thresh[[5]])), rownames(split_kit_thresh[[6]]))
+
+finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
+```
+
+
+###Standard Deviation
+is it ok to take the SD fo 2 numbers?
+https://math.stackexchange.com/questions/1584608/is-it-valid-to-calculate-standard-deviation-for-n-2
+
+Basically I look at the SD of each miRNA across the two batches.
+
+
+get union
+```{r}
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+
+Union<-lapply(split_kit_thresh,  finding_rows)
+Union<-lapply(Union, log2)
+###need to compare batch 2 to average of batch 1
+
+Union$Clontech[2:4]<-rowMeans(Union$Clontech[2:4])########## get mean of batch1
+Union$Clontech[3:4] <-NULL###########remove reapeats
+Union$Illumina[2:4]<-rowMeans(Union$Illumina[2:4])
+Union$Illumina[3:4] <-NULL
+Union$NEB[2:4]<-rowMeans(Union$NEB[2:4])
+Union$NEB[3:4] <-NULL
+Union$NEXTflex[2:4]<-rowMeans(Union$NEXTflex[2:4])
+Union$NEXTflex[3:4] <-NULL
+Union$Deduped[2:4]<-rowMeans(Union$Deduped[2:4])
+Union$Deduped[3:4] <-NULL
+Union$Fivepercent[2:4]<-rowMeans(Union$Fivepercent[2:4])
+Union$Fivepercent[3:4] <-NULL
+
+str(Union) # here we see the raw data for batch2 (called 11 for all but clontech) and the mean of batch1 for each kit
+```
+
+standard dev of union
+```{r}
+sdtest <- lapply(Union,rowSds)#genefilter
+vartest <-lapply(Union,rowVars)
+
+
+test_names <- data.frame(combn(names(Union), m= 2))
+
+get_test_results<- function(data,test_names, pairedvalue) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+    Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+    Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+    colnames(Kit1)<-c("error")
+    colnames(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x, tested_kits) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+}
+
+#higher t is worse because we are using sds
+get_test_results(data = data.frame(sdtest), test_names = test_names, pairedvalue = TRUE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+#higher t is worse because we are using variance
+get_test_results(data = data.frame(vartest), test_names = test_names, pairedvalue = TRUE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+sdtest <-data.frame(sdtest)
+sdtestm<-melt(sdtest)
+ggplot(sdtestm, aes(x = variable, y = value))+geom_boxplot(notch =TRUE, aes(fill = variable), outlier.shape = NA, varwidth = TRUE)+geom_jitter(aes(color = variable, alpha = 0.5))
+
+vartest <-data.frame(vartest)
+vartestm<-melt(vartest)
+ggplot(vartestm, aes(x = variable, y = value))+geom_boxplot(notch =TRUE, aes(fill = variable), outlier.shape = NA, varwidth = TRUE)+geom_jitter(aes(color = variable, alpha = 0.5))
+
+#summary(lm(sdtest~colnames(sdtest)))
+```
+
+
+
+Error from Mean Union
+
+```{r}
+Union<-lapply(split_kit_thresh,  finding_rows)
+forerrorData<-list()
+forerrorData$Clontech[[1]]<-rowMeans(Union$Clontech[2:4])
+forerrorData$Clontech[[2]]<-rowMeans(Union$Clontech[1])
+names(forerrorData$Clontech) <-c("Batch1", "Batch2")
+
+forerrorData$Illumina[[1]]<-rowMeans(Union$Illumina[2:4])
+forerrorData$Illumina[[2]]<-rowMeans(Union$Illumina[1])
+names(forerrorData$Illumina) <-c("Batch1", "Batch2")
+
+forerrorData$NEXTflex[[1]]<-rowMeans(Union$NEXTflex[2:4])
+forerrorData$NEXTflex[[2]]<-rowMeans(Union$NEXTflex[1])
+names(forerrorData$NEXTflex) <-c("Batch1", "Batch2")
+
+forerrorData$NEB[[1]]<-rowMeans(Union$NEB[2:4])
+forerrorData$NEB[[2]]<-rowMeans(Union$NEB[1])
+names(forerrorData$NEB) <-c("Batch1", "Batch2")
+
+forerrorData$Deduped[[1]]<-rowMeans(Union$Deduped[2:4])
+forerrorData$Deduped[[2]]<-rowMeans(Union$Deduped[1])
+names(forerrorData$Deduped) <-c("Batch1", "Batch2")
+
+forerrorData$Fivepercent[[1]]<-rowMeans(Union$Fivepercent[2:4])
+forerrorData$Fivepercent[[2]]<-rowMeans(Union$Fivepercent[1])
+names(forerrorData$Fivepercent) <-c("Batch1", "Batch2")
+
+forerrorData<-lapply(forerrorData, data.frame)
+
+get_error <-function(x){log2(abs(x - rowMeans(x))+1)}
+error_from_mean <-lapply(forerrorData, get_error)
+getone <- function(x){x[,2]}
+error_from_mean <- lapply(error_from_mean, getone)
+ERROR <-data.frame(error_from_mean)
+ERRORm <-melt(error_from_mean)
+
+#anova
+anova(lm(ERRORm$value~ERRORm$L1))
+#higher t is worse because we are using variance
+get_test_results(data = data.frame(ERROR), test_names = test_names, pairedvalue = TRUE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+ERRORm$L1<-factor(ERRORm$L1, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+ggplot(ERRORm, aes(x = L1, y = value))+geom_jitter(aes(color = L1, alpha = 0.7), width = .2)+ geom_boxplot(notch =FALSE, outlier.shape = NA, varwidth = TRUE)+theme(legend.position = "none", axis.text.x = element_text(size =15, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title.y=element_text(size = 17),axis.title.x = element_text(size = 0), plot.title = element_text(size = 20), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Error from the Mean", title = " Inconsistency Across Batch")
+```
+```{r}
+#Explanation of Variance Plot
+
+library(ggplot2)
+expression <-(lapply(forerrorData, log2))
+avg_Express <-data.frame(Clontech =rowMeans(expression$Clontech), Illumina = rowMeans(expression$Illumina), NEB = rowMeans(expression$NEB), NEXTflex = rowMeans(expression$NEXTflex), Deduped = rowMeans(expression$Deduped), Fivepercent = rowMeans(expression$Fivepercent))
+                         
+Error <-ERROR
+
+interesction_seqs <- Names_thresh
+Names_thresh[which(!Names_thresh %in% seqs_human$name)] #10 of the intersecting miRNAs are difficult to distinguish so miRge lumps together with multiple miRNA seq identities with varying gc, length etc... so these will be excluded.
+avg_Express <- avg_Express[-which(!Names_thresh %in% seqs_human$name),]
+Error<- Error[-which(!Names_thresh %in% seqs_human$name),]
+load(here("hsa_miRNA_info.rda"))
+seqs <- data.frame(seqs_human[which(seqs_human$name %in% interesction_seqs),])
+
+
+TTTT<-sapply(gregexpr("UUUU", seqs$seqs), function(x) sum(x != -1))
+GGGG<-sapply(gregexpr("GGGG", seqs$seqs), function(x) sum(x != -1))
+AAAA<-sapply(gregexpr("AAAA", seqs$seqs), function(x) sum(x != -1))
+CCCC<-sapply(gregexpr("CCCC", seqs$seqs), function(x) sum(x != -1))
+patterns <- c("UU", "GG", "CC", "AA")
+
+duplets <- sapply(gregexpr(paste(patterns,collapse="|"), 
+                        seqs$seqs), function(x) sum(x != -1))
+anyT<-sapply(gregexpr("U", seqs$seqs), function(x) sum(x != -1))
+anyG<-sapply(gregexpr("G", seqs$seqs), function(x) sum(x != -1))
+anyC<-sapply(gregexpr("C", seqs$seqs), function(x) sum(x != -1))
+anyA<-sapply(gregexpr("A", seqs$seqs), function(x) sum(x != -1))
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last <- data.frame(x =lastStuff(str=seqs$seqs, 1))####uncomment to get last n bases
+seqs_first <-data.frame(x =strtrim(seqs$seqs, c(1)))###uncomment to get first n bases and comment next line
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_two <- data.frame(x =lastStuff(str=seqs$seqs, 2))####uncomment to get last n bases
+seqs_first_two <-data.frame(x =strtrim(seqs$seqs, c(2)))###uncomment to get first n bases and comment next line
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_three<- data.frame(x =lastStuff(str=seqs$seqs, 3))####uncomment to get last n bases
+seqs_first_three <-data.frame(x =strtrim(seqs$seqs, c(3)))###uncomment to get first n bases and comment next line
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_four <- data.frame(x =lastStuff(str=seqs$seqs, 4))####uncomment to get last n bases
+seqs_first_four <-data.frame(x =strtrim(seqs$seqs, c(4)))###uncomment to get first n bases and comment next line
+
+#seqs$FoldG<-errorFoldG$FoldG
+pd<-seqs
+pd$First_base <-seqs_first$x
+pd$First_2_bases <-seqs_first_two$x
+pd$First_3_bases <-seqs_first_three$x
+pd$First_4_bases <-seqs_first_four$x
+pd$Last_base <-seqs_last$x
+pd$Last_2_bases <-seqs_last_two$x
+pd$Last_3_bases <-seqs_last_three$x
+pd$Last_4_bases <-seqs_last_four$x
+pd$TTTT <- TTTT
+pd$CCCC <- CCCC
+pd$GGGG <- GGGG
+pd$AAAA <- AAAA
+pd$rep <- (TTTT+ CCCC+ GGGG+ AAAA)
+pd$duplets <-duplets
+pd$anyT <- anyT
+pd$anyC <-anyC
+pd$anyG <- anyG
+pd$anyA <- anyA
+
+Clontech_pd <-cbind(pd, avg_Express$Clontech)
+Illumina_pd<-cbind(pd, avg_Express$Illumina)
+NEB_pd<-cbind(pd, avg_Express$NEB)
+NEXTflex_pd<-cbind(pd, avg_Express$NEXTflex)
+Deduped_pd<-cbind(pd, avg_Express$Deduped)
+Fivepercent_pd<-cbind(pd, avg_Express$Fivepercent)
+```
+####
+run for each kit
+```{r}
+
+#overall variance of error
+variance <- lapply(Error, var)
+boxplot(variance) # interesting the variance in error is really low for deduped - meaning error is more consistent across sequences
+
+yGene <-as.matrix(Error$Clontech)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~ GC +length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG +anyT +avg_Express$Clontech, data=Clontech_pd)
+  fit = lm(yGene ~avg_Express$Clontech+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=Clontech_pd, singular.ok = TRUE)
+  full =Anova(fit, type = "III")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+varexpclontech <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+###############
+yGene <-as.matrix(Error$Illumina)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT + avg_Express$Illumina , data=Illumina_pd)
+  fit = lm(yGene ~avg_Express$Illumina+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=Illumina_pd, singular.ok = TRUE)
+  full =Anova(fit, type = "III")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+varexpIllumina <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+###############
+
+yGene <-as.matrix(Error$NEB)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT +avg_Express$NEB, data=NEB_pd)
+  fit = lm(yGene ~avg_Express$NEB+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data =NEB_pd, singular.ok = TRUE)
+  full =Anova(fit, type = "III")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+varexpNEB <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+###############
+yGene <-as.matrix(Error$NEXTflex)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT + avg_Express$NEXTflex, data=NEXTflex_pd)
+  fit = lm(yGene ~avg_Express$NEXTflex+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=NEXTflex_pd, singular.ok = TRUE)
+ full =Anova(fit, type = "III")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+varexpNEXTflex <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+###############
+yGene <-as.matrix(Error$Deduped)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG+anyT+avg_Express$Deduped , data=Deduped_pd)
+  fit = lm(yGene ~avg_Express$Deduped+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=Deduped_pd, singular.ok = TRUE)
+  full =Anova(fit, type = "III")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+varexpDeduped <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+
+###############
+yGene <-as.matrix(Error$Fivepercent)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  #fit = lm(y ~ GC+  + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT +avg_Express$Fivepercent , data=Fivepercent_pd, singular.ok = TRUE)
+  fit = lm(yGene ~avg_Express$Fivepercent+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=Fivepercent_pd, singular.ok = TRUE)
+  full =Anova(fit, type = "III")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+varexpFivepercent<-do.call(rbind, lapply(varCompAnalysis, data.frame))
+
+
+### a different method - gives similar results
+require(variancePartition)
+form <- ~avg_Express$Fivepercent+ GC+  + length +FoldG  +First_base + Last_base+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA
+varPart <- fitVarPartModel(t(yGene), form, as.data.frame(Fivepercent_pd), showWarnings = FALSE)
+varGene = extractVarPart(varPart, showWarnings = FALSE)
+apply(varGene, 2, mean)
+
+#put together
+varCompAnalysis <-list(varexpclontech, varexpIllumina, varexpNEB, varexpNEXTflex, varexpDeduped, varexpFivepercent)
+names(varCompAnalysis) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp_PctExp<- varexp_PctExp[-grep("(Intercept)",rownames(varexp_PctExp)),]
+rownames(varexp_PctExp)[1] <- "Expression"
+
+
+###NOT sure I need below
+#labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+#colnames(labels_varexp)<-c("Kit", "variable")
+#colnames(labels_varexp)<-c("variable")
+#VarExp<-cbind(labels_varexp,varexp$PctExp)
+#VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "duplets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
+# VarExp$KitF <- factor(VarExp$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
+# plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp)) + geom_boxplot(aes(fill = "black"), notch = TRUE, outlier.shape=NA) +facet_grid(~KitF)
+# plotfull +ggtitle("Percent of Variance Explained by Influential Factors") +
+#   labs(y="Percent of Variance Explained", x ="none") + 
+#   scale_fill_manual(values = c("black"))+
+#   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 90, face = "bold"), axis.text.x=element_text(size = 10, angle = 20, face = "bold", colour = "black"),
+#         axis.title.y=element_text(size=20), plot.title = element_text(size = 30, face = "bold"))
+
+
+#expression <-log2(miRge_synth+1)
+
+#VarExp[which(VarExp$variable == "First_base"),]
+#VarExp[which(VarExp$variable == "Last_base"),]
+#VarExp[grep("First", VarExp$variable),]
+#VarExp[grep("Last", VarExp$variable),]
+
+#pheatmap(VarExp)
+
+#var_Table <-read.table(here("Var_exp_Table"))
+#rank_Table <-sapply((-1*var_Table), rank )
+```
+
+
+```{r, eval=FALSE}
+library(pheatmap)
+
+#varexp_PctExp<- read.table(here("batch_var_Exp_data"), header = TRUE)
+#varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
+#varexp_PctExp<- varexp_PctExp[-grep("First_4_bases",rownames(varexp_PctExp)),]
+varexp_PctExp<- varexp_PctExp[-grep("Residual",rownames(varexp_PctExp)),]
+
+pheatmap(varexp_PctExp, main = "Percent of batch error variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
+# myBreaks<-seq(to=round(max(varexp_PctExp))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
+# myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+# #myColor<-c(myColorbelow, myColorabove)
+# pheatmap(varexp_PctExp, breaks = myBreaks, color = myColor, cluster_rows = FALSE, cluster_cols = FALSE, main ="Contribution of factors to sequence detection variance")
+
+
+####weighted by overall variance by multiplying by kit variance and dividing by mean of all kit variance
+varexp_PctExp2<-varexp_PctExp
+varexp_PctExp2<-((varexp_PctExp2*variance)/mean(unlist(variance)))
+#varexp_PctExp2<- varexp_PctExp2[-grep("Residuals",rownames(varexp_PctExp2)),]
+#varexp_PctExp2<- varexp_PctExp2[-grep("Last_4_bases",rownames(varexp_PctExp2)),]
+#varexp_PctExp2<- varexp_PctExp2[-grep("First_4_bases",rownames(varexp_PctExp2)),]
+pheatmap(varexp_PctExp2, cluster_cols = FALSE, main = "Percent of batch error variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE)
+
+```
+
+Expression plot
+```{r}
+#avg_Express - this is the log2 expression
+#Error
+
+Clontech_exp <-data.frame(Error =Error$Clontech, Expression =avg_Express$Clontech, Kit = rep("Clontech",162))
+Illumina_exp <-data.frame(Error =Error$Illumina, Expression =avg_Express$Illumina, Kit = rep("Illumina",162))
+NEB_exp <-data.frame(Error =Error$NEB, Expression =avg_Express$NEB, Kit = rep("NEB",162))
+NEXTflex_exp <-data.frame(Error =Error$NEXTflex, Expression =avg_Express$NEXTflex, Kit = rep("NEXTflex",162))
+Deduped_exp <-data.frame(Error =Error$Deduped, Expression =avg_Express$Deduped, Kit = rep("Deduped",162))
+Fivepercent_exp <-data.frame(Error =Error$Fivepercent, Expression =avg_Express$Fivepercent, Kit = rep("Fivepercent",162))
+
+exp_error <- rbind(Clontech_exp, Illumina_exp, NEB_exp, NEXTflex_exp, Deduped_exp, Fivepercent_exp)
+
+ggplot(exp_error, aes(x = Expression, y = Error, col = Kit)) + geom_point()+ stat_smooth(method = "loess")+ facet_grid(Kit~.) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Expression", y = " Error across Batch", title = " Relationship of Error and Expression") 
+```
+
+#GC content
+```{r}
+Clontech_exp <-data.frame(Error =Error$Clontech, Expression =pd$GC, Kit = rep("Clontech",162))
+Illumina_exp <-data.frame(Error =Error$Illumina, Expression =pd$GC, Kit = rep("Illumina",162))
+NEB_exp <-data.frame(Error =Error$NEB, Expression =pd$GC, Kit = rep("NEB",162))
+NEXTflex_exp <-data.frame(Error =Error$NEXTflex, Expression =pd$GC, Kit = rep("NEXTflex",162))
+Deduped_exp <-data.frame(Error =Error$Deduped, Expression =pd$GC, Kit = rep("Deduped",162))
+Fivepercent_exp <-data.frame(Error =Error$Fivepercent, Expression =pd$GC, Kit = rep("Fivepercent",162))
+
+exp_error <- rbind(Clontech_exp, Illumina_exp, NEB_exp, NEXTflex_exp, Deduped_exp, Fivepercent_exp)
+
+ggplot(exp_error, aes(x = Expression, y = Error, col = Kit)) + geom_point()+ stat_smooth(method = "loess")+ facet_grid(.~Kit, scales="free") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "GC Content", y = " Error across Batch", title = " Relationship of GC Content and Error") 
+```
+
+
+
+
+#First 4 bases
+```{r}
+
+errorFirst<-data.frame(First_4_bases =pd$First_4_bases, Error)
+aggdata <-aggregate(errorFirst[-1], by=list(errorFirst$First_4_bases), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
+
+pheatmap(aggdata,cluster_cols = FALSE, main = "Batch error of sequences with different first base")
+pheatmap(aggdata,cluster_cols = FALSE,cluster_rows = FALSE, main = "Batch error of sequences with different first base")
+
+```
+
+
+
+
+
+
+###################
+
+Standard Deviation Full
+```{r}
+
+#split_kit_thresh is all rows
+logData<-lapply(split_kit_thresh, log2)
+###need to just compare average of batch 1 to batch 2
+logData$Clontech[2:4]<-rowMeans(logData$Clontech[2:4])
+logData$Clontech[3:4] <-NULL
+logData$Illumina[2:4]<-rowMeans(logData$Illumina[2:4])
+logData$Illumina[3:4] <-NULL
+logData$NEB[2:4]<-rowMeans(logData$NEB[2:4])
+logData$NEB[3:4] <-NULL
+logData$NEXTflex[2:4]<-rowMeans(logData$NEXTflex[2:4])
+logData$NEXTflex[3:4] <-NULL
+logData$Deduped[2:4]<-rowMeans(logData$Deduped[2:4])
+logData$Deduped[3:4] <-NULL
+logData$Fivepercent[2:4]<-rowMeans(logData$Fivepercent[2:4])
+logData$Fivepercent[3:4] <-NULL
+
+sdtest <- lapply(logData,rowSds)#genefilter
+vartest <-lapply(logData,rowVars)
+
+
+
+test_names <- data.frame(combn(names(logData), m= 2))
+
+get_test_results<- function(data,test_names, pairedvalue) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+    #Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+    #Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+    names(Kit1)<-c("error")
+    names(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x, tested_kits) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+}
+
+#higher t is worse because we are using sds
+get_test_results(data = sdtest, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+#higher t is worse because we are using variance
+get_test_results(data = vartest, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+sdtestm<-melt(sdtest)
+sdtestm$L1<-factor(sdtestm$L1, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+
+ggplot(sdtestm, aes(x = L1, y = value))+geom_boxplot(notch =TRUE, aes(fill = L1), outlier.shape = NA, varwidth = TRUE)+geom_jitter(aes(color = L1, alpha=0.5))
+
+
+vartestm<-melt(vartest)
+vartestm$L1<-factor(vartestm$L1, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+ggplot(vartestm, aes(x = L1, y = value))+geom_boxplot(notch =TRUE, aes(fill = L1), outlier.shape = NA, varwidth = TRUE)+geom_jitter(aes(color = L1, alpha = 0.5))
+#summary(lm(sdtest~colnames(sdtest)))
+```
+
+
+###error from mean across batch
+```{r, eval = FALSE}
+
+forerrorData<-list()
+forerrorData$Clontech[[1]]<-rowMeans(split_kit_thresh$Clontech[2:4])
+forerrorData$Clontech[[2]]<-rowMeans(split_kit_thresh$Clontech[1])
+names(forerrorData$Clontech) <-c("Batch1", "Batch2")
+
+forerrorData$Illumina[[1]]<-rowMeans(split_kit_thresh$Illumina[2:4])
+forerrorData$Illumina[[2]]<-rowMeans(split_kit_thresh$Illumina[1])
+names(forerrorData$Illumina) <-c("Batch1", "Batch2")
+
+forerrorData$NEXTflex[[1]]<-rowMeans(split_kit_thresh$NEXTflex[2:4])
+forerrorData$NEXTflex[[2]]<-rowMeans(split_kit_thresh$NEXTflex[1])
+names(forerrorData$NEXTflex) <-c("Batch1", "Batch2")
+
+forerrorData$NEB[[1]]<-rowMeans(split_kit_thresh$NEB[2:4])
+forerrorData$NEB[[2]]<-rowMeans(split_kit_thresh$NEB[1])
+names(forerrorData$NEB) <-c("Batch1", "Batch2")
+
+forerrorData$Deduped[[1]]<-rowMeans(split_kit_thresh$Deduped[2:4])
+forerrorData$Deduped[[2]]<-rowMeans(split_kit_thresh$Deduped[1])
+names(forerrorData$Deduped) <-c("Batch1", "Batch2")
+
+forerrorData$Fivepercent[[1]]<-rowMeans(split_kit_thresh$Fivepercent[2:4])
+forerrorData$Fivepercent[[2]]<-rowMeans(split_kit_thresh$Fivepercent[1])
+names(forerrorData$Fivepercent) <-c("Batch1", "Batch2")
+
+forerrorData<-lapply(forerrorData, data.frame)
+
+get_error <-function(x){log2(abs(x - rowMeans(x))+1)}
+error_from_mean <-lapply(forerrorData, get_error)
+getone <- function(x){x[,2]}
+ERROR <- lapply(error_from_mean, getone)
+ERRORm <-melt(error_from_mean)
+#ERRORm<-ERRORm[which(ERRORm$variable == Batch1),]
+
+
+
+test_names <- data.frame(combn(names(ERROR), m= 2))
+
+get_test_results<- function(data,test_names, pairedvalue) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+    #Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+    #Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+    names(Kit1)<-c("error")
+    names(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x, tested_kits) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+}
+
+
+
+
+
+
+#higher t is worse because we are using variance
+get_test_results(data = data.frame(ERROR), test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+
+
+ERRORm$L1<-factor(ERRORm$L1, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+ggplot(ERRORm, aes(x = L1, y = value))+geom_boxplot(notch =TRUE, aes(fill = L1), outlier.shape = NA, varwidth = TRUE)+geom_jitter(aes(color = L1, alpha = 0.5))
+```
+
+
+
+
+```
+

@@ -1,0 +1,883 @@
+---
+title: "Synth_analysis"
+author: "carriewright"
+date: "12/19/2017"
+output:
+  html_document:
+    code_folding: hide
+---
+#########################################################
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(here)
+load(here("normalized_synth.rmd"))
+```
+
+
+###FUNCTIONS to get ttests results and output nicely
+```{r, echo = TRUE, eval=TRUE}
+library(dplyr)
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(names(data), m= 2))
+}
+
+get_test_results<- function(data,test_names) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    #tested_names[[i]]<<-(test_names[i][,1])
+    Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+    Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-colnames(Kit1)
+    tested_names2[[i]]<<-colnames(Kit2)
+    colnames(Kit1)<-c("error")
+    colnames(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1$error, y=Kit2$error, paired = TRUE) ### may have messed things up adding paired = TRUE previously had more ))
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x) {
+  #print(length(test_names))
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni_thresh = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+}
+```
+
+
+###Callfunctions on the data
+```{r, eval=TRUE}
+library(reshape2)
+get_test_names(data = error_synth)
+#sink(here(synthlog.txt"))
+get_test_results(test_names = test_names, data = error_synth)
+#sink()
+ttestStats<-data.frame(lapply(tresults, get_ttestStats))
+
+colnames(ttestStats)<-tested_kits
+
+ttestStats
+synth <-melt(error_synth)
+fit = lm(synth$value ~ synth$variable)
+anova(fit)
+
+
+```
+
+#### Main Plot###########
+```{r}
+library(jaffelab)
+error_synth$miRNA <-rownames(error_synth)
+synth<- melt(error_synth)
+synth$miRNA <-jaffelab::ss(synth$miRNA, "-" ,slot =2)
+
+#synth$variable <- factor(synth$variable, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped"))
+library(ggplot2)
+library(ggpubr)
+library(ggsignif)
+#my_comparisons <- list( c("Clontech", "Illumina"), c("Clontech", "NEB"), c("Clontech", "NEXTflex"), c("Clontech", "Deduped"), c("Clontech", "Fivepercent"),c("Illumina", "NEB"), c("Illumina", "NEXTflex"), c("Illumina", "Deduped"), c("Illumina", "Fivepercent"),c("NEB", "NEXTflex"), c("NEB", "Deduped"), c("NEB", "Fivepercent"), c("NEXTflex", "Deduped"), c("NEXTflex", "Fivepercent"), c("Deduped", "Fivepercent"))
+my_comparisons <- list( c("Clontech", "Illumina"), c("Illumina", "NEB"), c("NEB", "NEXTflex"), c("Fivepercent", "Deduped"), c("NEXTflex", "Fivepercent"),c("Clontech", "NEXTflex"))
+
+#synth is created in the my_scale function based on which data is selected as synthDATA in the above chunk
+plot1000<-ggplot(data = synth, aes(x = variable, y = value, color= variable, label = miRNA))+geom_jitter(aes(fill = variable, alpha = 1)) +geom_boxplot( outlier.shape = NA, notch = TRUE, color = "black")+
+  labs(y = "Error from the mean")+
+   theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 15, colour = "Black", angle = 45, hjust = 0.7),
+        axis.text.y = element_text(size = 15), 
+        axis.title.y = element_text(size =18))
+
+
+plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +geom_signif(comparisons = my_comparisons, annotations=c("***", "NS","***", "***","NS", "NS"), tip_length = 0, y_position = c(8,18, 8, 9, 17, 16), color = c("black"))
+
+my_comparisons <- list( c("Clontech", "Illumina"), c("NEB", "NEXTflex"), c("NEXTflex", "Deduped"), c("Deduped", "Fivepercent"))
+
+plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +geom_signif(comparisons = my_comparisons, annotations=c("***", "***","***", "***"), tip_length = .02, y_position = c(16,18, 16, 18), color = c("black"))
+plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," )
+#interesting mistkae
+#plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +   geom_text(
+ #   aes(label = value, y = value + 0.05),
+#    position = position_dodge(0.9),
+ #   vjust = 0
+  #)
+
+library(ggrepel)
+
+ranks_error<-data.frame(sapply(error_synth, rank))
+ranks_error$miRNA<-error_synth$miRNA
+
+
+library(GGally)
+set.seed(42)
+ggpairs(ranks_error[1:6])
+
+error_ranks <- melt(ranks_error)
+
+### plot just extremes:
+synth_with_lab <- synth
+#synth_with_lab$miRNA<-ifelse(synth_with_lab$value>20 | synth_with_lab$value<5 ,as.character(synth_with_lab$miRNA),'')
+synth_with_lab$miRNA<-ifelse(error_ranks$value>958 | error_ranks$value<5 ,as.character(synth_with_lab$miRNA),'')
+plot_with_labs<-plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) + geom_label_repel(data = synth_with_lab,aes(variable, value, fill = variable, label = miRNA),fontface = 'bold', color = 'white',label.padding = 0, box.padding = 0.1, point.padding = 0,segment.color = 'grey50') 
+
+plot_with_labs
+```
+
+relative consistency
+```{r}
+errorData_toplot<-log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
+```
+
+GC line plot
+```{r}
+errorGC <-cbind(seqs$GC, errorData_toplot)
+errorGC$`seqs$GC`<-as.factor(errorGC$`seqs$GC`)
+errorGC<-melt(errorGC)
+errorGC$`seqs$GC`<-as.numeric(as.character(errorGC$`seqs$GC`))
+colnames(errorGC)<-c("GC_Content", "Kit", "expression")
+#errorGC$Kit <- factor(errorGC$Kit, levels =c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent"))
+  plot1002<<-ggplot(data = errorGC, aes(x = GC_Content, y = expression, color= Kit)) +geom_point(aes(color = Kit))+
+  theme(axis.title.x = element_text(size =20), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 25),
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_text(size =20))
+        
+  plot1002 +labs(x = "GC_Content", y = "Relative Expression to mean", title = "Consistency of detection across GC_content") + stat_smooth(method = loess) 
+
+```
+
+
+#####Heatmap############
+
+Last and First good Plots of expression relative to the mean!
+```{r, eval = TRUE}
+library(pheatmap)
+###get seq info
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last <- data.frame(x =lastStuff(str=seqs$RNA, 2))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first <-data.frame(x =strtrim(seqs$RNA, c(2)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+errorData_toplot<-log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
+errorLast<-cbind(seqs_last, errorData_toplot)
+errorFirst<-cbind(seqs_first, errorData_toplot)
+
+
+
+
+####get Breaks
+aggdata <-aggregate(errorFirst[-1], by=list(errorFirst$x), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
+sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+sorted_aggdata <<- sorted_aggdata
+paletteLength <- 10
+
+myBreaks_below<-seq(to=max(sorted_aggdata[sorted_aggdata<100]), from = round(min(sorted_aggdata))-3, length.out = paletteLength*abs(min(sorted_aggdata))/10)
+myBreaks_above<-seq(to=round(max(sorted_aggdata))+3, from = min(sorted_aggdata[sorted_aggdata>100]), length.out = paletteLength*(max(sorted_aggdata))/10)
+myBreaks_first <- c(myBreaks_below, myBreaks_above)
+
+aggdata <-aggregate(errorLast[-1], by=list(errorLast$x), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
+sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+sorted_aggdata <<- sorted_aggdata
+paletteLength <- paletteLength
+
+myBreaks_below<-seq(to=max(sorted_aggdata[sorted_aggdata<100]), from = round(min(sorted_aggdata))-3, length.out = paletteLength*abs(min(sorted_aggdata))/10)
+myBreaks_above<-seq(to=round(max(sorted_aggdata))+3, from = min(sorted_aggdata[sorted_aggdata>100]), length.out = paletteLength*(max(sorted_aggdata))/10)
+myBreaks_last <- c(myBreaks_below, myBreaks_above)
+
+myBreaks<-append(myBreaks_first,myBreaks_last[which(myBreaks_last>max(myBreaks_first))])
+myBreaks<-append(myBreaks_first[which(myBreaks_first<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks_last[which(myBreaks_last<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks,myBreaks_last[which(myBreaks_last>max(myBreaks))])
+
+myColorbelow<-colorRampPalette(c("blue","white"))(length(which(myBreaks<100))) ### change for white 
+myColorabove<-colorRampPalette(c("white","red"))(length(which(myBreaks>100)))### change for white
+myColor<-c(myColorbelow, myColorabove)
+###################
+
+```
+
+relative percentage heatmaps
+```{r}
+library(pheatmap)
+make_heatmap <-function(Data, title){
+aggdata <-aggregate(Data[-1], by=list(Data$x), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
+sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+#sorted_aggdata <<-sorted_aggdata
+pheatmap(sorted_aggdata, color = myColor, breaks =myBreaks, cluster_cols = FALSE, cluster_rows = TRUE, main = title)
+}
+
+make_heatmap(Data = errorFirst, title = "Consistency of expression of sequences with different first base")
+#First<-ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(90, 110))
+make_heatmap(Data = errorLast, title = "Consistency of expression of sequences with different last base")
+#Last<-ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(90, 110))
+
+#Last<-ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_boxplot(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(90, 110))
+
+firstdata <-melt(errorFirst)
+ggplot(data = firstdata, aes(x=x, y = value, fill = variable)) + geom_jitter() + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")+labs(y = "Expression relative to the mean", title = "Consistency of synthetic sequence detection with across different first bases", x = NULL)
+
+
+
+lastdata <-melt(errorLast)
+ggplot(data = lastdata, aes(x=x, y = value, fill = variable))  + geom_jitter()+geom_boxplot()+facet_grid(~variable)+theme(legend.position="none") +labs(y = "Expression relative to the mean", title = "Consistency of synthetic sequence detection across different last bases", x = NULL)
+```
+
+
+
+
+
+
+Length based on log2 expression +1
+```{r}
+library(ggpubr)
+errorData_toplot<-log2(miRge_synth+1)
+errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
+errorLength<-as.data.frame(cbind(seqs$length, errorData_toplot))
+colnames(errorLength) <- c("length","Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+errorGC<-as.data.frame(cbind(round(seqs$GC, digits = 1), errorData_toplot))
+colnames(errorGC) <- c("GC","Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+
+aggdata <-aggregate(errorLength, by=list(errorLength$length), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1"&colnames(aggdata)!="length")]
+paletteLength <- 10
+
+sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+
+myBreaks_below<-seq(to=max(sorted_aggdata[sorted_aggdata<100]), from = round(min(sorted_aggdata))-3, length.out = paletteLength*abs(min(sorted_aggdata))/10)
+
+myBreaks_above<-seq(to=round(max(sorted_aggdata))+3, from = min(sorted_aggdata[sorted_aggdata>100]), length.out = paletteLength*(max(sorted_aggdata))/10)
+myBreaks_last <- c(myBreaks_below, myBreaks_above)
+
+myBreaks<-append(myBreaks_first,myBreaks_last[which(myBreaks_last>max(myBreaks_first))])
+myBreaks<-append(myBreaks_first[which(myBreaks_first<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks_last[which(myBreaks_last<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks,myBreaks_last[which(myBreaks_last>max(myBreaks))])
+
+myColorbelow<-colorRampPalette(c("blue","white"))(length(which(myBreaks<100))) ### change for white 
+myColorabove<-colorRampPalette(c("white","red"))(length(which(myBreaks>100)))### change for white
+myColor<-c(myColorbelow, myColorabove)
+
+pheatmap(aggdata, color=myColor, breaks=myBreaks, main = "Length", cluster_cols = FALSE, cluster_rows = FALSE)
+ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(min(myBreaks-10), max(myBreaks+10)))+coord_cartesian(ylim=c(60, 140))
+
+lengthplot <-errorLength
+lengthplot$length <-factor(lengthplot$length)
+ggplot(data = melt(lengthplot), aes(x=length, y = value, fill = variable)) + geom_jitter()+geom_boxplot()+facet_grid(~variable) +theme(strip.text.x = element_text(size = 14),axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14), axis.title.x = element_text(size = 18),axis.title.y = element_text(size = 18),title = element_text(size = 24), legend.position="none") +labs(y = "Percent expression relative to the mean", title = "Consistency of synthetic sequence detection across lengths", x = "Sequence Length")
+```
+
+
+
+GC
+```{r}
+errorData_toplot<-log2(miRge_synth+1)
+errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
+
+errorGC<-as.data.frame(cbind(round(seqs$GC, digits = 1), errorData_toplot))
+colnames(errorGC) <- c("GC", "Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
+
+aggdata <-aggregate(errorGC, by=list(errorGC$GC), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1"&colnames(aggdata)!="GC")]
+sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+paletteLength <- 10
+
+myBreaks_below<-seq(to=max(sorted_aggdata[sorted_aggdata<100]), from = round(min(sorted_aggdata))-3, length.out = paletteLength*abs(min(sorted_aggdata))/10)
+
+myBreaks_above<-seq(to=round(max(sorted_aggdata))+3, from = min(sorted_aggdata[sorted_aggdata>100]), length.out = paletteLength*(max(sorted_aggdata))/10)
+myBreaks_last <- c(myBreaks_below, myBreaks_above)
+
+myBreaks<-append(myBreaks_first,myBreaks_last[which(myBreaks_last>max(myBreaks_first))])
+myBreaks<-append(myBreaks_first[which(myBreaks_first<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks_last[which(myBreaks_last<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks,myBreaks_last[which(myBreaks_last>max(myBreaks))])
+
+myColorbelow<-colorRampPalette(c("blue","white"))(length(which(myBreaks<100))) ### change for white 
+myColorabove<-colorRampPalette(c("white","red"))(length(which(myBreaks>100)))### change for white
+myColor<-c(myColorbelow, myColorabove)
+
+pheatmap(sorted_aggdata, color=myColor, breaks=myBreaks, main = "GC", cluster_cols = FALSE, cluster_rows = FALSE)
+
+ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(min(myBreaks-10), max(myBreaks+10)))
+
+GCplot <-errorGC
+
+GCplot$GC <-factor(GCplot$GC)
+ggplot(data = melt(GCplot), aes(x=GC, y = value, fill = variable)) + geom_jitter()+ geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")
+
+```
+
+
+
+
+
+Fold
+```{r}
+errorData_toplot<-log2(miRge_synth+1)
+errorData_toplot<-(errorData_toplot /colMeans(errorData_toplot))*100
+
+errorFoldG<-as.data.frame(cbind(round(seqs$FoldG, digits = 0), errorData_toplot))
+colnames(errorFoldG) <- c("FoldG", "Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
+
+aggdata <-aggregate(errorFoldG, by=list(errorFoldG$FoldG), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1"&colnames(aggdata)!="FoldG")]
+#sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+sorted_aggdata <-aggdata
+paletteLength <- 10
+
+myBreaks_below<-seq(to=max(sorted_aggdata[sorted_aggdata<100]), from = round(min(sorted_aggdata))-3, length.out = paletteLength*abs(min(sorted_aggdata))/10)
+
+myBreaks_above<-seq(to=round(max(sorted_aggdata))+3, from = min(sorted_aggdata[sorted_aggdata>100]), length.out = paletteLength*(max(sorted_aggdata))/10)
+myBreaks_last <- c(myBreaks_below, myBreaks_above)
+
+myBreaks<-append(myBreaks_first,myBreaks_last[which(myBreaks_last>max(myBreaks_first))])
+myBreaks<-append(myBreaks_first[which(myBreaks_first<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks_last[which(myBreaks_last<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks,myBreaks_last[which(myBreaks_last>max(myBreaks))])
+
+myColorbelow<-colorRampPalette(c("blue","white"))(length(which(myBreaks<100))) ### change for white 
+myColorabove<-colorRampPalette(c("white","red"))(length(which(myBreaks>100)))### change for white
+myColor<-c(myColorbelow, myColorabove)
+
+pheatmap(sorted_aggdata, color=myColor, breaks=myBreaks, main = "FoldG", cluster_cols = FALSE, cluster_rows = FALSE)
+
+ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(min(myBreaks-10), max(myBreaks+10)))
+FoldGplot <-errorFoldG
+
+FoldGplot$FoldG <-factor(FoldGplot$FoldG)
+ggplot(data = melt(FoldGplot), aes(x=FoldG, y = value, fill = variable)) + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")
+
+table(round(seqs$FoldG))
+
+```
+
+
+
+
+Repeats
+```{r}
+#grep("TTTT", seqs$x)
+#grep("GGGG", seqs$x)
+
+
+TTTT<-sapply(gregexpr("TTTT", seqs$x), function(x) sum(x != -1))
+GGGG<-sapply(gregexpr("GGGG", seqs$x), function(x) sum(x != -1))
+AAAA<-sapply(gregexpr("AAAA", seqs$x), function(x) sum(x != -1))
+CCCC<-sapply(gregexpr("CCCC", seqs$x), function(x) sum(x != -1))
+patterns <- c("TT", "GG", "CC", "AA")
+duplets <- sapply(gregexpr(paste(patterns,collapse="|"), 
+                        seqs$x), function(x) sum(x != -1))
+anyT<-sapply(gregexpr("T", seqs$x), function(x) sum(x != -1))
+anyG<-sapply(gregexpr("G", seqs$x), function(x) sum(x != -1))
+anyC<-sapply(gregexpr("C", seqs$x), function(x) sum(x != -1))
+anyA<-sapply(gregexpr("A", seqs$x), function(x) sum(x != -1))
+```
+
+Duplets
+```{r}
+errorData_toplot<-log2(miRge_synth+1)
+errorData_toplot<-(errorData_toplot /colMeans(errorData_toplot))*100
+
+error<-as.data.frame(cbind(duplets, errorData_toplot))
+colnames(error) <- c("duplets", "Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
+
+aggdata <-aggregate(error, by=list(error$duplets), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1"&colnames(aggdata)!="FoldG")]
+#sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+sorted_aggdata <-aggdata
+paletteLength <- 10
+
+myBreaks_below<-seq(to=max(sorted_aggdata[sorted_aggdata<100]), from = round(min(sorted_aggdata))-3, length.out = paletteLength*abs(min(sorted_aggdata))/10)
+
+myBreaks_above<-seq(to=round(max(sorted_aggdata))+3, from = min(sorted_aggdata[sorted_aggdata>100]), length.out = paletteLength*(max(sorted_aggdata))/10)
+myBreaks_last <- c(myBreaks_below, myBreaks_above)
+
+myBreaks<-append(myBreaks_first,myBreaks_last[which(myBreaks_last>max(myBreaks_first))])
+myBreaks<-append(myBreaks_first[which(myBreaks_first<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks_last[which(myBreaks_last<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks,myBreaks_last[which(myBreaks_last>max(myBreaks))])
+
+myColorbelow<-colorRampPalette(c("blue","white"))(length(which(myBreaks<100))) ### change for white 
+myColorabove<-colorRampPalette(c("white","red"))(length(which(myBreaks>100)))### change for white
+myColor<-c(myColorbelow, myColorabove)
+
+pheatmap(sorted_aggdata, color=myColor, breaks=myBreaks, main = "Duplets", cluster_cols = FALSE, cluster_rows = FALSE)
+
+ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(min(myBreaks-10), max(myBreaks+10)))
+errorplot <-error
+
+errorplot$duplets <-factor(error$duplets)
+ggplot(data = melt(errorplot), aes(x=duplets, y = value, fill = variable)) + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")
+
+table(round(seqs$FoldG))
+
+```
+
+TTTT
+```{r}
+errorData_toplot<-log2(miRge_synth+1)
+errorData_toplot<-(errorData_toplot /colMeans(errorData_toplot))*100
+
+error<-as.data.frame(cbind(TTTT, errorData_toplot))
+colnames(error) <- c("TTTT", "Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
+
+aggdata <-aggregate(error[2:7], by=list(error$TTTT), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1"&colnames(aggdata)!="FoldG")]
+#sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+sorted_aggdata <-aggdata
+paletteLength <- 10
+
+myBreaks_below<-seq(to=max(sorted_aggdata[sorted_aggdata<100]), from = round(min(sorted_aggdata))-3, length.out = paletteLength*abs(min(sorted_aggdata))/10)
+
+myBreaks_above<-seq(to=round(max(sorted_aggdata))+3, from = min(sorted_aggdata[sorted_aggdata>100]), length.out = paletteLength*(max(sorted_aggdata))/10)
+myBreaks_last <- c(myBreaks_below, myBreaks_above)
+
+myBreaks<-append(myBreaks_first,myBreaks_last[which(myBreaks_last>max(myBreaks_first))])
+myBreaks<-append(myBreaks_first[which(myBreaks_first<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks_last[which(myBreaks_last<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks,myBreaks_last[which(myBreaks_last>max(myBreaks))])
+
+myColorbelow<-colorRampPalette(c("blue","white"))(length(which(myBreaks<100))) ### change for white 
+myColorabove<-colorRampPalette(c("white","red"))(length(which(myBreaks>100)))### change for white
+myColor<-c(myColorbelow, myColorabove)
+
+pheatmap(sorted_aggdata, color=myColor, breaks=myBreaks, main = "TTTT", cluster_cols = FALSE, cluster_rows = FALSE)
+
+ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(min(myBreaks-10), max(myBreaks+10)))
+errorplot <-error
+
+errorplot$TTTT<-factor(error$TTTT)
+ggplot(data = melt(errorplot), aes(x=TTTT, y = value, fill = variable)) + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")
+
+table(TTTT)
+
+```
+Variance Plot
+```{r}
+library(ggplot2)
+yGene<-as.matrix(log2(miRge_synth+1))
+yGene <-as.matrix(errorData_toplot)
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last <- data.frame(x =lastStuff(str=seqs$RNA, 1))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first <-data.frame(x =strtrim(seqs$RNA, c(1)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_two <- data.frame(x =lastStuff(str=seqs$RNA, 2))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_two <-data.frame(x =strtrim(seqs$RNA, c(2)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_three<- data.frame(x =lastStuff(str=seqs$RNA, 3))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_three <-data.frame(x =strtrim(seqs$RNA, c(3)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_four <- data.frame(x =lastStuff(str=seqs$RNA, 4))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_four <-data.frame(x =strtrim(seqs$RNA, c(4)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+#seqs$FoldG<-errorFoldG$FoldG
+pd<-seqs
+pd$First_base <-seqs_first$x
+pd$First_2_bases <-seqs_first_two$x
+pd$First_3_bases <-seqs_first_three$x
+pd$First_4_bases <-seqs_first_four$x
+pd$Last_base <-seqs_last$x
+pd$Last_2_bases <-seqs_last_two$x
+pd$Last_3_bases <-seqs_last_three$x
+pd$Last_4_bases <-seqs_last_four$x
+pd$TTTT <- TTTT
+pd$CCCC <- CCCC
+pd$GGGG <- GGGG
+pd$AAAA <- AAAA
+pd$rep <- (TTTT+ CCCC+ GGGG+ AAAA)
+pd$duplets <-duplets
+pd$anyT <- anyT
+pd$anyC <-anyC
+pd$anyG <- anyG
+pd$anyA <- anyA
+
+#modFull = model.matrix(~GC + length +FoldG + First_base + Last_base +TTTT + CCCC + GGGG +AAAA, data=pd)
+
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  #fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases +  +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT, data=pd)
+  fit = lm(y ~ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data = pd)
+  full =Anova(fit, type = "III")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("Kit", "variable")
+#colnames(labels_varexp)<-c("variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+#VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "duplets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
+VarExp$KitF <- factor(VarExp$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
+
+
+variance <- lapply(log2(miRge_synth+1), var)
+boxplot(variance)
+expression <-log2(miRge_synth+1)
+#if F is greater than one its worse for first kit
+#get_test_names(expression)
+# #get_var_results <-function(data,test_names) {
+#   tresults<<-list()
+#   tested_names1<<-list()
+#   tested_names2<<-list()
+#   for(i in names(test_names)){
+#     #tested_names[[i]]<<-(test_names[i][,1])
+#     Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+#     Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+#     tested_names1[[i]]<<-colnames(Kit1)
+#     tested_names2[[i]]<<-colnames(Kit2)
+#     colnames(Kit1)<-c("error")
+#     colnames(Kit2)<-c("error")
+#     tresults[[i]]<<-var.test(x=Kit1$error, y=Kit2$error) ### may have messed things up adding paired = TRUE previously had more ))
+#     tested_kits <<-paste0(tested_names1, "&", tested_names2)
+#   }
+# }
+# get_var_results(data =expression, test_names = test_names)
+# varStats<-data.frame(lapply(tresults, get_ttestStats))
+# colnames(varStats)<-tested_kits
+# varStats
+
+VarExp[which(VarExp$variable == "First_base"),]
+VarExp[which(VarExp$variable == "Last_base"),]
+VarExp[grep("First", VarExp$variable),]
+VarExp[grep("Last", VarExp$variable),]
+
+#pheatmap(VarExp)
+
+var_Table <-read.table(here("Var_exp_Table"))
+rank_Table <-sapply((-1*var_Table), rank )
+```
+
+
+```{r, eval=TRUE}
+library(pheatmap)
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
+varexp_PctExp<- varexp_PctExp[-grep("Intercept",rownames(varexp_PctExp)),]
+pheatmap(varexp_PctExp, main = "Percent of sequence detection variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
+
+varexp_PctExp2<-((varexp_PctExp*variance)/mean(unlist(variance)))
+pheatmap(varexp_PctExp2, main = "Percent of sequence detection variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE, cluster_cols = FALSE)
+```
+
+Radar plot of variance
+
+```{r}
+library(fmsb)
+data=as.data.frame(matrix( sample( 2:20 , 10 , replace=T) , ncol=10))
+colnames(data)=c("math" , "english" , "biology" , "music" , "R-coding", "data-viz" , "french" , "physic", "statistic", "sport" )
+ 
+# To use the fmsb package, I have to add 2 lines to the dataframe: the max and min of each topic to show on the plot!
+data=rbind(rep(20,10) , rep(0,10) , data)
+ 
+# The default radar chart proposed by the library:
+radarchart(data)
+ 
+# Custom the radarChart !
+radarchart( data  , axistype=1 , 
+ 
+    #custom polygon
+    pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+ 
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+ 
+    #custom labels
+    vlcex=0.8 
+    )
+Variance<-t(data.frame(unlist(variance)))
+var_data <-data.frame(rbind(rep(12,6), rep(0,6), Variance))
+radarchart(var_data)
+
+# Custom the radarChart !
+radarchart( var_data  , axistype=1 , 
+ 
+    #custom polygon
+    pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+ 
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,2), cglwd=0.8,
+ 
+    #custom labels
+    vlcex=0.8 
+    )
+boxplot(Variance)
+
+
+vplot <- ggplot(data=melt(Variance), aes(x=Var2, y=value, fill = Var2)) +
+       geom_bar(position="dodge",stat="identity") +
+       ylab("Variance") + 
+       xlab(" ")+
+       ggtitle("Variance of Synthetic miRNA Detection")+
+theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
+        axis.text.x = element_text(size = 18, angle =45, color = "black", vjust = 0.6),
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_text(size =18))
+
+vplot    +  theme(legend.position = "none") + geom_text(aes(label = (round(value, digits =2)), size = 5, hjust = 0.5, vjust = 1.5) )
+
+```
+
+
+
+##### dont need below
+```{r}
+
+
+#varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
+# 
+# pheatmap(varexp_PctExp, main = "varexp", cluster_cols = FALSE, cluster_rows = FALSE)
+# myBreaks<-seq(to=round(max(53))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
+# myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+# #myColor<-c(myColorbelow, myColorabove)
+# pheatmap(varexp_PctExp, breaks = myBreaks, color = myColor)
+
+
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp_PctExp<-var_Table#####################using full varaince info
+varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
+#varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
+#varexp_PctExp<- varexp_PctExp[-grep("First_4_bases",rownames(varexp_PctExp)),]
+
+pheatmap(varexp_PctExp, main = "Percent of sequence detection variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
+myBreaks<-seq(to=round(max(varexp_PctExp))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
+myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+#myColor<-c(myColorbelow, myColorabove)
+pheatmap(varexp_PctExp, breaks = myBreaks, color = myColor, cluster_rows = FALSE, cluster_cols = FALSE, main ="Contribution of factors to sequence detection variance")
+
+
+####weighted by overall variance by multiplying by overall variance...
+# varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+# varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+# colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+# varexp_PctExp<-varexp_PctExp*variance
+# varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
+# #varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
+# pheatmap(varexp_PctExp, main = "varexp", cluster_cols = FALSE, cluster_rows = FALSE)
+# myBreaks<-seq(to=round(max(varexp_PctExp))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
+# myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+# #myColor<-c(myColorbelow, myColorabove)
+# pheatmap(varexp_PctExp, breaks = myBreaks, main ="Contribution of factors to sequence detection variance", color = myColor, row_cols = FALSE)
+
+####weighted by overall variance by multiplying by kit variance and dividing by mean of all kit variance
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp_PctExp2<-var_Table
+varexp_PctExp2<-((varexp_PctExp2*variance)/mean(unlist(variance)))
+varexp_PctExp2<- varexp_PctExp2[-grep("Residuals",rownames(varexp_PctExp2)),]
+#varexp_PctExp2<- varexp_PctExp2[-grep("Last_4_bases",rownames(varexp_PctExp2)),]
+#varexp_PctExp2<- varexp_PctExp2[-grep("First_4_bases",rownames(varexp_PctExp2)),]
+pheatmap(varexp_PctExp2, cluster_cols = FALSE, main = "Percent of sequence detection variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE)
+myBreaks<-seq(to=round(max(varexp_PctExp2)+2), from = min(varexp_PctExp2), length.out = paletteLength*(max(varexp_PctExp2))/2)
+myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+pheatmap(varexp_PctExp2, breaks = myBreaks, color = myColor, main = "Contribution of factors to sequence detection variance \n weighted by overall variance for each kit", cluster_cols = FALSE, cluster_rows = FALSE)
+```
+Variance Plot
+```{r}
+library(ggplot2)
+yGene<-as.matrix(log2(miRge_synth+1))
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last <- data.frame(x =lastStuff(str=seqs$RNA, 1))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first <-data.frame(x =strtrim(seqs$RNA, c(1)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_two <- data.frame(x =lastStuff(str=seqs$RNA, 2))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_two <-data.frame(x =strtrim(seqs$RNA, c(2)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_three<- data.frame(x =lastStuff(str=seqs$RNA, 3))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_three <-data.frame(x =strtrim(seqs$RNA, c(3)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_four <- data.frame(x =lastStuff(str=seqs$RNA, 4))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_four <-data.frame(x =strtrim(seqs$RNA, c(4)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+#seqs$FoldG<-errorFoldG$FoldG
+pd<-seqs
+pd$First_base <-seqs_first$x
+pd$First_2_bases <-seqs_first_two$x
+pd$First_3_bases <-seqs_first_two$x
+pd$First_4_bases <-seqs_first_two$x
+pd$Last_base <-seqs_last$x
+pd$Last_2_bases <-seqs_last_two$x
+pd$Last_3_bases <-seqs_last_three$x
+pd$Last_4_bases <-seqs_last_four$x
+pd$TTTT <- TTTT
+pd$CCCC <- CCCC
+pd$GGGG <- GGGG
+pd$AAAA <- AAAA
+pd$rep <- (TTTT+ CCCC+ GGGG+ AAAA)
+pd$duplets
+pd$anyT
+pd$anyA
+pd$anyC
+pd$anyG
+
+
+#modFull = model.matrix(~GC + length +FoldG + First_base + Last_base +TTTT + CCCC + GGGG +AAAA, data=pd)
+
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ AAAA+ TTTT + CCCC + GGGG + anyT + anyC + anyA + anyG, data=pd)
+    fit = lm(y ~ GC + length +FoldG + First_4_bases + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ AAAA+ TTTT + CCCC + GGGG + anyT + anyC + anyA + anyG, data=pd)
+  full = anova(fit)
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("Kit", "variable")
+#colnames(labels_varexp)<-c("variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "duplets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
+VarExp$KitF <- factor(VarExp$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp)) + geom_boxplot(aes(fill = "black"), notch = TRUE, outlier.shape=NA) +facet_grid(~KitF)
+plotfull +ggtitle("Percent of Variance Explained by Influential Factors") +
+  labs(y="Percent of Variance Explained", x ="none") + 
+  scale_fill_manual(values = c("black"))+
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 90, face = "bold"), axis.text.x=element_text(size = 10, angle = 20, face = "bold", colour = "black"),
+        axis.title.y=element_text(size=20), plot.title = element_text(size = 30, face = "bold"))
+
+variance <- lapply(log2(miRge_synth+1), var)
+boxplot(variance)
+expression <-log2(miRge_synth+1)
+#if F is greater than one its worse for first kit
+get_test_names(expression)
+get_var_results <-function(data,test_names) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    #tested_names[[i]]<<-(test_names[i][,1])
+    Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+    Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-colnames(Kit1)
+    tested_names2[[i]]<<-colnames(Kit2)
+    colnames(Kit1)<-c("error")
+    colnames(Kit2)<-c("error")
+    tresults[[i]]<<-var.test(x=Kit1$error, y=Kit2$error) ### may have messed things up adding paired = TRUE previously had more ))
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+get_var_results(data =expression, test_names = test_names)
+varStats<-data.frame(lapply(tresults, get_ttestStats))
+colnames(varStats)<-tested_kits
+varStats
+
+VarExp[which(VarExp$variable == "First_base"),]
+VarExp[which(VarExp$variable == "Last_base"),]
+VarExp[grep("First", VarExp$variable),]
+VarExp[grep("Last", VarExp$variable),]
+
+#pheatmap(VarExp)
+```
+
+
+```{r}
+
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+#varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
+# 
+# pheatmap(varexp_PctExp, main = "varexp", cluster_cols = FALSE, cluster_rows = FALSE)
+# myBreaks<-seq(to=round(max(53))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
+# myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+# #myColor<-c(myColorbelow, myColorabove)
+# pheatmap(varexp_PctExp, breaks = myBreaks, color = myColor)
+
+
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
+#varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
+pheatmap(varexp_PctExp, cluster_cols = FALSE, cluster_rows = FALSE,main ="Percent of sequence detection variance explained")
+myBreaks<-seq(to=round(max(varexp_PctExp))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
+myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+#myColor<-c(myColorbelow, myColorabove)
+pheatmap(varexp_PctExp, breaks = myBreaks, color = myColor, cluster_rows = FALSE, cluster_cols = FALSE, main ="Contribution of factors to sequence detection variance")
+
+
+####weighted by overall variance by multiplying by overall variance...
+# varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+# varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+# colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+# varexp_PctExp<-varexp_PctExp*variance
+# varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
+# #varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
+# pheatmap(varexp_PctExp, main = "varexp", cluster_cols = FALSE, cluster_rows = FALSE)
+# myBreaks<-seq(to=round(max(varexp_PctExp))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
+# myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+# #myColor<-c(myColorbelow, myColorabove)
+# pheatmap(varexp_PctExp, breaks = myBreaks, main ="Contribution of factors to sequence detection variance", color = myColor, row_cols = FALSE)
+
+####weighted by overall variance by multiplying by kit variance and dividing by mean of all kit variance
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp_PctExp2<-((varexp_PctExp*variance)/mean(unlist(variance)))
+varexp_PctExp2<- varexp_PctExp2[-grep("Residuals",rownames(varexp_PctExp)),]
+#varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
+pheatmap(varexp_PctExp2, cluster_cols = FALSE, cluster_rows = FALSE,main = "Percent of sequence detection variance explained \n weighted by overall varaince for each kit")
+myBreaks<-seq(to=round(max(varexp_PctExp2)+2), from = min(varexp_PctExp2), length.out = paletteLength*(max(varexp_PctExp2))/10)
+myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
+pheatmap(varexp_PctExp2, breaks = myBreaks, color = myColor, main = "Contribution of factors to sequence detection variance \n weighted by overall variance for each kit", cluster_cols = FALSE, cluster_rows = FALSE)
+```
