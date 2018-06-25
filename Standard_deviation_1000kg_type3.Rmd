@@ -504,9 +504,17 @@ aggdata <-aggregate(errorFirst[-1], by=list(errorFirst$First_2_bases), FUN=mean)
 rownames(aggdata) <- aggdata$Group.1
 aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
 
-pheatmap(aggdata,cluster_cols = FALSE, main = "Batch error of sequences with different first base")
-pheatmap(aggdata,cluster_cols = FALSE,cluster_rows = FALSE, main = "Batch error of sequences with different first base")
+pheatmap(aggdata,cluster_cols = FALSE, main = "Batch error of sequences with different first bases")
+pheatmap(aggdata,cluster_cols = FALSE,cluster_rows = FALSE, main = "Batch error of sequences with different first bases")
 
+
+errorLast<-data.frame(Last_2_bases =pd$Last_2_bases, Error)
+aggdata <-aggregate(errorLast[-1], by=list(errorLast$Last_2_bases), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
+
+pheatmap(aggdata,cluster_cols = FALSE, main = "Batch error of sequences with different last bases")
+pheatmap(aggdata,cluster_cols = FALSE,cluster_rows = FALSE, main = "Batch error of sequences with different last bases")
 ```
 
 
