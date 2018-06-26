@@ -132,6 +132,8 @@ thresh_number[[amt]][[kit]]<- dim(split_kit_miRNAData[[amt]][[kit]][thresh[[amt]
 # thresh_number$variable <-as.numeric(as.character(thresh_number$variable))
 # thresh_number<-thresh_number[-which(thresh_number$value =="0"),]
 # thresh_number$kit <- factor(thresh_number$kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+
+save(split_amt_thresh, file =here("Complete_data/one_batch_thresh10across_trip.rda"))
 ```
 How consistent are the results...
 ```{r}
