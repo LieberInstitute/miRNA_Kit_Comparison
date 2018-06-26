@@ -466,7 +466,7 @@ Expression plot
 ```{r}
 #avg_Express - this is the log2 expression
 #Error
-
+library(ggpubr)
 Clontech_exp <-data.frame(Error =Error$Clontech, Expression =avg_Express$Clontech, Kit = rep("Clontech",162))
 Illumina_exp <-data.frame(Error =Error$Illumina, Expression =avg_Express$Illumina, Kit = rep("Illumina",162))
 NEB_exp <-data.frame(Error =Error$NEB, Expression =avg_Express$NEB, Kit = rep("NEB",162))
@@ -476,7 +476,20 @@ Fivepercent_exp <-data.frame(Error =Error$Fivepercent, Expression =avg_Express$F
 
 exp_error <- rbind(Clontech_exp, Illumina_exp, NEB_exp, NEXTflex_exp, Deduped_exp, Fivepercent_exp)
 
-ggplot(exp_error, aes(x = Expression, y = Error, col = Kit)) + geom_point()+ stat_smooth(method = "loess")+ facet_grid(Kit~.) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Expression", y = " Error across Batch", title = " Relationship of Error and Expression") 
+ggplot(exp_error, aes(x = Expression, y = Error, col = Kit)) + geom_point()+ stat_smooth(method = "loess")+ facet_grid(.~Kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Expression", y = " Error across Batch", title = " Relationship of Error and Expression") + stat_cor(method = "pearson", label.x = 10, label.y = 16, size =3)
+
+summary(lm(Clontech_exp$Error ~ Clontech_exp$Expression))
+summary(lm(Illumina_exp$Error ~ Illumina_exp$Expression))
+summary(lm(NEB_exp$Error ~ NEB_exp$Expression))
+summary(lm(NEXTflex_exp$Error ~ NEXTflex_exp$Expression))
+summary(lm(Deduped_exp$Error ~ Deduped_exp$Expression))
+summary(lm(Fivepercent_exp$Error ~ Fivepercent_exp$Expression))
+cor.test(y =Clontech_exp$Error, x =Clontech_exp$Expression)
+cor.test(y =Illumina_exp$Error,x =Illumina_exp$Expression)
+cor.test(y =NEB_exp$Error,x =NEB_exp$Expression)
+cor.test(y =NEXTflex_exp$Error,x =NEXTflex_exp$Expression)
+cor.test(y =Deduped_exp$Error, x =Deduped_exp$Expression)
+cor.test(y =Fivepercent_exp$Error, x =Fivepercent_exp$Expression)
 ```
 
 #GC content
