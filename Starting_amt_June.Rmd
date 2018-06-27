@@ -95,6 +95,7 @@ load(here("Complete_data/one_batch_thresh10across_trip.rda"))
 ```{r, echo = FALSE, message = FALSE, eval = TRUE}
 library(dplyr)
 
+
 get_test_results<- function(data,test_names, pairedvalue) {
   tresults<<-list()
   tested_names1<<-list()
@@ -154,33 +155,33 @@ Higher t is worse = higher error
 ```{r, warning=FALSE, message=FALSE}
 errorData_all <-list()
 
-get_error(data = split_amt_thresh$starting_amt_100)
+get_error(data = split_amt_thresh$`100`)
 mean_errors_1 <- lapply(errorData, rowMeans)
 errorData_all[[1]] <-lapply(mean_errors_1, data.frame)
 
-get_error(data = split_amt_thresh$starting_amt_250)
+get_error(data = split_amt_thresh$`250`)
 mean_errors_1 <- lapply(errorData, rowMeans)
 errorData_all[[2]] <-lapply(mean_errors_1, data.frame)
 
-get_error(data = split_amt_thresh$starting_amt_500)
+get_error(data = split_amt_thresh$`500`)
 mean_errors_1 <- lapply(errorData, rowMeans)
 errorData_all[[3]] <-lapply(mean_errors_1, data.frame)
 
-get_error(data = split_amt_thresh$starting_amt_1000)
+get_error(data = split_amt_thresh$`1000`)
 mean_errors_1 <- lapply(errorData, rowMeans)
 errorData_all[[4]] <-lapply(mean_errors_1, data.frame)
 
 errorData <-NULL
-get_error(data = split_amt_thresh$starting_amt_1500)
+get_error(data = split_amt_thresh$`1500`)
 mean_errors_1500 <- lapply(errorData, rowMeans)
 errorData_all[[5]] <-lapply(mean_errors_1500, data.frame)
 
 errorData <-NULL
-get_error(data = split_amt_thresh$starting_amt_2000)
+get_error(data = split_amt_thresh$`2000`)
 mean_errors_1 <- lapply(errorData, rowMeans)
 errorData_all[[6]] <-lapply(mean_errors_1, data.frame)
 
-names(errorData_all)<- unique(Pheno$raw_start)
+names(errorData_all)<- unique(Pheno$startingAmt)
 
 
 Names_thresh <-list()
@@ -189,7 +190,8 @@ Names_thresh<<-intersect(intersect(intersect(rownames(as.data.frame(data[[1]])),
 #get_names_thresh(data = split_amt_thresh)
 
 #finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
-#errorData_test <- lapply(errorData_test, finding_rows)  
+#errorData_test <- lapply(errorData_test, finding_rows) 
+
 errorAll <-melt(errorData_all)
 names(errorAll)<- c("variable", "value"  ,  "Method"   ,    "Starting_Amount" )
 errorAll$Method<-factor(errorAll$Method, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
@@ -217,8 +219,25 @@ errorAll$Starting_Amount <-as.numeric(as.character(errorAll$Starting_Amount))
 anova(lm(errorAll$value~ errorAll$Method))
 anova(lm(errorAll$value~ errorAll$Starting_Amount))
 split_errorAll <-list()
-for(kit in names(errorAll[[kit]])){
- split_errorAll[[kit]]<- errorAll[[kit]]}
+for(kit in errorAll$Method){
+ split_errorAll[[kit]]<- errorAll[which(errorAll$Method == kit),]$value}
+test_names <- data.frame(combn(names(split_errorAll), m= 2))
+
+get_test_results(data = split_errorAll, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across #lower t indicates lower error across triplicates
+
+msplit_errorAll <-melt(split_errorAll)
+msplit_errorAll$L1 <- factor(msplit_errorAll$L1, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+ggplot(msplit_errorAll, aes(x = L1, y = value))+ geom_jitter(width = .3, size = 2, aes(col = L1, alpha = 0.7))+ geom_boxplot(outlier.shape = NA, varwidth = FALSE, notch = FALSE) +  ggtitle(label = "Inconsistency Across Triplicates")+ labs( x= "Method", y = " Error from the Mean of Triplicates")+
+      theme(axis.title.x = element_text(size =0), 
+            plot.title = element_text(size = 20, face = "bold"),
+            strip.text = element_text(size = 13),
+            axis.text.x = element_text(size = 15, angle = 60, hjust = 1),
+            axis.text.y = element_text(size = 15), 
+            axis.title.y = element_text(size =13),
+            legend.position= "none")
 
 ```
 
