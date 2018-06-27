@@ -388,47 +388,6 @@ pd$anyC <-anyC
 pd$anyG <- anyG
 pd$anyA <- anyA
 
-#modFull = model.matrix(~GC + length +FoldG + First_base + Last_base +TTTT + CCCC + GGGG +AAAA, data=pd)
-
-
-# varCompAnalysis = apply(t(yGene),1,function(y) {
-#   if(runif(1) < 1e-4) cat(".")
-#   fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases + Last_4_bases +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT, data=pd)
-#   full = anova(fit)
-#   fullSS =full$"Sum Sq"
-#   signif(cbind(full,PctExp=fullSS/
-#                  sum(fullSS)*100),3)
-# })
-# 
-# 
-# 
-# varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
-# labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
-# colnames(labels_varexp)<-c("Kit", "variable")
-# #colnames(labels_varexp)<-c("variable")
-# VarExp<-cbind(labels_varexp,varexp$PctExp)
-# #VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "duplets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
-# VarExp$KitF <- factor(VarExp$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
-# plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp)) + geom_boxplot(aes(fill = "black"), notch = TRUE, outlier.shape=NA) +facet_grid(~KitF)
-# plotfull +ggtitle("Percent of Variance Explained by Influential Factors") +
-#   labs(y="Percent of Variance Explained", x ="none") + 
-#   scale_fill_manual(values = c("black"))+
-#   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 90, face = "bold"), axis.text.x=element_text(size = 10, angle = 20, face = "bold", colour = "black"),
-#         axis.title.y=element_text(size=20), plot.title = element_text(size = 30, face = "bold"))
-# 
-# variance <- lapply(log2(miRge_synth+1), var)
-# boxplot(variance)
-# expression <-log2(miRge_synth+1)
-# 
-# VarExp[which(VarExp$variable == "First_base"),]
-# VarExp[which(VarExp$variable == "Last_base"),]
-# VarExp[grep("First", VarExp$variable),]
-# VarExp[grep("Last", VarExp$variable),]
-# 
-# #pheatmap(VarExp)
-# 
-# var_Table <-read.table(here("Var_exp_Table"))
-# rank_Table <-sapply((-1*var_Table), rank )
 ```
 
 
@@ -526,34 +485,6 @@ varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
 colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
 varexp_PctExp<- varexp_PctExp[-grep("(Intercept)",rownames(varexp_PctExp)),]
 rownames(varexp_PctExp)[1] <- "Expression"
-
-
-###NOT sure I need below
-#labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
-#colnames(labels_varexp)<-c("Kit", "variable")
-#colnames(labels_varexp)<-c("variable")
-#VarExp<-cbind(labels_varexp,varexp$PctExp)
-#VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "duplets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
-# VarExp$KitF <- factor(VarExp$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
-# plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp)) + geom_boxplot(aes(fill = "black"), notch = TRUE, outlier.shape=NA) +facet_grid(~KitF)
-# plotfull +ggtitle("Percent of Variance Explained by Influential Factors") +
-#   labs(y="Percent of Variance Explained", x ="none") + 
-#   scale_fill_manual(values = c("black"))+
-#   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 90, face = "bold"), axis.text.x=element_text(size = 10, angle = 20, face = "bold", colour = "black"),
-#         axis.title.y=element_text(size=20), plot.title = element_text(size = 30, face = "bold"))
-
-
-#expression <-log2(miRge_synth+1)
-
-#VarExp[which(VarExp$variable == "First_base"),]
-#VarExp[which(VarExp$variable == "Last_base"),]
-#VarExp[grep("First", VarExp$variable),]
-#VarExp[grep("Last", VarExp$variable),]
-
-#pheatmap(VarExp)
-
-#var_Table <-read.table(here("Var_exp_Table"))
-#rank_Table <-sapply((-1*var_Table), rank )
 ```
 
 
@@ -601,43 +532,34 @@ cor.test(y =Deduped_exp$Error, x =Deduped_exp$Expression)
 cor.test(y =Fivepercent_exp$Error, x =Fivepercent_exp$Expression)
 ```
 
+Are high error miRNAs the same across methods?
+```{r}
+library(ggrepel)
 
+ranks_error<-data.frame(sapply(errorData_testdf, rank))
+rownames(ranks_error)<-rownames(errorData_testdf)
+Clontech_ranks <-(ranks_error[grep("Clontech", colnames(ranks_error))])
+Illumina_ranks <-(ranks_error[grep("Illumina", colnames(ranks_error))])
+NEB_ranks <-(ranks_error[grep("NEB", colnames(ranks_error))])
+NEXTflex_ranks <-(ranks_error[grep("NEXTflex", colnames(ranks_error))])
+Deduped_ranks <-(ranks_error[grep("Deduped", colnames(ranks_error))])
+Fivepercent_ranks <-(ranks_error[grep("Fivepercent", colnames(ranks_error))])
 
-
-
-
-
-
-
-```{r, eval=FALSE}
-library(pheatmap)
-varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
-varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
-colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
-
-varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
-varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
-colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
-varexp_PctExp<-var_Table#####################using full varaince info
-varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
-#varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
-#varexp_PctExp<- varexp_PctExp[-grep("First_4_bases",rownames(varexp_PctExp)),]
-
-pheatmap(varexp_PctExp, main = "Percent of sequence detection variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
-
-####weighted by overall variance by multiplying by kit variance and dividing by mean of all kit variance
-varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
-varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
-colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
-varexp_PctExp2<-var_Table
-varexp_PctExp2<-((varexp_PctExp2*variance)/mean(unlist(variance)))
-varexp_PctExp2<- varexp_PctExp2[-grep("Residuals",rownames(varexp_PctExp2)),]
-#varexp_PctExp2<- varexp_PctExp2[-grep("Last_4_bases",rownames(varexp_PctExp2)),]
-#varexp_PctExp2<- varexp_PctExp2[-grep("First_4_bases",rownames(varexp_PctExp2)),]
-pheatmap(varexp_PctExp2, cluster_cols = FALSE, main = "Percent of sequence detection variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE)
-
+library(GGally)
+set.seed(42)
+#1000ng input
+ggpairs(Clontech_ranks)
+ggpairs(Illumina_ranks)
+ggpairs(NEB_ranks)
+ggpairs(NEXTflex_ranks)
+ggpairs(Deduped_ranks)
+ggpairs(Fivepercent_ranks)
+ggpairs(data.frame(ranks_error$Clontech.3, ranks_error$Illumina, ranks_error$NEB.3, ranks_error$NEXTflex.3, ranks_error$Deduped.3, ranks_error$Fivepercent.3))
 ```
-```
+
+
+
+
 ######################################
 ###Within Error Batch 100ng
 ```{r}
