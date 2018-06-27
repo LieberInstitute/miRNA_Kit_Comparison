@@ -86,7 +86,7 @@ perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie 
 ###load data into R
 ```{r, echo=FALSE}
 library(here)
-load(here("Complete_data/one_batch_thresh10across_trip.rda"))
+load(here("Complete_data/one_batch_thresh10across_trip.rda"))# created in miRNA_detection_June.Rmd
 ```
 
 
@@ -153,6 +153,7 @@ Higher t is worse = higher error
 ###Overall Error
 
 ```{r, warning=FALSE, message=FALSE}
+library(ggplot2)
 errorData_all <-list()
 
 get_error(data = split_amt_thresh$`100`)
@@ -244,13 +245,58 @@ ggplot(msplit_errorAll, aes(x = L1, y = value))+ geom_jitter(width = .3, size = 
 
 Find Intersection across starting Amt and Kit
 ```{r}
-# Names_thresh <-list()
-# get_names_thresh<-function(data) {
-# Names_thresh<<-intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]])))}
-# get_names_thresh(data = split_amt_thresh$starting_amt_100)
 
-#finding_rows<-function(x){x[rownames(x) %in% Names_thresh, , drop= FALSE]}
-#errorData_test <- lapply(errorData_test, finding_rows)  
+#get miRNA names
+miRNA_names <- list()
+for(amt in names(split_amt_thresh)){
+miRNA_names[[amt]] <- lapply(split_amt_thresh[[amt]], rownames)}
+
+#intersection of 100ng lists
+Names_thresh_100 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_100<<-intersect(intersect(intersect(intersect(data[[1]], data[[3]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`100`)
+
+Names_thresh_250 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_250<<-intersect(intersect(intersect(intersect(data[[1]], data[[3]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`250`)  
+
+Names_thresh_500 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_500<<-intersect(intersect(intersect(intersect(data[[1]], data[[3]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`500`)  
+
+Names_thresh_1000 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_1000<<-intersect(intersect(intersect(intersect(intersect(data[[1]], data[[2]]), data[[3]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`1000`)  
+
+Names_thresh_1500 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_1500<<-intersect(intersect(intersect(intersect(data[[1]], data[[2]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`1500`) 
+
+Names_thresh_2000 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_2000<<-intersect(intersect(intersect(intersect(data[[1]], data[[2]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`2000`)
+
+
+Names_total <-list()
+get_names_thresh<-function(data) {
+Names_total<<-intersect(intersect(intersect(intersect(intersect(data[[1]], data[[2]]), data[[3]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = list(Names_thresh_100, Names_thresh_250, Names_thresh_500, Names_thresh_1000, Names_thresh_1500, Names_thresh_2000))  
+
+
+
+finding_rows<-function(x){x[rownames(x) %in% Names_total, , drop= FALSE]}
+errorData_test<-list()
+for(amt in names(errorData_all)){
+errorData_test[[amt]] <- lapply(errorData_all[[amt]], finding_rows)}
+
+identical(rownames(errorData_test$`100`$Clontech), rownames(errorData_test$`1000`$NEXTflex))
+
 ```
 
 #### variance of within error### need to update
