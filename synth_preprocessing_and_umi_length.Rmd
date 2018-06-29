@@ -216,8 +216,8 @@ ggplot(mratios, aes(x = variable, y = value))+geom_jitter(aes(color = variable, 
         axis.text.y = element_text(size = 20, color= "black"), 
         axis.title.y = element_text(size =20),
         legend.position= "none")
-
-ggplot(mratios, aes(x = variable, y = value))+geom_jitter(aes(color = variable, alpha=0.1), width = .2)+geom_boxplot(notch =TRUE, aes(fill = variable), outlier.shape = NA, varwidth = TRUE) +scale_fill_manual(values = c(cols[1:4])) +scale_color_manual(values = c(cols[1:4])) +ggtitle(label = "Percentage of Correct Location of miRNAs Within Reads")+ 
+pdf(file =here("Figures/Raw_plots/Fig.2.a.pdf"),width=6,height=4) 
+ggplot(mratios, aes(x = variable, y = value))+geom_jitter(aes(color = variable, alpha=0.1), width = .2)+geom_boxplot(notch =TRUE, outlier.shape = NA, varwidth = TRUE) +scale_fill_manual(values = c(cols[1:4])) +scale_color_manual(values = c(cols[1:4])) +ggtitle(label = "Percentage of Correct Location of miRNAs Within Reads")+ 
   ylab("Percentage correct")+
   xlab("Kit")+
   theme(axis.title.x = element_text(size =0), 
@@ -226,6 +226,7 @@ ggplot(mratios, aes(x = variable, y = value))+geom_jitter(aes(color = variable, 
         axis.text.y = element_text(size = 20), 
         axis.title.y = element_text(size =20),
         legend.position= "none")
+dev.off()
 write.table(ratios, here("ratios.txt"), sep="\t")
 write.table(any_Reads, here("any_Reads.txt"), sep="\t")
 write.table(ideal_Reads, here("ideal_Reads.txt"), sep="\t")

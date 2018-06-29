@@ -54,7 +54,9 @@ ggplot(miRNA_data, aes(x = Kit, y = value, color = Kit)) +geom_bar(stat  = "iden
 
 ggplot(miRNA_data, aes(x = Kit, y = value, color = Kit)) +geom_jitter(col = "black")+geom_boxplot(aes(y =value, fill = Kit, alpha = 0.7)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 0, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+scale_fill_manual(values=cols)+scale_color_manual(values=cols) +facet_grid(.~Input_Amount)
 
+pdf(file =here("Figures/Raw_plots/Fig.3.a.pdf"),width=9,height=4)
 ggplot(miRNA_data, aes(x = Input_Amount, y = value, color = Kit)) +geom_jitter(col = "black")+geom_boxplot(aes(y =value, fill = Kit, alpha = 0.7)) +theme(legend.position = "none", axis.title.x=element_blank(), axis.text.x=element_text(size = 20, angle = 60,hjust = 1, face = "bold", colour = "black"), axis.text.y=element_text(size = 20),axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20))+scale_fill_manual(values=cols)+scale_color_manual(values=cols) +facet_grid(.~Kit)+geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1, fill = Kit)) +ggtitle("Percent of reads mapping to miRNA") +labs(y="Percent of reads", x ="none")
+dev.off()
 
 ```
 Just other RNAs
@@ -72,9 +74,12 @@ ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "ident
 
 ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge",width = 1, aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 60,hjust = 1, face = "bold", colour = "black"), axis.text.y=element_text(size = 10))+facet_grid(Kit~Input_Amount)+scale_fill_manual(values=cols)+scale_color_manual(values=cols) +ggtitle("Percent of reads mapping to other RNAs") +labs(y="Percent of reads", x ="none")
 
+pdf(file =here("Figures/Raw_plots/Fig.3.b.pdf"),width=10,height=7)
 ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_boxplot( aes(y =value, fill = Kit)) +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 13, angle = 60,hjust = 1, face = "bold", colour = "black"), axis.text.y=element_text(size = 20),axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20), strip.text.y = element_text(size = 18))+facet_grid(Kit~Input_Amount)+scale_fill_manual(values=cols)+scale_color_manual(values=cols) +ggtitle("Percent of reads mapping to other RNAs") +labs(y="Percent of reads", x ="none")
+dev.off()
 
-ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_bar(stat  = "identity", position = "dodge", aes(y =value, fill = Kit)) +theme(axis.title.x=element_blank(), axis.text.x=element_text(size = 14, angle = 60,hjust = 1, face = "bold", colour = "black"), axis.text.y=element_text(size = 20), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20))+facet_grid(Input_Amount~Kit)+scale_fill_manual(values=cols)+scale_color_manual(values=cols) +ggtitle("Percent of reads mapping to other RNAs") +labs(y="Percent of reads", x ="none")
+# this looks strange... think I need to aggregate data first
+ggplot(mRNA, aes(x = variable, y = value, color = Kit, group = variable)) +geom_bar(stat  = "identity", position = "identity", aes(y =value, fill = Kit), col = "black") +theme(axis.title.x=element_blank(), axis.text.x=element_text(size = 14, angle = 60,hjust = 1, face = "bold", colour = "black"), axis.text.y=element_text(size = 20), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20))+facet_grid(Input_Amount~Kit)+scale_fill_manual(values=cols)+scale_color_manual(values=cols) +ggtitle("Percent of reads mapping to other RNAs") +labs(y="Percent of reads", x ="none")
 ```
 
 Just1000ng - other RNAs

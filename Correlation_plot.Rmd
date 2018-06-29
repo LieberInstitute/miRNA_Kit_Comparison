@@ -92,7 +92,9 @@ avg_1000ng <-lapply(split_kit,rowMeans)
 avg_1000ng<-data.frame(avg_1000ng)
 # avg_1000ng<-sapply(avg_1000ng, log2)
 # avg_1000ng<- data.frame(avg_1000ng)
+pdf(file =here("Figures/Raw_plots/Fig.2.c.pdf"),width=10.5,height=7)
 ggpairs(avg_1000ng)
+dev.off()
 # estimated density in diagonal
 ```
 ###Dendrogram to see how data clusters after normalization of counts

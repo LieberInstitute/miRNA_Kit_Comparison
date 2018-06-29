@@ -177,7 +177,9 @@ detected$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c(
 detected$det_Data.startingAmt <-gsub("starting_amt_", "",detected$det_Data.startingAmt)
 #ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.startingAmt)
 
+pdf(file =here("Figures/Raw_plots/Fig.3.f.pdf"),width=10,height=4)
 ggplot(detected, aes(x =det_Data.startingAmt, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Percentage of Inconsistently \n Detected miRNA Sequences", title = "Inconsistentcy of miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))
+dev.off()
 
 
 #ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()
@@ -218,7 +220,9 @@ raw_det$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("
 
 ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter(aes(color = det_Data.kit))+ facet_grid(.~det_Data.kit, scales="free") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1.0001, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
 
-ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + facet_grid(.~det_Data.kit, scales="free") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
+pdf(file =here("Figures/Raw_plots/Fig.3.d.pdf"),width=10,height=4)
+ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
+dev.off()
 ```
 
 # get lists of miRNAs for across thresholds for given starting amounts
@@ -248,7 +252,7 @@ gg_color_hue <- function(n) {
 n = 5
 cols = gg_color_hue(n)
 cols <-cols[1:5]
-vp_alpha <- venn.diagram(miRNAs_1000ng[1:5], fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.3,.3,.3, .3, .3))
+vp_1000 <- venn.diagram(miRNAs_1000ng[1:5], fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.3,.3,.3, .3, .3))
 
 
 
@@ -270,8 +274,9 @@ grid.draw(vp_alpha);
 
 
 
-
-
+pdf(file =here("Figures/Raw_plots/Fig.3.c.pdf"),width=6,height=6,onefile=FALSE)
+grid.draw(vp_1000);
+dev.off()
 
 
 ```{r}
