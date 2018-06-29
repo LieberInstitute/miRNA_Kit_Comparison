@@ -207,6 +207,7 @@ n = 6
 cols = gg_color_hue(n)
 
 boxplotwidth <- data.frame(width =c(rep(1,6), rep(.3,3), rep(.5, 4), rep(1, 18)))
+pdf(file =here("Figures/Raw_plots/Fig.5.e.pdf"),width=10,height=4, onefile=FALSE)
 ggplot(errorAll, aes(x = Starting_Amount, y = value))+ geom_jitter(width = .3, size = 2, aes(col = Method, alpha = 0.7))+ geom_boxplot(outlier.shape = NA, varwidth = FALSE, notch = FALSE) + facet_grid(.~Method)+  ggtitle(label = "Inconsistency Across Triplicates")+ labs( x= "Starting Amount", y = " Error from the Mean of Triplicates")+
       theme(axis.title.x = element_text(size =0), 
             plot.title = element_text(size = 20, face = "bold"),
@@ -214,8 +215,8 @@ ggplot(errorAll, aes(x = Starting_Amount, y = value))+ geom_jitter(width = .3, s
             axis.text.x = element_text(size = 15, angle = 60, hjust = 1),
             axis.text.y = element_text(size = 15), 
             axis.title.y = element_text(size =13),
-            legend.position= "none")  +scale_color_manual(values =cols)+ geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1, fill = Method))
-
+            legend.position= "none")  +scale_color_manual(values =cols)+ geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1, fill = Method))
+dev.off()
 errorAll$Starting_Amount <-as.numeric(as.character(errorAll$Starting_Amount))
 anova(lm(errorAll$value~ errorAll$Method))
 anova(lm(errorAll$value~ errorAll$Starting_Amount))
@@ -231,6 +232,7 @@ ttestStats_across #lower t indicates lower error across triplicates
 
 msplit_errorAll <-melt(split_errorAll)
 msplit_errorAll$L1 <- factor(msplit_errorAll$L1, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+pdf(file =here("Figures/Raw_plots/Fig.5.f.tall.pdf"),width=3.8,height=4, onefile=FALSE)
 ggplot(msplit_errorAll, aes(x = L1, y = value))+ geom_jitter(width = .3, size = 2, aes(col = L1, alpha = 0.7))+ geom_boxplot(outlier.shape = NA, varwidth = FALSE, notch = FALSE) +  ggtitle(label = "Inconsistency Across Triplicates")+ labs( x= "Method", y = " Error from the Mean of Triplicates")+
       theme(axis.title.x = element_text(size =0), 
             plot.title = element_text(size = 20, face = "bold"),
@@ -239,6 +241,7 @@ ggplot(msplit_errorAll, aes(x = L1, y = value))+ geom_jitter(width = .3, size = 
             axis.text.y = element_text(size = 15), 
             axis.title.y = element_text(size =13),
             legend.position= "none")
+dev.off()
 
 ```
 
@@ -404,7 +407,7 @@ yGene <-as.matrix(errorData_testdf$Clontech)
 varCompAnalysis = apply(t(yGene),1,function(y) {
   if(runif(1) < 1e-4) cat(".")
   fit = lm(yGene ~expressData_test_meandf$Clontech+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=pd, singular.ok = TRUE)
-  full =Anova(fit, type = "III")
+  full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
                  sum(fullSS)*100),3)
@@ -417,7 +420,7 @@ varCompAnalysis = apply(t(yGene),1,function(y) {
   if(runif(1) < 1e-4) cat(".")
 
   fit = lm(yGene ~expressData_test_meandf$Illumina+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=pd, singular.ok = TRUE)
-  full =Anova(fit, type = "III")
+  full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
                  sum(fullSS)*100),3)
@@ -430,7 +433,7 @@ yGene <-as.matrix(errorData_testdf$NEB)
 varCompAnalysis = apply(t(yGene),1,function(y) {
   if(runif(1) < 1e-4) cat(".")
   fit = lm(yGene ~expressData_test_meandf$NEB+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data =pd, singular.ok = TRUE)
-  full =Anova(fit, type = "III")
+  full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
                  sum(fullSS)*100),3)
@@ -442,7 +445,7 @@ yGene <-as.matrix(errorData_testdf$NEXTflex)
 varCompAnalysis = apply(t(yGene),1,function(y) {
   if(runif(1) < 1e-4) cat(".")
   fit = lm(yGene ~expressData_test_meandf$NEXTflex+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=pd, singular.ok = TRUE)
- full =Anova(fit, type = "III")
+ full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
                  sum(fullSS)*100),3)
@@ -454,7 +457,7 @@ yGene <-as.matrix(errorData_testdf$Deduped)
 varCompAnalysis = apply(t(yGene),1,function(y) {
   if(runif(1) < 1e-4) cat(".")
   fit = lm(yGene ~expressData_test_meandf$Deduped+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=pd, singular.ok = TRUE)
-  full =Anova(fit, type = "III")
+  full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
                  sum(fullSS)*100),3)
@@ -468,7 +471,7 @@ yGene <-as.matrix(errorData_testdf$Fivepercent)
 varCompAnalysis = apply(t(yGene),1,function(y) {
   if(runif(1) < 1e-4) cat(".")
   fit = lm(yGene ~expressData_test_meandf$Fivepercent+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=pd, singular.ok = TRUE)
-  full =Anova(fit, type = "III")
+  full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
                  sum(fullSS)*100),3)
@@ -483,7 +486,7 @@ names(varCompAnalysis) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "F
 varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
 varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
 colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
-varexp_PctExp<- varexp_PctExp[-grep("(Intercept)",rownames(varexp_PctExp)),]
+#varexp_PctExp<- varexp_PctExp[-grep("(Intercept)",rownames(varexp_PctExp)),]
 rownames(varexp_PctExp)[1] <- "Expression"
 ```
 
@@ -492,12 +495,15 @@ rownames(varexp_PctExp)[1] <- "Expression"
 library(pheatmap)
 
 varexp_PctExp<- varexp_PctExp[-grep("Residual",rownames(varexp_PctExp)),]
+pdf(file =here("Figures/Raw_plots/Fig.5.h.pdf"),width=3,height=7, onefile=FALSE)
 pheatmap(varexp_PctExp, main = "Percent of batch error variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
+dev.off()
 ####weighted by overall variance by multiplying by kit variance and dividing by mean of all kit variance
 varexp_PctExp2<-varexp_PctExp
 varexp_PctExp2<-((varexp_PctExp2*variance)/mean(unlist(variance)))
+pdf(file =here("Figures/Raw_plots/Fig.5.i.pdf"),width=3,height=7, onefile=FALSE)
 pheatmap(varexp_PctExp2, cluster_cols = FALSE, main = "Percent of batch error variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE)
-
+dev.off()
 ```
 
 Expression plot
@@ -515,9 +521,9 @@ Deduped_exp <-data.frame(Error =Error$Deduped, Expression =avg_Express$Deduped, 
 Fivepercent_exp <-data.frame(Error =Error$Fivepercent, Expression =avg_Express$Fivepercent, Kit = rep("Fivepercent",228))
 
 exp_error <- rbind(Clontech_exp, Illumina_exp, NEB_exp, NEXTflex_exp, Deduped_exp, Fivepercent_exp)
-
+pdf(file =here("Figures/Raw_plots/Fig.5.g.pdf"),width=10,height=4, onefile=FALSE)
 ggplot(exp_error, aes(x = Expression, y = Error, col = Kit)) + geom_point(aes(alpha = 0.4))+ stat_smooth(method = "loess")+ facet_grid(.~Kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Expression", y = " Error across triplicates", title = " Relationship of Error and Expression") + stat_cor(method = "pearson", label.x = 10, label.y = 16, size =3.5)
-
+dev.off()
 summary(lm(Clontech_exp$Error ~ Clontech_exp$Expression))
 summary(lm(Illumina_exp$Error ~ Illumina_exp$Expression))
 summary(lm(NEB_exp$Error ~ NEB_exp$Expression))

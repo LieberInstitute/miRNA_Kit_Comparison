@@ -86,21 +86,23 @@ library(ggsignif)
 my_comparisons <- list( c("Clontech", "Illumina"), c("Illumina", "NEB"), c("NEB", "NEXTflex"), c("Fivepercent", "Deduped"), c("NEXTflex", "Fivepercent"),c("Clontech", "NEXTflex"))
 
 #synth is created in the my_scale function based on which data is selected as synthDATA in the above chunk
-plot1000<-ggplot(data = synth, aes(x = variable, y = value, color= variable, label = miRNA))+geom_jitter(aes(fill = variable, alpha = 1)) +geom_boxplot( outlier.shape = NA, notch = TRUE, color = "black")+
+plot1000<-ggplot(data = synth, aes(x = variable, y = value, color= variable, label = miRNA))+geom_jitter(aes(fill = variable, alpha = 1), width= .3) +geom_boxplot( outlier.shape = NA, notch = TRUE, color = "black", position = position_dodge(1))+
   labs(y = "Error from the mean")+
    theme(axis.title.x = element_text(size =0), 
         plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
-        axis.text.x = element_text(size = 15, colour = "Black", angle = 45, hjust = 0.7),
+        axis.text.x = element_text(size = 15, colour = "Black", angle = 20, hjust = 1),
         axis.text.y = element_text(size = 15), 
         axis.title.y = element_text(size =18))
+pdf(file =here("Figures/Raw_plots/Fig.4.a.pdf"),width=6,height=4)
+plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = ", " )
+dev.off()
+# plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +geom_signif(comparisons = my_comparisons, annotations=c("***", "NS","***", "***","NS", "NS"), tip_length = 0, y_position = c(8,18, 8, 9, 17, 16), color = c("black"))
+# 
+# my_comparisons <- list( c("Clontech", "Illumina"), c("NEB", "NEXTflex"), c("NEXTflex", "Deduped"), c("Deduped", "Fivepercent"))
+# 
+# plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +geom_signif(comparisons = my_comparisons, annotations=c("***", "***","***", "***"), tip_length = .02, y_position = c(16,18, 16, 18), color = c("black"))
 
 
-plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +geom_signif(comparisons = my_comparisons, annotations=c("***", "NS","***", "***","NS", "NS"), tip_length = 0, y_position = c(8,18, 8, 9, 17, 16), color = c("black"))
-
-my_comparisons <- list( c("Clontech", "Illumina"), c("NEB", "NEXTflex"), c("NEXTflex", "Deduped"), c("Deduped", "Fivepercent"))
-
-plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +geom_signif(comparisons = my_comparisons, annotations=c("***", "***","***", "***"), tip_length = .02, y_position = c(16,18, 16, 18), color = c("black"))
-plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," )
 #interesting mistkae
 #plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +   geom_text(
  #   aes(label = value, y = value + 0.05),
@@ -476,6 +478,7 @@ table(TTTT)
 Variance Plot
 ```{r}
 library(ggplot2)
+library(car)
 yGene<-as.matrix(log2(miRge_synth+1))
 yGene <-as.matrix(errorData_toplot)
 
@@ -531,7 +534,7 @@ varCompAnalysis = apply(t(yGene),1,function(y) {
   if(runif(1) < 1e-4) cat(".")
   #fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases +  +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT, data=pd)
   fit = lm(y ~ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data = pd)
-  full =Anova(fit, type = "III")
+  full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
                  sum(fullSS)*100),3)
@@ -592,11 +595,14 @@ varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
 varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
 colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
 varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
-varexp_PctExp<- varexp_PctExp[-grep("Intercept",rownames(varexp_PctExp)),]
+#varexp_PctExp<- varexp_PctExp[-grep("Intercept",rownames(varexp_PctExp)),]
+pdf(file =here("Figures/Raw_plots/Fig.4.c.pdf"),width=3,height=7, onefile = FALSE)
 pheatmap(varexp_PctExp, main = "Percent of sequence detection variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
-
+dev.off()
 varexp_PctExp2<-((varexp_PctExp*variance)/mean(unlist(variance)))
+pdf(file =here("Figures/Raw_plots/Fig.4.d.pdf"),width=3,height=7, onefile=FALSE)
 pheatmap(varexp_PctExp2, main = "Percent of sequence detection variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE, cluster_cols = FALSE)
+dev.off()
 ```
 
 Radar plot of variance
@@ -654,8 +660,9 @@ theme(axis.title.x = element_text(size =0),
         axis.text.y = element_text(size = 20), 
         axis.title.y = element_text(size =18))
 
+pdf(file =here("Figures/Raw_plots/Fig.4.b.pdf"),width=6,height=4)
 vplot    +  theme(legend.position = "none") + geom_text(aes(label = (round(value, digits =2)), size = 5, hjust = 0.5, vjust = 1.5) )
-
+dev.off()
 ```
 
 
