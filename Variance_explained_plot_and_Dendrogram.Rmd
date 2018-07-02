@@ -149,11 +149,12 @@ cols2<-gsub("Deduped","#619CFF" ,cols2)
 cols2<-gsub("Fivepercent","#F564E3" ,cols2)
 
 Pheno<-read.table(here("Pheno_Dendrogram.csv"), header =TRUE, sep = ",")
-pdf(file =here("Figures/Raw_plots/Fig.2.d.pdf"),width=6,height=4) 
+pdf(file =here("Figures/Raw_plots/Fig.2.d.pdf"),width=10,height=4) 
 # png(here("Dendrogram.png"), width = 1000, height = 800)
 # png(here("Dendrogram.png"), width = 5000, height = 3000)
 # png(here("Dendrogram.png"), width = 1000, height = 800)
-myplclust(miRNAc, labels=Pheno$Groups,lab.col=(cols2), main = "Counts Generally Cluster by Method", cex =.4)
+#myplclust(miRNAc, labels=Pheno$Groups,lab.col=(cols2), main = "Counts Generally Cluster by Method", cex =.4)
+myplclust(miRNAc, labels=Pheno$Trip_Group,lab.col=(cols2), main = "Counts Generally Cluster by Method", cex =.6)
 dev.off()
 ```
 
