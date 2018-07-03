@@ -474,15 +474,51 @@ miRNA_det<-list("Clontech\n(N=427)" = Clontech, "Illumina\n(N=443)" = Illumina, 
 
 summary(lm(det_Data$not_consistent~ det_Data$kit)) #sig difference in det inconsisentency across methods
 #vp_alpha <- venn.diagram(miRNA_det, fill = c("red", "white", "blue", "green"), alpha = 0.5, filename = NULL)
+
+det_Data$startingAmt <-as.numeric(as.character(det_Data$startingAmt))
 summary(lm(det_Data$not_consistent~ det_Data$startingAmt)) #sig difference in det inconsisentency across methods
 Clontech <- det_Data[which(det_Data$kit == "Clontech"),]
 summary(lm(Clontech$not_consistent~Clontech$startingAmt))#F-statistic: 4.128 on 1 and 16 DF,  p-value: 0.05913
 NEB<- det_Data[which(det_Data$kit == "NEB"),]
 summary(lm(NEB$not_consistent~NEB$startingAmt))
+NEXTflex<- det_Data[which(det_Data$kit == "NEXTflex"),]
+summary(lm(NEXTflex$not_consistent~NEXTflex$startingAmt))
 Deduped<- det_Data[which(det_Data$kit == "Deduped"),]
 summary(lm(Deduped$not_consistent~Deduped$startingAmt))#F-statistic: 32.44 on 1 and 16 DF,  p-value: 3.313e-05
 Fivepercent<- det_Data[which(det_Data$kit == "Fivepercent"),]
 summary(lm(Fivepercent$not_consistent~Fivepercent$startingAmt))#F-statistic: 11.86 on 1 and 16 DF,  p-value: 0.003334
+Illumina<- det_Data[which(det_Data$kit == "Illumina"),]
+summary(lm(Illumina$not_consistent~Illumina$startingAmt))
+
+inconsistency <-list(Clontech$not_consistent, Illumina$not_consistent, NEB$not_consistent, NEXTflex$not_consistent, Deduped$not_consistent, Fivepercent$not_consistent)
+inconsistency<-lapply(inconsistency, data.frame)
+names(inconsistency)<-c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
+get_test_names(inconsistency)
+
+get_test_results<- function(data,test_names) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    #tested_names[[i]]<<-(test_names[i][,1])
+    Kit1<-data[grep(test_names[i][1,], names(data))]
+    Kit2<-data[grep(test_names[i][2,], names(data))]
+    #Kit1<-data.frame(select(data, names(data)[names(data) %in% test_names[i][1,]]))
+    #Kit2<-data.frame(select(data, names(data)[names(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-names(Kit1)
+    tested_names2[[i]]<<-names(Kit2)
+    # colnames(Kit1)<-c("error")
+    # colnames(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1[[1]][1], y=Kit2[[1]][1], paired = FALSE) ### may have messed things up adding paired = TRUE previously had more ))
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_test_results(data = inconsistency, test_names = test_names)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
 #grid.draw(vp_alpha);
 #venn.plot <- venn.diagram(
 # x = miRNA_det,
