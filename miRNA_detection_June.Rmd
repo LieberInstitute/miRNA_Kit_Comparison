@@ -196,6 +196,8 @@ Deduped<- det_Data[which(det_Data$kit == "Deduped"),]
 summary(lm(Deduped$not_consistent~Deduped$startingAmt))#F-statistic: 32.44 on 1 and 16 DF,  p-value: 3.313e-05
 Fivepercent<- det_Data[which(det_Data$kit == "Fivepercent"),]
 summary(lm(Fivepercent$not_consistent~Fivepercent$startingAmt))#F-statistic: 11.86 on 1 and 16 DF,  p-value: 0.003334
+Illumina <- det_Data[which(det_Data$kit == "Illumina"),]
+summary(lm(Illumina $not_consistent~Illumina $startingAmt))
 #grid.draw(vp_alpha);
 #venn.plot <- venn.diagram(
 # x = miRNA_det,
