@@ -207,7 +207,7 @@ n = 6
 cols = gg_color_hue(n)
 
 boxplotwidth <- data.frame(width =c(rep(1,6), rep(.3,3), rep(.5, 4), rep(1, 18)))
-pdf(file =here("Figures/Raw_plots/Fig.5.e.pdf"),width=10,height=4, onefile=FALSE)
+pdf(file =here("Figures/Raw_plots/Fig.5.e.pdf"),width=12,height=4, onefile=FALSE)
 ggplot(errorAll, aes(x = Starting_Amount, y = value))+ geom_jitter(width = .3, size = 2, aes(col = Method, alpha = 0.7))+ geom_boxplot(outlier.shape = NA, varwidth = FALSE, notch = FALSE) + facet_grid(.~Method)+  ggtitle(label = "Inconsistency Across Triplicates")+ labs( x= "Starting Amount", y = " Error from the Mean of Triplicates")+
       theme(axis.title.x = element_text(size =0), 
             plot.title = element_text(size = 20, face = "bold"),
@@ -494,9 +494,10 @@ rownames(varexp_PctExp)[1] <- "Expression"
 ```{r, eval=FALSE}
 library(pheatmap)
 
-varexp_PctExp<- varexp_PctExp[-grep("Residual",rownames(varexp_PctExp)),]
+varexp_PctExp3<- varexp_PctExp[-grep("Residual",rownames(varexp_PctExp)),]
 pdf(file =here("Figures/Raw_plots/Fig.5.h.pdf"),width=3,height=7, onefile=FALSE)
-pheatmap(varexp_PctExp, main = "Percent of batch error variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
+varexp_PctExp3$Fake <- c(100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+pheatmap(varexp_PctExp3, main = "Percent of batch error variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
 dev.off()
 ####weighted by overall variance by multiplying by kit variance and dividing by mean of all kit variance
 varexp_PctExp2<-varexp_PctExp

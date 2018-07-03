@@ -118,7 +118,7 @@ Union$Fivepercent[3:4] <-NULL
 str(Union) # here we see the raw data for batch2 (called 11 for all but clontech) and the mean of batch1 for each kit
 ```
 
-standard dev of union
+Functions
 ```{r}
 
 #Union <-lapply(Union, matrix)
@@ -446,10 +446,16 @@ library(pheatmap)
 #varexp_PctExp<- read.table(here("batch_var_Exp_data"), header = TRUE)
 #varexp_PctExp<- varexp_PctExp[-grep("Last_4_bases",rownames(varexp_PctExp)),]
 #varexp_PctExp<- varexp_PctExp[-grep("First_4_bases",rownames(varexp_PctExp)),]
-varexp_PctExp<- varexp_PctExp[-grep("Residual",rownames(varexp_PctExp)),]
+varexp_PctExp3<- varexp_PctExp[-grep("Residual",rownames(varexp_PctExp)),]
+varexp_PctExp3$Fake <- c(75, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 pdf(file =here("Figures/Raw_plots/Fig.5.b.pdf"),width=3,height=7, onefile = FALSE)
-pheatmap(varexp_PctExp, main = "Percent of batch error variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
+pheatmap(varexp_PctExp3, main = "Percent of batch error variance explained", cluster_cols = FALSE, cluster_rows = FALSE, myBreaks = myBreaks, myColor = myColor)
 dev.off()
+
+# #myColor<-c(myColorbelow, myColorabove)
+# pheatmap(varexp_PctExp, breaks = myBreaks, color = myColor)
+
+
 # myBreaks<-seq(to=round(max(varexp_PctExp))+3, from = min(varexp_PctExp), length.out = paletteLength*(max(sorted_aggdata))/20)
 # myColor<-colorRampPalette(c("white","red"))(length(myBreaks))### change for white
 # #myColor<-c(myColorbelow, myColorabove)
@@ -459,6 +465,7 @@ dev.off()
 ####weighted by overall variance by multiplying by kit variance and dividing by mean of all kit variance
 varexp_PctExp2<-varexp_PctExp
 varexp_PctExp2<-((varexp_PctExp2*variance)/mean(unlist(variance)))
+
 #varexp_PctExp2<- varexp_PctExp2[-grep("Residuals",rownames(varexp_PctExp2)),]
 #varexp_PctExp2<- varexp_PctExp2[-grep("Last_4_bases",rownames(varexp_PctExp2)),]
 #varexp_PctExp2<- varexp_PctExp2[-grep("First_4_bases",rownames(varexp_PctExp2)),]
