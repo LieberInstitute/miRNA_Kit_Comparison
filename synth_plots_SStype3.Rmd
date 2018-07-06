@@ -93,8 +93,8 @@ plot1000<-ggplot(data = synth, aes(x = variable, y = value, color= variable, lab
         axis.text.x = element_text(size = 15, colour = "Black", angle = 20, hjust = 1),
         axis.text.y = element_text(size = 15), 
         axis.title.y = element_text(size =18))
-pdf(file =here("Figures/Raw_plots/Fig.4.a.pdf"),width=6,height=4)
-plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = ", " )
+pdf(file =here("Figures/Raw_plots/Fig.4.a.tall.pdf"),width=3.8,height=4)
+plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of Synthetic Sequence Detection") + stat_compare_means(method = "anova", label.sep = ", " )
 dev.off()
 # plot1000    +  theme(legend.position = "none")+ labs(y = "Absolute error from the mean", title = "Error of synthetic sequence detection") + stat_compare_means(method = "anova", label.sep = "," ) +geom_signif(comparisons = my_comparisons, annotations=c("***", "NS","***", "***","NS", "NS"), tip_length = 0, y_position = c(8,18, 8, 9, 17, 16), color = c("black"))
 # 
@@ -112,7 +112,7 @@ dev.off()
 
 library(ggrepel)
 
-ranks_error<-data.frame(sapply(error_synth, rank))
+ranks_error<-data.frame(sapply(-error_synth[1:6], rank, ties.method = c("average")))
 ranks_error$miRNA<-error_synth$miRNA
 
 
@@ -130,6 +130,152 @@ plot_with_labs<-plot1000    +  theme(legend.position = "none")+ labs(y = "Absolu
 
 plot_with_labs
 ```
+
+Are high error miRNAs the same across methods?
+```{r}
+library(ggrepel)
+
+
+#ranks_error<-data.frame(sapply(-errorData_testdf, rank))#ranked so 1 is the highest error
+rownames(ranks_error)<-ranks_error$miRNA
+Clontech_ranks <-(ranks_error[grep("Clontech", colnames(ranks_error))])
+Illumina_ranks <-(ranks_error[grep("Illumina", colnames(ranks_error))])
+NEB_ranks <-(ranks_error[grep("NEB", colnames(ranks_error))])
+NEXTflex_ranks <-(ranks_error[grep("NEXTflex", colnames(ranks_error))])
+Deduped_ranks <-(ranks_error[grep("Deduped", colnames(ranks_error))])
+Fivepercent_ranks <-(ranks_error[grep("Fivepercent", colnames(ranks_error))])
+ranked_miRNA<-list()
+
+Clontech_miRNAs <- data.frame("Clontech" =rownames(ranks_error)[order(Clontech_ranks$Clontech)])
+NEXTflex_miRNAs <- data.frame("NEXTflex" =rownames(ranks_error)[order(NEXTflex_ranks$NEXTflex)]) 
+Deduped_miRNAs <- data.frame("Deduped" =rownames(ranks_error)[order(Deduped_ranks$Deduped)]) 
+Fivepercent_miRNAs <- data.frame("Fivepercent" =rownames(ranks_error)[order(Fivepercent_ranks$Fivepercent)])
+NEB_miRNAs <- data.frame("NEB" =rownames(ranks_error)[order(NEB_ranks$NEB)])
+Illumina_miRNAs <- data.frame("Illumina"=rownames(ranks_error)[order(Illumina_ranks$Illumina)])
+ranked_miRNA <-data.frame(Clontech_miRNAs, Illumina_miRNAs, NEB_miRNAs, NEXTflex_miRNAs,  Deduped_miRNAs, Fivepercent_miRNAs)
+
+
+
+# library(GGally)
+# set.seed(42)
+# #1000ng input
+# ggpairs(Clontech_ranks)
+# ggpairs(Illumina_ranks)
+# ggpairs(NEB_ranks)
+# ggpairs(NEXTflex_ranks)
+# ggpairs(Deduped_ranks)
+# ggpairs(Fivepercent_ranks)
+# ggpairs(data.frame(ranks_error$Clontech.3, ranks_error$Illumina, ranks_error$NEB.3, ranks_error$NEXTflex.3, ranks_error$Deduped.3, ranks_error$Fivepercent.3))
+
+
+library(ffpe)
+
+#rel to Clontech
+library(RColorBrewer)
+trop = cols <- brewer.pal(9, "Set1")
+forcatplot_1000 <- list(ranks_error$Clontech, ranks_error$Illumina, ranks_error$NEB, ranks_error$NEXTflex, ranks_error$Deduped, ranks_error$Fivepercent)
+forcatplot_1000[[7]] <- c(rep(0,962))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods",xlab="Rank", xlim=c(1,962))
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(600,0.4,legend=c("Clontech_vs_Illumina","Clontech_vs_NEB", "Clontech_vs_NEXTflex","Clontech_vs_Deduped","Clontech_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+
+
+#rel to NEXTflex
+forcatplot_1000 <- list( ranks_error$NEXTflex,ranks_error$Illumina, ranks_error$NEB, ranks_error$Clontech, ranks_error$Deduped, ranks_error$Fivepercent)
+forcatplot_1000[[7]] <- c(rep(0,962))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods",xlab="Rank", xlim=c(1,962))
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(600,0.4,legend=c("NEXTflex_vs_Illumina","NEXTflex_vs_NEB", "NEXTflex_vs_Clontech","NEXTflex_vs_Deduped","NEXTflex_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+
+
+#1000ng -rel to Illumina
+forcatplot_1000 <- list(ranks_error$Illumina,ranks_error$Clontech, ranks_error$NEB, ranks_error$NEXTflex, ranks_error$Deduped, ranks_error$Fivepercent)
+forcatplot_1000[[7]] <- c(rep(0,962))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods",xlab="Rank", xlim=c(1,962))
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(600,0.4,legend=c("Illumina_vs_Clontech","Illumina_vs_NEB", "Illumina_vs_NEXTflex","Illumina_vs_Deduped","Illumina_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+
+
+#1000ng -rel to NEB
+forcatplot_1000 <- list(ranks_error$NEB,ranks_error$Clontech,ranks_error$Illumina, ranks_error$NEXTflex, ranks_error$Deduped, ranks_error$Fivepercent)
+forcatplot_1000[[7]] <- c(rep(0,962))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods",xlab="Rank", xlim=c(1,962))
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(600,0.4,legend=c("NEB_vs_Clontech","NEB_vs_Illumina", "NEB_vs_NEXTflex","NEB_vs_Deduped","NEB_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+
+
+#1000ng -rel to Deduped
+forcatplot_1000 <- list(ranks_error$Deduped,ranks_error$Clontech,ranks_error$Illumina, ranks_error$NEB, ranks_error$NEXTflex, ranks_error$Fivepercent)
+forcatplot_1000[[7]] <- c(rep(0,962))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods",xlab="Rank", xlim=c(1,962))
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(600,0.4,legend=c("Deduped_vs_Clontech","Deduped_vs_Illumina","Deduped_vs_NEB", "Deduped_vs_NEXTflex","Deduped_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+
+#1000ng -rel to Fivepercent
+forcatplot_1000 <- list(ranks_error$Fivepercent,ranks_error$Clontech,ranks_error$Illumina, ranks_error$NEB, ranks_error$NEXTflex, ranks_error$Deduped)
+forcatplot_1000[[7]] <- c(rep(0,962))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods",xlab="Rank", xlim=c(1,962))
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(600,0.4,legend=c("Fivepercent_vs_Clontech","Fivepercent_vs_Illumina","Fivepercent_vs_NEB", "Fivepercent_vs_NEXTflex","Fivepercent_vs_Deduped", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+
+```
+
+
+
 
 relative consistency
 ```{r}
