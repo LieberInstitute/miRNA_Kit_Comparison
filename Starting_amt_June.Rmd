@@ -243,6 +243,90 @@ ggplot(msplit_errorAll, aes(x = L1, y = value))+ geom_jitter(width = .3, size = 
             legend.position= "none")
 dev.off()
 
+
+```
+
+How is each method influenced by starting amount
+```{r}
+for(kit in errorAll$Method){
+ split_errorAll[[kit]]<- errorAll[which(errorAll$Method == kit),]}
+anova(lm(split_errorAll$Clontech$value~ split_errorAll$Clontech$Starting_Amount))
+anova(lm(split_errorAll$Illumina$value~ split_errorAll$Illumina$Starting_Amount))
+anova(lm(split_errorAll$NEB$value~ split_errorAll$NEB$Starting_Amount))
+anova(lm(split_errorAll$NEXTflex$value~ split_errorAll$NEXTflex$Starting_Amount))
+anova(lm(split_errorAll$Deduped$value~ split_errorAll$Deduped$Starting_Amount))
+anova(lm(split_errorAll$Fivepercent$value~ split_errorAll$Fivepercent$Starting_Amount))
+#also want to know when is there more error - at what starting amount for each kit does it appear to be better
+for(kit in errorAll$Method){
+ split_errorAll[[kit]]<- errorAll[which(errorAll$Method == kit),]
+ for(amount in errorAll)}
+Clontech <-split(split_errorAll$Clontech$value, split_errorAll$Clontech$Starting_Amount)
+NEXTflex <-split(split_errorAll$NEXTflex$value, split_errorAll$NEXTflex$Starting_Amount)
+Illumina<-split(split_errorAll$Illumina$value, split_errorAll$Illumina$Starting_Amount)
+NEB<-split(split_errorAll$NEB$value, split_errorAll$NEB$Starting_Amount)
+Deduped<-split(split_errorAll$Deduped$value, split_errorAll$Deduped$Starting_Amount)
+Fivepercent<-split(split_errorAll$Fivepercent$value, split_errorAll$Fivepercent$Starting_Amount)
+
+test_names <- data.frame(combn(names(Clontech), m= 2))
+get_test_results(data = Clontech, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across #lower t indicates lower error across triplicates
+
+
+test_names <- data.frame(combn(names(NEB), m= 2))
+get_test_results(data = NEB, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across #lower t indicates lower error across triplicates
+
+test_names <- data.frame(combn(names(NEXTflex), m= 2))
+get_test_results(data = NEXTflex, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across #lower t indicates lower error across triplicates
+
+test_names <- data.frame(combn(names(Deduped), m= 2))
+get_test_results(data = Deduped, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across #lower t indicates lower error across triplicates
+
+
+test_names <- data.frame(combn(names(Fivepercent), m= 2))
+get_test_results(data = Fivepercent, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across #lower t indicates lower error across triplicates
+#maybe look at how the mean of the triplicates for each amounts is correlated to the mean of the other amounts- but with the raw data - not the error?
+
+# stats comparing kits should maybe only be done on 1000ng input - or does it matter?
+Error1000 <- errorAll[which(errorAll$Starting_Amount == "1000"),]
+error_1000 <-list()
+for(kit in Error1000$Method){
+error_1000[[kit]]<- Error1000[which(Error1000$Method == kit),]$value}
+test_names <- data.frame(combn(names(error_1000), m= 2))
+
+get_test_results(data = error_1000, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across #lower t indicates lower error across triplicates
+m_1000 <- melt(error_1000)
+m_1000$L1 <- factor(m_1000$L1, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+
+pdf(file =here("Figures/Raw_plots/Inconsistencyacrosstriplicates_1000ng.pdf"),width=3.8,height=4, onefile=FALSE)
+ggplot(m_1000, aes(x = L1, y = value))+ geom_jitter(width = .3, size = 2, aes(col = L1, alpha = 0.7))+ geom_boxplot(outlier.shape = NA, varwidth = FALSE, notch = FALSE) +  ggtitle(label = "Inconsistency Across Triplicates 1000ng")+ labs( x= "Starting Amount", y = " Error from the Mean of Triplicates")+
+      theme(axis.title.x = element_text(size =0), 
+            plot.title = element_text(size = 20, face = "bold"),
+            strip.text = element_text(size = 13),
+            axis.text.x = element_text(size = 15, angle = 60, hjust = 1),
+            axis.text.y = element_text(size = 15), 
+            axis.title.y = element_text(size =13),
+            legend.position= "none")  +scale_color_manual(values =cols)
+dev.off()
+
+
+
 ```
 
 
