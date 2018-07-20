@@ -354,6 +354,7 @@ ttestStats_across
 ```
 
 
+#dont run too slow
 Threshold across triplicates
 ```{r, eval = FALSE}
 library(genefilter)
@@ -449,6 +450,7 @@ det_Data$not_consistent <- ((det_Data$det_indv_thresh - as.numeric(as.character(
 detected <-data.frame(det_Data$kit, det_Data$startingAmt, det_Data$not_consistent)
 
 detected$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
+detected$det_Data.startingAmt <-gsub("starting_amt_", "",detected$det_Data.startingAmt)
 detected$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("100", "250", "500", "1000", "1500","2000"))
 
 
@@ -457,11 +459,11 @@ detected$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c(
 
 
 
-detected$det_Data.startingAmt <-gsub("starting_amt_", "",detected$det_Data.startingAmt)
+
 ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.startingAmt)
 
-pdf(file =here("Figures/Raw_plots/Fig.3.g.pdf"),width=10,height=4, onefile=FALSE)
-ggplot(detected, aes(x =det_Data.startingAmt, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Percentage of Inconsistently \n Detected isomiR Sequences", title = "Inconsistentcy of isomiR Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))
+pdf(file =here("Figures/Raw_plots/isomiR_inconsistency.pdf"),width=10,height=6, onefile=FALSE)
+ggplot(detected, aes(x =det_Data.startingAmt, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Percentage of Inconsistently \n Detected isomiR Sequences", title = "Inconsistentcy of isomiR Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ylim(c(0,30))
 dev.off()
 
 ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()
@@ -545,10 +547,48 @@ ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = 
 
 ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =10, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected isomiRNA Sequences", title = " isomiRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
 
+#was 10 by 4
 
-pdf(file =here("Figures/Raw_plots/Fig.3.e.pdf"),width=10,height=4, onefile=FALSE)
-ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =10, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected isomiRNA Sequences", title = " isomiRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
+pdf(file =here("Figures/Raw_plots/isomiR_Det.pdf"),width=10,height=6, onefile=FALSE)
+ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected isomiRNA Sequences", title = " isomiRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)+ylim(c(150,1000))
 dev.off()
+
+
+#Just 1000ng
+
+raw_det_1000 <- raw_det[which(raw_det$det_Data.startingAmt == "1000"),]
+across_det_1000 <- across[which(across$det_Data.startingAmt == "1000"),]
+across_1000<-aggregate(across_det_1000, by = list(across_det_1000$det_Data.kit), FUN = mean)
+across_1000<-data.frame(Kit =across_1000$Group.1, Detection =across_1000$det_Data.det_across_thresh)
+
+
+ggplot(raw_det_1000, aes(x =det_Data.kit, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter()  + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits")  + geom_boxplot(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit, alpha = 0.7), color = "black") + geom_point(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit), color = "black", shape=24)
+
+pdf(file =here("Figures/Raw_plots/isomiR_1000ng_Det.pdf"),width=4,height=6, onefile=FALSE)
+ggplot(across_1000, aes(x =Kit, y=Detection, fill = Kit)) + geom_bar(stat = "identity", aes(y =Detection, fill = Kit)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected Unique isomiRNA Sequences") +coord_cartesian(ylim=c(200,720))
+dev.off()
+
+det_Data_1000 <- detected[which(detected$det_Data.startingAmt == "1000"),]
+
+pdf(file =here("Figures/Raw_plots/isomiR_1000ng_inconsistency.pdf"),width=4,height=6, onefile=FALSE)
+ggplot(det_Data_1000, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit))  + geom_boxplot() + geom_jitter(width = 0.3)+ theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Percentage of Inconsistently \n Detected isomiRNA Sequences", title = "Inconsistentcy of isomiRNA Detection Across Kits")+coord_cartesian(ylim=c(0,30))
+dev.off()
+
+summary(lm(det_Data_1000$det_Data.not_consistent~ det_Data_1000$det_Data.kit)) #sig difference in det inconsisentency across methods
+#main effect of NEB??? lower than the rest
+# library(tidyr)
+# det_Data_1000$sample <- rep(c(1,2,3),6)
+# #det_Data_1000$sample<-paste0(det_Data_1000$det_Data.kit, det_Data_1000$sample)
+# det_Data <-spread(det_Data_1000, sample, det_Data.not_consistent)
+# det_Data <-data.frame(t(det_Data))
+# det_Data<-det_Data[-1,]
+# det_Data<-det_Data[-1,]
+# colnames(det_Data)<-c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
+# get_test_names(det_Data)
+# get_test_results(data = det_Data, test_names = test_names)
+# ttestStats_across<-data.frame(lapply(tresults, get_ttestStats)) # no sig between any pairs...
+# colnames(ttestStats_across)<-tested_kits
+# ttestStats_across
 
 ```
 

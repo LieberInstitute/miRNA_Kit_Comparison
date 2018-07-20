@@ -36,6 +36,8 @@ num_greater<-t(data.frame(lapply(greater_vals, length)))
 miR_counts<-miR_counts[-grep("Accur", Pheno$Batch)]
 Pheno<- Pheno[-grep("Accur", Pheno$Batch),]
 miRNAtotal<- miRNAtotal[-grep("Accur", Pheno$Batch)]
+
+
 library("RBioinf")
 randUMI<-lapply(rep(8,65536), randDNA)
 randUMI2<-data.frame(lapply(rep(8,65536), randDNA))
@@ -301,15 +303,19 @@ across_det_1000 <- across[which(across$det_Data.startingAmt == "1000"),]
 across_1000<-aggregate(across_det_1000, by = list(across_det_1000$det_Data.kit), FUN = mean)
 across_1000<-data.frame(Kit =across_1000$Group.1, Detection =across_1000$det_Data.det_across_thresh)
 
+pdf(file =here("Figures/Raw_plots/miRNA_inconsistency.pdf"),width=10,height=6)
+
 ggplot(raw_det_1000, aes(x =det_Data.kit, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter()  + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits")  + geom_boxplot(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit, alpha = 0.7), color = "black") + geom_point(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit), color = "black", shape=24)
 
+pdf(file =here("Figures/Raw_plots/miRNA_1000ng_detection.pdf"),width=4,height=6)
 ggplot(across_1000, aes(x =Kit, y=Detection, fill = Kit)) + geom_bar(stat = "identity", aes(y =Detection, fill = Kit)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected Unique miRNA Sequences") +coord_cartesian(ylim=c(200,720))
-  
+dev.off()
 
 det_Data_1000 <- detected[which(detected$det_Data.startingAmt == "1000"),]
 
-ggplot(det_Data_1000, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_jitter() + geom_boxplot() + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Percentage of Inconsistently \n Detected miRNA Sequences", title = "Inconsistentcy of miRNA Detection Across Kits")+coord_cartesian(ylim=c(0,30)) 
-
+pdf(file =here("Figures/Raw_plots/miRNA_1000ng_inconsistency.pdf"),width=4,height=6)
+ggplot(det_Data_1000, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit))  + geom_boxplot() + geom_jitter(width = 0.2) +theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Percentage of Inconsistently \n Detected miRNA Sequences", title = "Inconsistentcy of miRNA Detection Across Kits")+coord_cartesian(ylim=c(0,30)) 
+dev.off()
 summary(lm(det_Data_1000$det_Data.not_consistent~ det_Data_1000$det_Data.kit)) #sig difference in det inconsisentency across methods
 
 library(tidyr)
