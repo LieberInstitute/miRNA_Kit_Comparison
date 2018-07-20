@@ -149,12 +149,12 @@ cols2<-gsub("Deduped","#619CFF" ,cols2)
 cols2<-gsub("Fivepercent","#F564E3" ,cols2)
 
 Pheno<-read.table(here("Pheno_Dendrogram.csv"), header =TRUE, sep = ",")
-pdf(file =here("Figures/Raw_plots/Fig.2.d.pdf"),width=10,height=4) 
+pdf(file =here("Figures/Raw_plots/Fig.2.d.pdf"),width=13,height=4.25) 
 # png(here("Dendrogram.png"), width = 1000, height = 800)
 # png(here("Dendrogram.png"), width = 5000, height = 3000)
 # png(here("Dendrogram.png"), width = 1000, height = 800)
 #myplclust(miRNAc, labels=Pheno$Groups,lab.col=(cols2), main = "Counts Generally Cluster by Method", cex =.4)
-myplclust(miRNAc, labels=Pheno$Trip_Group,lab.col=(cols2), main = "Counts Generally Cluster by Method", cex =.6)
+myplclust(miRNAc, labels=Pheno$Trip_Group,lab.col=(cols2), cex =.6)
 dev.off()
 ```
 
@@ -187,7 +187,7 @@ colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup",
 
 varCompAnalysis = apply(yGene,1,function(y) {
   if(runif(1) < 1e-4) cat(".")
-  fit = lm(y ~   Starting_Amount + Batch +Total_miRNA_Mapped_Reads, data=pd)
+  fit = lm(y ~   Starting_Amount + Batch , data=pd)
   full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
@@ -202,11 +202,11 @@ VarExp<-cbind(labels_varexp,varexp$PctExp)
 Method<-VarExp[which(VarExp$variable == "Method"),]
  VarExp$variable <- factor(VarExp$variable,
                          levels = c('Method','Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
-plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = "red"), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
-pdf(file =here("Figures/Raw_plots/var_clontech.pdf"),width=7,height=4)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[1]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_clontech_type2.pdf"),width=7,height=5)
 plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
   labs(y="Percent of Variance Explained", x ="none") + 
-  scale_fill_manual(values = c("red"))+
+  scale_fill_manual(values = cols[1])+
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
@@ -234,7 +234,7 @@ colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup",
 
 varCompAnalysis = apply(yGene,1,function(y) {
   if(runif(1) < 1e-4) cat(".")
-  fit = lm(y ~   Starting_Amount + Batch +Total_miRNA_Mapped_Reads, data=pd)
+  fit = lm(y ~   Starting_Amount + Batch , data=pd)
   full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
@@ -249,11 +249,11 @@ VarExp<-cbind(labels_varexp,varexp$PctExp)
 Method<-VarExp[which(VarExp$variable == "Method"),]
  VarExp$variable <- factor(VarExp$variable,
                          levels = c('Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
-plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = "red"), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
-pdf(file =here("Figures/Raw_plots/var_Illumina.pdf"),width=7,height=4)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[2]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_Illumina_type2.pdf"),width=7,height=5)
 plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
   labs(y="Percent of Variance Explained", x ="none") + 
-  scale_fill_manual(values = c("red"))+
+  scale_fill_manual(values = cols[2])+
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
@@ -279,7 +279,7 @@ colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup",
 
 varCompAnalysis = apply(yGene,1,function(y) {
   if(runif(1) < 1e-4) cat(".")
-  fit = lm(y ~   Starting_Amount + Batch +Total_miRNA_Mapped_Reads, data=pd)
+  fit = lm(y ~   Starting_Amount + Batch , data=pd)
   full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
@@ -294,11 +294,11 @@ VarExp<-cbind(labels_varexp,varexp$PctExp)
 Method<-VarExp[which(VarExp$variable == "Method"),]
  VarExp$variable <- factor(VarExp$variable,
                          levels = c('Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
-plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = "red"), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
-pdf(file =here("Figures/Raw_plots/var_NEB.pdf"),width=7,height=4)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[3]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_NEB_type2.pdf"),width=7,height=5)
 plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
   labs(y="Percent of Variance Explained", x ="none") + 
-  scale_fill_manual(values = c("red"))+
+  scale_fill_manual(values = cols[3])+
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
@@ -325,7 +325,7 @@ colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup",
 
 varCompAnalysis = apply(yGene,1,function(y) {
   if(runif(1) < 1e-4) cat(".")
-  fit = lm(y ~   Starting_Amount + Batch +Total_miRNA_Mapped_Reads, data=pd)
+  fit = lm(y ~   Starting_Amount + Batch , data=pd)
   full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
@@ -340,11 +340,11 @@ VarExp<-cbind(labels_varexp,varexp$PctExp)
 Method<-VarExp[which(VarExp$variable == "Method"),]
  VarExp$variable <- factor(VarExp$variable,
                          levels = c('Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
-plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = "red"), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
-pdf(file =here("Figures/Raw_plots/var_NEXTflex.pdf"),width=7,height=4)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[4]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_NEXTflex_type2.pdf"),width=7,height=5)
 plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
   labs(y="Percent of Variance Explained", x ="none") + 
-  scale_fill_manual(values = c("red"))+
+  scale_fill_manual(values = cols[4])+
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
@@ -371,7 +371,7 @@ colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup",
 
 varCompAnalysis = apply(yGene,1,function(y) {
   if(runif(1) < 1e-4) cat(".")
-  fit = lm(y ~   Starting_Amount + Batch +Total_miRNA_Mapped_Reads, data=pd)
+  fit = lm(y ~   Starting_Amount + Batch , data=pd)
   full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
@@ -386,11 +386,11 @@ VarExp<-cbind(labels_varexp,varexp$PctExp)
 Method<-VarExp[which(VarExp$variable == "Method"),]
  VarExp$variable <- factor(VarExp$variable,
                          levels = c('Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
-plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = "red"), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
-pdf(file =here("Figures/Raw_plots/var_Deduped.pdf"),width=7,height=4)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[5]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_Deduped_type2.pdf"),width=7,height=5)
 plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
   labs(y="Percent of Variance Explained", x ="none") + 
-  scale_fill_manual(values = c("red"))+
+  scale_fill_manual(values = cols[5])+
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
@@ -417,7 +417,7 @@ colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup",
 
 varCompAnalysis = apply(yGene,1,function(y) {
   if(runif(1) < 1e-4) cat(".")
-  fit = lm(y ~   Starting_Amount + Batch +Total_miRNA_Mapped_Reads, data=pd)
+  fit = lm(y ~   Starting_Amount + Batch, data=pd)
   full =Anova(fit, type = "II")
   fullSS =full$"Sum Sq"
   signif(cbind(full,PctExp=fullSS/
@@ -432,11 +432,11 @@ VarExp<-cbind(labels_varexp,varexp$PctExp)
 Method<-VarExp[which(VarExp$variable == "Method"),]
  VarExp$variable <- factor(VarExp$variable,
                          levels = c('Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
-plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = "red"), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
-pdf(file =here("Figures/Raw_plots/var_Fivepercent.pdf"),width=7,height=4)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[6]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_Fivepercent_type2.pdf"),width=7,height=5)
 plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
   labs(y="Percent of Variance Explained", x ="none") + 
-  scale_fill_manual(values = c("red"))+
+  scale_fill_manual(values = cols[6])+
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
