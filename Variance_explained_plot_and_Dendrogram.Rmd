@@ -210,6 +210,8 @@ plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential 
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
+VarExp$Method <- rep("Clontech", length(VarExp$miRNA))
+VarExp_Clontech <- VarExp
 ```
 
 #variance explained plot just Illumina
@@ -257,6 +259,9 @@ plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential 
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
+
+VarExp$Method <- rep("Illumina", length(VarExp$miRNA))
+VarExp_Illumina <- VarExp
 ```
 #variance explained plot just NEB
 ```{r}
@@ -302,6 +307,9 @@ plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential 
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
+
+VarExp$Method <- rep("NEB", length(VarExp$miRNA))
+VarExp_NEB <- VarExp
 ```
 
 #variance explained plot just NEXTflex
@@ -348,6 +356,9 @@ plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential 
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
+
+VarExp$Method <- rep("NEXTflex", length(VarExp$miRNA))
+VarExp_NEXTflex <- VarExp
 ```
 
 #variance explained plot just Deduped
@@ -394,6 +405,9 @@ plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential 
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
+
+VarExp$Method <- rep("Deduped", length(VarExp$miRNA))
+VarExp_Deduped <- VarExp
 ```
 
 #variance explained plot just Fivpercent
@@ -440,4 +454,23 @@ plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential 
   theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
         axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
+
+VarExp$Method <- rep("Fivepercent", length(VarExp$miRNA))
+VarExp_Fivepercent <- VarExp
 ```
+
+
+```{r}
+VarExp<-rbind(VarExp_Clontech, VarExp_Illumina, VarExp_NEB, VarExp_NEXTflex, VarExp_Deduped, VarExp_Fivepercent)
+
+VarExp$Method <-factor(VarExp$Method, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+pdf(file =here("Figures/Raw_plots/var_kits_together_type2.pdf"),width=15,height=5, onefile=FALSE)
+ggplot(VarExp, aes(x =factor(variable), y =`varexp$PctExp`), colour = "black")+ geom_boxplot(notch = TRUE, outlier.shape=NA, aes(fill = Method)) +geom_jitter(aes(alpha =0.6), width = 0.2) + facet_grid(.~Method)+
+  labs(y="Percent of Variance Explained", x ="none") + 
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold", hjust = 1), axis.text.x=element_text(size = 10, angle = 20, face = "bold", colour = "black", hjust = 1),
+        axis.title.y=element_text(size=20),strip.text.x = element_text(size = 20, colour = "black")) 
+dev.off()
+
+
+```
+
