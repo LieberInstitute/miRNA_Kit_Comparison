@@ -285,6 +285,7 @@ across$det_Data.det_across_thresh<-as.numeric(as.character(across$det_Data.det_a
 
 across$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
 across$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("100", "250", "500", "1000", "1500","2000"))
+across_agg<-aggregate(across, by = list(Pheno$TriplicateGroup), FUN = mean)
 
 raw_det$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
 raw_det$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("100", "250", "500", "1000", "1500","2000"))
@@ -303,12 +304,14 @@ across_det_1000 <- across[which(across$det_Data.startingAmt == "1000"),]
 across_1000<-aggregate(across_det_1000, by = list(across_det_1000$det_Data.kit), FUN = mean)
 across_1000<-data.frame(Kit =across_1000$Group.1, Detection =across_1000$det_Data.det_across_thresh)
 
+anova(lm(across_det_1000$det_Data.det_across_thresh~across_det_1000$det_Data.kit))
+
 pdf(file =here("Figures/Raw_plots/miRNA_inconsistency.pdf"),width=10,height=6)
 
 ggplot(raw_det_1000, aes(x =det_Data.kit, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter()  + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits")  + geom_boxplot(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit, alpha = 0.7), color = "black") + geom_point(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit), color = "black", shape=24)
 
 pdf(file =here("Figures/Raw_plots/miRNA_1000ng_detection.pdf"),width=4,height=6)
-ggplot(across_1000, aes(x =Kit, y=Detection, fill = Kit)) + geom_bar(stat = "identity", aes(y =Detection, fill = Kit)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected Unique miRNA Sequences") +coord_cartesian(ylim=c(200,720))
+ggplot(across_1000, aes(x =Kit, y=Detection, fill = Kit)) + geom_bar(stat = "identity", aes(y =Detection, fill = Kit)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected Unique miRNA Sequences") +coord_cartesian(ylim=c(200,720))+ geom_text(aes(label = (Detection), size = 6, hjust = 0.5, vjust = 1.5) )
 dev.off()
 
 det_Data_1000 <- detected[which(detected$det_Data.startingAmt == "1000"),]
@@ -327,6 +330,7 @@ det_Data<-det_Data[-1,]
 det_Data<-det_Data[-1,]
 colnames(det_Data)<-c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
 get_test_names(det_Data)
+t.test(c(det_Data$Clontech), c(det_Data$Illumina)
 # get_test_results(data = det_Data, test_names = test_names)
 # ttestStats_across<-data.frame(lapply(tresults, get_ttestStats)) # no sig between any pairs...
 # colnames(ttestStats_across)<-tested_kits

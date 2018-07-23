@@ -565,7 +565,7 @@ across_1000<-data.frame(Kit =across_1000$Group.1, Detection =across_1000$det_Dat
 ggplot(raw_det_1000, aes(x =det_Data.kit, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter()  + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits")  + geom_boxplot(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit, alpha = 0.7), color = "black") + geom_point(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit), color = "black", shape=24)
 
 pdf(file =here("Figures/Raw_plots/isomiR_1000ng_Det.pdf"),width=4,height=6, onefile=FALSE)
-ggplot(across_1000, aes(x =Kit, y=Detection, fill = Kit)) + geom_bar(stat = "identity", aes(y =Detection, fill = Kit)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected Unique isomiRNA Sequences") +coord_cartesian(ylim=c(200,720))
+ggplot(across_1000, aes(x =Kit, y=Detection, fill = Kit)) + geom_bar(stat = "identity", aes(y =Detection, fill = Kit)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected Unique isomiRNA Sequences") +coord_cartesian(ylim=c(200,720))+ geom_text(aes(label = (Detection), size = 6, hjust = 0.5, vjust = 1.5) )
 dev.off()
 
 det_Data_1000 <- detected[which(detected$det_Data.startingAmt == "1000"),]
@@ -576,15 +576,16 @@ dev.off()
 
 summary(lm(det_Data_1000$det_Data.not_consistent~ det_Data_1000$det_Data.kit)) #sig difference in det inconsisentency across methods
 #main effect of NEB??? lower than the rest
-# library(tidyr)
-# det_Data_1000$sample <- rep(c(1,2,3),6)
-# #det_Data_1000$sample<-paste0(det_Data_1000$det_Data.kit, det_Data_1000$sample)
+library(tidyr)
+det_Data_1000$sample <- rep(c(1,2,3),6)
+#det_Data_1000$sample<-paste0(det_Data_1000$det_Data.kit, det_Data_1000$sample)
 # det_Data <-spread(det_Data_1000, sample, det_Data.not_consistent)
 # det_Data <-data.frame(t(det_Data))
 # det_Data<-det_Data[-1,]
 # det_Data<-det_Data[-1,]
 # colnames(det_Data)<-c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
 # get_test_names(det_Data)
+# det_Data <-as.numeric(as.character)
 # get_test_results(data = det_Data, test_names = test_names)
 # ttestStats_across<-data.frame(lapply(tresults, get_ttestStats)) # no sig between any pairs...
 # colnames(ttestStats_across)<-tested_kits
