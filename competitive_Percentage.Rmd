@@ -49,6 +49,7 @@ library("ggplot2")
 library("reshape2")
 library("jaffelab")
 library(RColorBrewer) #set 3 or 1
+
 percentages <- read.table(here("competitive_percentages.csv"), sep = ",", header = TRUE)
 colnames(percentages) <-gsub("X.", "", colnames(percentages))
 percentages$name<- paste0(percentages$Method, "_", percentages$StaringAmount_of_totalRNA)
@@ -407,6 +408,8 @@ ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_point() +theme( ax
 ggplot(mRNA, aes(x = variable, y = value, color = Kit)) +geom_point() +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10)) +facet_grid(Input_Amount~.)+coord_flip()
 
 ggplot(mRNA, aes(x = variable, y = value, color = Kit))+ geom_bar(stat = "identity", aes(y =value, fill = Kit))  +theme( axis.title.x=element_blank(), axis.text.x=element_text(size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 10)) +facet_grid(.~Input_Amount) +coord_flip()
+
+
 
 ```
 
