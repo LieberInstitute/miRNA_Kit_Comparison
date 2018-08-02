@@ -535,7 +535,33 @@ ggpairs(seq_counts)
 
 Last and First good Plots of expression relative to the mean!
 ```{r, eval = TRUE}
+Clontech_100_full$First_2_bases <- pd$First_2_bases
+Clontech_first<-aggregate(Clontech_100_full$x, by = list(Clontech_100_full$First_2_bases), FUN = sum)
+
+rownames(Clontech_first)<- Clontech_first$Group.1
+Clontech_first$Group.1<- NULL
+Clontech_first$x2<- Clontech_first$x
+pheatmap(Clontech_first)
 library(pheatmap)
+library(here)
+
+seq_counts$bases<- pd$First_2_bases
+seq_counts_first<-aggregate(seq_counts[1:6], by = list(seq_counts$bases), FUN = mean)
+rownames(seq_counts_first) <- seq_counts_first$Group.1
+seq_counts_first$Group.1<-NULL
+pdf(here("Figures/Raw_plots/isomirs_by_first_bases_mean.pdf"), width = 3, height = 7, onefile = FALSE)
+pheatmap(seq_counts_first, cluster_cols = FALSE)
+dev.off()
+
+seq_counts$bases<- pd$First_2_bases
+seq_counts_first<-aggregate(seq_counts[1:6], by = list(seq_counts$bases), FUN = sum)
+rownames(seq_counts_first) <- seq_counts_first$Group.1
+seq_counts_first$Group.1<-NULL
+pdf(here("Figures/Raw_plots/isomirs_by_first_bases_sum.pdf"), width = 3, height = 7, onefile = FALSE)
+pheatmap(seq_counts_first, cluster_cols = FALSE)
+dev.off()
+
+
 ###get seq info
 lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
 seqs_last <- data.frame(x =lastStuff(str=seqs$RNA, 2))####uncomment to get last n bases
