@@ -55,15 +55,15 @@ percentages <- read.table(here("competitive_percentages.csv"), sep = ",", header
 colnames(percentages) <-gsub("X.", "", colnames(percentages))
 percentages$name<- paste0(percentages$Method, "_", percentages$StaringAmount_of_totalRNA)
 percentages<- cbind(percentages$File, percentages$unmapped, percentages[22:length(colnames(percentages))])
-colnames(percentages)<- c("File", "unmapped", "miRNA","piRNA", "rRNA", "scaRNA", "snoRNA", "snRNA", "tRNA", "name")
+colnames(percentages)<- c("File", "undetermined", "miRNA","piRNA", "rRNA", "scaRNA", "snoRNA", "snRNA", "tRNA", "name")
 percentages$File= factor(percentages$File,levels(percentages$File)[percentages$File])# reorder levels of files to be the same as in the dataframe
 #percents <- cbind(percentages$File, percentages$name, percentages[22:length(colnames(percentages))])
 mp <-melt(percentages)
 mp$Method <- ss(x = mp$name, "_", 1)
 mp$amount <- ss(x = mp$name, "_", 2)
 mp$File<-factor(mp$File, ordered = TRUE)
-colnames(mp)[5] <-c("Read_type")
-mp$Read_type= factor(mp$Read_type,levels = c("unmapped","rRNA","tRNA", "scaRNA", "snoRNA", "snRNA","piRNA","miRNA"))
+colnames(mp)[3] <-c("Read_type")
+mp$Read_type= factor(mp$Read_type,levels = c("undetermined","rRNA","tRNA", "scaRNA", "snoRNA", "snRNA","piRNA","miRNA"))
 
 pdf(file =here("Figures/Raw_plots/stackedbar_percentages.pdf"),width=10,height=8)
 ggplot(mp, aes(x = File, y = value, color = Read_type)) +geom_bar(stat  = "identity", position = "stack", aes(y =value, fill = Read_type), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 15), axis.title.y=element_text(size = 20)) +scale_x_discrete(labels= mp$name)  +ylab("Percentage of reads")   +    scale_fill_manual(values =c("gray", "lightsteelblue4","thistle4",   "maroon2", "olivedrab2", "indianred3", "steelblue2", "orange2"))
@@ -101,8 +101,14 @@ cols<-cols[1:4]
 pdf(file =here("Figures/Raw_plots/percentages_1000ng.pdf"),width=10,height=6)
 ggplot(aggregate_1000, aes(x = Read_type, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 18)) +ylab("Percentage of reads")+ facet_grid(.~Method)  +scale_fill_manual(values = cols)
 dev.off()
-pdf(file = here("Figures/Raw_plots/percentages_1000ng.pdf"),width=12,height=5)
-ggplot(aggregate_1000, aes(x = Method, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 15, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 18)) +ylab("Percentage of reads")+ facet_grid(.~Read_type)  +scale_fill_manual(values = cols)
+
+mp$Read_type= factor(mp$Read_type,levels = c("undetermined","rRNA","tRNA", "scaRNA", "snoRNA", "snRNA","piRNA","miRNA"))
+
+aggregate_1000$Read_type <- factor(aggregate_1000$Read_type, levels = c("miRNA","piRNA", "snRNA", "snoRNA", "scaRNA","rRNA","tRNA", "undetermined"))
+pdf(file = here("Figures/Raw_plots/percentages_1000ng.pdf"),width=12.5,height=5)
+
+#no_unmapped <- aggregate_1000[which(!aggregate_1000$Read_type == "unmapped"),]
+ggplot(aggregate_1000, aes(x = Method, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 15, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 16)) +ylab("Percentage of reads")+ facet_grid(.~Read_type)  +scale_fill_manual(values = cols)
 dev.off()
 ggplot(aggregate_1000, aes(x = Method, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 18)) +ylab("Percentage of reads")+ facet_grid(Read_type~., scales = "free")  +scale_fill_manual(values = cols)
 
