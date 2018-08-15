@@ -55,6 +55,7 @@ get_ttestStats<- function(x) {
 ###Callfunctions on the data
 ```{r, eval=TRUE}
 library(reshape2)
+library(lsr)
 get_test_names(data = error_synth)
 #sink(here(synthlog.txt"))
 get_test_results(test_names = test_names, data = error_synth)
@@ -67,7 +68,7 @@ ttestStats
 synth <-melt(error_synth)
 fit = lm(synth$value ~ synth$variable)
 anova(fit)
-
+lsr::etaSquared(aov(fit))
 
 ```
 
@@ -259,6 +260,7 @@ legend(600,0.4,legend=c("Deduped_vs_Clontech","Deduped_vs_Illumina","Deduped_vs_
 #1000ng -rel to Fivepercent
 forcatplot_1000 <- list(ranks_error$Fivepercent,ranks_error$Clontech,ranks_error$Illumina, ranks_error$NEB, ranks_error$NEXTflex, ranks_error$Deduped)
 forcatplot_1000[[7]] <- c(rep(0,962))
+
 catplots <-list()
 for(i in 1:7){
   catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
@@ -385,7 +387,7 @@ ggplot(data = firstdata, aes(x=x, y = value, fill = variable)) + geom_jitter() +
 
 
 lastdata <-melt(errorLast)
-ggplot(data = lastdata, aes(x=x, y = value, fill = variable))  + geom_jitter()+geom_boxplot()+facet_grid(~variable)+theme(legend.position="none") +labs(y = "Expression relative to the mean", title = "Consistency of synthetic sequence detection across different last bases", x = NULL)
+ggplot(data = lastdata, aes(x=x, y = value, fill = variable))  + geom_jitter()+geom_boxplot()+facet_grid(~variable)+theme(legend.position="none") +labs(y = "Expression relative to the mean", title = "Consistency of synthetic sequence detection across different last 2 bases", x = NULL)
 ```
 
 
