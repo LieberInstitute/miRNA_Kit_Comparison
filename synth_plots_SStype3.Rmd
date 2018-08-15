@@ -47,15 +47,37 @@ get_ttestStats<- function(x) {
     df = format(x$parameter, digits = 0),
     p.value = format(x$p.value, scientific = TRUE, digits = 2),
     bonferroni_thresh = format(.05/length(test_names), digits = 2),
-    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+    t.es.g = tes(x$statistic, n.1 = 962, n.2 = 962)$g,
+    t.es.OR =tes(x$statistic, n.1 = 962, n.2 = 962)$OR)
 }
+
+
+
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-(abs(colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+
+tes(t, n.1, n.2, level = 95, cer = 0.2, dig = 2, verbose = TRUE, id=NULL, data=NULL)
+
 ```
 
 
 ###Callfunctions on the data
 ```{r, eval=TRUE}
 library(reshape2)
-library(lsr)
+library(compute.es)
+library(sjstats)
+
 get_test_names(data = error_synth)
 #sink(here(synthlog.txt"))
 get_test_results(test_names = test_names, data = error_synth)
@@ -68,8 +90,14 @@ ttestStats
 synth <-melt(error_synth)
 fit = lm(synth$value ~ synth$variable)
 anova(fit)
-lsr::etaSquared(aov(fit))
 
+sjstats::anova_stats(aov(fit)) # get effect size
+
+#calculate percent differences
+get_perc_diff(data = error_synth)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
 ```
 
 #### Main Plot###########
