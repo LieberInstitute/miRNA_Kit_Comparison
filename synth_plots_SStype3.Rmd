@@ -67,7 +67,7 @@ get_perc_diff <-function(data) {
     }
 }
 
-tes(t, n.1, n.2, level = 95, cer = 0.2, dig = 2, verbose = TRUE, id=NULL, data=NULL)
+
 
 ```
 
@@ -198,7 +198,10 @@ ranked_miRNA <-data.frame(Clontech_miRNAs, Illumina_miRNAs, NEB_miRNAs, NEXTflex
 
 
 library(ffpe)
-
+x<-c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,30,29,28,27,26,25,24,23,22,21,20,16,17,18,19)
+y<-c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,30,29,28,27,26,25,24,23,22,21,20,16,17,18,19)
+test <-CATplot(x,y, make.plot = F)
+plot(test)
 #rel to Clontech
 library(RColorBrewer)
 trop = cols <- brewer.pal(9, "Set1")
@@ -651,6 +654,65 @@ ggplot(data = melt(errorplot), aes(x=TTTT, y = value, fill = variable)) + geom_b
 table(TTTT)
 
 ```
+
+anyC
+```{r}
+errorData_toplot<-log2(miRge_synth+1)
+errorData_toplot<-(errorData_toplot /colMeans(errorData_toplot))*100
+
+error<-as.data.frame(cbind(anyC, errorData_toplot))
+colnames(error) <- c("anyC", "Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
+
+aggdata <-aggregate(error[2:7], by=list(error$anyC), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1"&colnames(aggdata)!="FoldG")]
+#sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+sorted_aggdata <-aggdata
+paletteLength <- 10
+
+myBreaks_below<-seq(to=max(sorted_aggdata[sorted_aggdata<100]), from = round(min(sorted_aggdata))-3, length.out = paletteLength*abs(min(sorted_aggdata))/10)
+
+myBreaks_above<-seq(to=round(max(sorted_aggdata))+3, from = min(sorted_aggdata[sorted_aggdata>100]), length.out = paletteLength*(max(sorted_aggdata))/10)
+myBreaks_last <- c(myBreaks_below, myBreaks_above)
+
+myBreaks<-append(myBreaks_first,myBreaks_last[which(myBreaks_last>max(myBreaks_first))])
+myBreaks<-append(myBreaks_first[which(myBreaks_first<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks_last[which(myBreaks_last<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks,myBreaks_last[which(myBreaks_last>max(myBreaks))])
+
+myColorbelow<-colorRampPalette(c("blue","white"))(length(which(myBreaks<100))) ### change for white 
+myColorabove<-colorRampPalette(c("white","red"))(length(which(myBreaks>100)))### change for white
+myColor<-c(myColorbelow, myColorabove)
+
+pheatmap(sorted_aggdata, color=myColor, breaks=myBreaks, main = "anyC", cluster_cols = FALSE, cluster_rows = FALSE)
+
+ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(min(myBreaks-10), max(myBreaks+10)))
+errorplot <-error
+
+errorplot$anyC<-factor(error$anyC)
+melted <- melt(t(errorplot))
+anyC_value <-rep(melted[which(melted$Var1 == "anyC"),]$value, each =6)
+melted2 <- melted[which(melted$Var1 != "anyC"),]
+melted2$anyC_value <-factor(anyC_value)
+ggplot(data = melted2, aes(x=anyC_value, y = value, fill = Var1)) + geom_jitter()+ geom_boxplot(varwidth = TRUE) +facet_grid(~Var1)+theme(legend.position="none")
+
+table(anyC)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Variance Plot
 ```{r}
 library(ggplot2)
