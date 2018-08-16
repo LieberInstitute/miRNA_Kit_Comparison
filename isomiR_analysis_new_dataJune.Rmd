@@ -403,12 +403,12 @@ thresh_number$variable <-as.numeric(as.character(thresh_number$variable))
 thresh_number<-thresh_number[-which(thresh_number$value =="0"),]
 thresh_number$kit <- factor(thresh_number$kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
 
-#save(thresh_number, file = here("Complete_data/IsomiR_data/thresh_number.rda") )
+save(thresh, thresh_number, file = here("Complete_data/IsomiR_data/thresh_number.rda") )
 ```
 
 plot of threshold across Triplicates
 ```{r}
-load(here("IsomiR_data/thresh_number.rda"))
+load(here("Complete_data/IsomiR_data/thresh_number.rda"))
 ggplot(data = thresh_number, aes(x = variable, y = value, group = variable)) + geom_jitter(aes(col = kit))+ facet_grid(.~kit) + scale_x_continuous(breaks=unique(thresh_number$variable)) + theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "isomiRNA Detection across kits > 10 reads in all triplicates") +geom_smooth(method = "lm", se=TRUE, color="black", aes(group=1))
 
 ```
@@ -441,8 +441,44 @@ Fivepercent<- data.frame(t=unlist(lapply(thresh_kits$Fivepercent[1:6], to_repeat
 
 thresh_across_amts<-rbind(Clontech, Illumina, NEB, NEXTflex, Deduped, Fivepercent)
 
+load(here("Complete_data/IsomiR_data/annotation.rda"))
+Clontech1000_anno <-annotation[thresh$`1000`$Clontech,]
+Illumina1000_anno <-annotation[thresh$`1000`$Illumina,]
+NEB1000_anno <-annotation[thresh$`1000`$NEB,]
+NEXTflex1000_anno <-annotation[thresh$`1000`$NEXTflex,]
+Deduped1000_anno <-annotation[thresh$`1000`$Deduped,]
+Fivepercent1000_anno <-annotation[thresh$`1000`$Fivepercent,]
 
+load(here("hsa_miRNA_info.rda"))
+miRNA_hsa_sequences <-seqs_human$cDNA
 
+canonicalseqs <-paste(miRNA_hsa_sequences,collapse="|")
+canonicalseqs <-paste0(miRNA_hsa_sequences,collapse="|")
+# grep(paste0(miRNA_hsa_sequences[1:1000],collapse="|"), test_isomirs)
+# grep(paste0(miRNA_hsa_sequences[1:10000],collapse="|"), test_isomirs)# there is some other expression somewhere
+# 
+# grep(paste0(miRNA_hsa_sequences[1:2500],collapse="|"), test_isomirs) # no error
+# grep(paste0(miRNA_hsa_sequences[1:2600],collapse="|"), test_isomirs) # gives an error
+# grep(paste0(miRNA_hsa_sequences[2500:2600],collapse="|"), test_isomirs) # gives no error... maybe there is a grep limit? looks like 2538 yup!
+# grep(("TTCAAG|TTC"), test_isomirs)
+# grep(("TTCAAG"), test_isomirs)
+# grep(("TTC"), test_isomirs)# should be only one canonical sequence per isomiR - so if a full length with canonical sequence exists within an isomiR with additonal nucleotides, it should be counted
+
+write.csv(miRNA_hsa_sequences, file = here("miRNA_hsa_sequences.csv"))
+
+Clontech_1000_isomirs <-Clontech1000_anno$sequence
+Illumina_1000_isomirs <- Illumina1000_anno$sequence
+NEB_1000_isomirs <- NEB1000_anno$sequence
+NEXTflex_1000_isomirs <- NEXTflex1000_anno$sequence
+Deduped_1000_isomirs <- Deduped1000_anno$sequence
+Fivepercent_1000_isomirs <- Fivepercent1000_anno$sequence
+
+write.table(Clontech_1000_isomirs, file = here("Clontech_1000_isomirsfull.csv"), sep="\t")
+write.csv(Illumina_1000_isomirs, file = here("Illumina_1000_isomirsfull.csv"))
+write.csv(NEB_1000_isomirs, file = here("NEB_1000_isomirsfull.csv"))
+write.csv(NEXTflex_1000_isomirs, file = here("NEXTflex_1000_isomirsfull.csv"))
+write.csv(Deduped_1000_isomirs, file = here("Deduped_1000_isomirsfull.csv"))
+write.csv(Fivepercent_1000_isomirs, file = here("Fivepercent_1000_isomirsfull.csv"))
 
 det_Data$det_across_thresh<-thresh_across_amts$t
 det_Data$not_consistent <- ((det_Data$det_indv_thresh - as.numeric(as.character(det_Data$det_across_thresh)))/det_Data$det_indv_thresh)*100
@@ -473,21 +509,27 @@ ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data
 
 miRNA_det<-list("Clontech\n(N=427)" = Clontech, "Illumina\n(N=443)" = Illumina, "NEB\n(N=450)" = NEB, "NextFlex\n(N=380)" =NEXTflex, "Deduped\n(N=427)" = Deduped)
 
-
+library(sjstats)
 summary(lm(det_Data$not_consistent~ det_Data$kit)) #sig difference in det inconsisentency across methods
+anova_stats(anova(lm(det_Data$not_consistent~ det_Data$kit)))
 #vp_alpha <- venn.diagram(miRNA_det, fill = c("red", "white", "blue", "green"), alpha = 0.5, filename = NULL)
 
 det_Data$startingAmt <-as.numeric(as.character(det_Data$startingAmt))
 summary(lm(det_Data$not_consistent~ det_Data$startingAmt)) #sig difference in det inconsisentency across methods
+cor(det_Data$not_consistent, det_Data$startingAmt)
 Clontech <- det_Data[which(det_Data$kit == "Clontech"),]
 summary(lm(Clontech$not_consistent~Clontech$startingAmt))#F-statistic: 4.128 on 1 and 16 DF,  p-value: 0.05913
+cor(Clontech$not_consistent,Clontech$startingAmt)
 NEB<- det_Data[which(det_Data$kit == "NEB"),]
+cor(NEB$not_consistent,NEB$startingAmt)
+
 summary(lm(NEB$not_consistent~NEB$startingAmt))
 NEXTflex<- det_Data[which(det_Data$kit == "NEXTflex"),]
 summary(lm(NEXTflex$not_consistent~NEXTflex$startingAmt))
 Deduped<- det_Data[which(det_Data$kit == "Deduped"),]
 summary(lm(Deduped$not_consistent~Deduped$startingAmt))#F-statistic: 32.44 on 1 and 16 DF,  p-value: 3.313e-05
 Fivepercent<- det_Data[which(det_Data$kit == "Fivepercent"),]
+cor(Fivepercent$not_consistent, Fivepercent$startingAmt)
 summary(lm(Fivepercent$not_consistent~Fivepercent$startingAmt))#F-statistic: 11.86 on 1 and 16 DF,  p-value: 0.003334
 Illumina<- det_Data[which(det_Data$kit == "Illumina"),]
 summary(lm(Illumina$not_consistent~Illumina$startingAmt))
