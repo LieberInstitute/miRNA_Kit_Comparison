@@ -526,6 +526,7 @@ cor(NEB$not_consistent,NEB$startingAmt)
 summary(lm(NEB$not_consistent~NEB$startingAmt))
 NEXTflex<- det_Data[which(det_Data$kit == "NEXTflex"),]
 summary(lm(NEXTflex$not_consistent~NEXTflex$startingAmt))
+cor(NEXTflex$not_consistent,NEXTflex$startingAmt)
 Deduped<- det_Data[which(det_Data$kit == "Deduped"),]
 summary(lm(Deduped$not_consistent~Deduped$startingAmt))#F-statistic: 32.44 on 1 and 16 DF,  p-value: 3.313e-05
 Fivepercent<- det_Data[which(det_Data$kit == "Fivepercent"),]
@@ -569,6 +570,14 @@ ttestStats_across
 #  filename = NULL
 #)
 #grid.draw(venn.plot)
+
+#NEXTflex and Deduped
+tes(t =-3.8, n.1 = 18, n.2 = 18)
+#NEXTflex and Fivepercent
+tes(t =-3.7, n.1 = 18, n.2 = 18)
+
+abs(mean(inconsistency$NEXTflex$X..i..) - mean(inconsistency$Deduped$X..i..))/ mean(inconsistency$NEXTflex$X..i..)*100
+
 ```
 
 ```{r}
