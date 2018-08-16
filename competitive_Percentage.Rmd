@@ -6,6 +6,7 @@ output: html_document
 ---
 ```{r, echo = TRUE, eval=TRUE}
 library(dplyr)
+library(compute.es)
 get_test_names <- function(data){
   test_names <<- data.frame(combn(unique(names(data)), m= 2))
 }
@@ -35,8 +36,26 @@ get_ttestStats<- function(x) {
     df = format(x$parameter, digits = 0),
     p.value = format(x$p.value, scientific = TRUE, digits = 2),
     bonferroni_thresh = format(.05/length(test_names), digits = 2),
-    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+    t.es.g = tes(x$statistic, n.1 = 4, n.2 = 4)$g,
+    t.es.OR =tes(x$statistic, n.1 = 4, n.2 = 4)$OR)
 }
+
+
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-(abs(colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+
+
 
 #get_lmStats <-function(x) {
 #  c(p=x$coefficients[2,4], scientific = TRUE, digits =2)
@@ -126,12 +145,19 @@ TukeyHSD(miRNA, ordered = FALSE)
 anova(lm(percent_1000$miRNA ~ percent_1000$Method))
 sjstats::anova_stats(anova(lm(percent_1000$miRNA ~ percent_1000$Method)))
 anova(lm(percent_1000$undetermined ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$undetermined ~ percent_1000$Method)))
 anova(lm(percent_1000$rRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$rRNA ~ percent_1000$Method)))
 anova(lm(percent_1000$tRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$tRNA ~ percent_1000$Method)))
 anova(lm(percent_1000$piRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$piRNA ~ percent_1000$Method)))
 anova(lm(percent_1000$snoRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$snoRNA ~ percent_1000$Method)))
 anova(lm(percent_1000$snRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$snRNA ~ percent_1000$Method)))
 anova(lm(percent_1000$scaRNA ~ percent_1000$Method)) # no difference after multiple correction
+sjstats::anova_stats(anova(lm(percent_1000$scaRNA ~ percent_1000$Method)))
 percent_1000$key <- rep(c(1:4), 4)
 percent_1000<-as.data.table(percent_1000)
 
@@ -167,6 +193,11 @@ ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
 colnames(ttestStats_across)<-tested_kits
 ttestStats_across
 
+get_perc_diff(data = miRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
 get_test_names(rRNA)
 get_test_results(data = rRNA, test_names = test_names)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
@@ -198,6 +229,42 @@ ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
 colnames(ttestStats_across)<-tested_kits
 ttestStats_across
 
+
+
+get_perc_diff(data = unmapped)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = miRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = rRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = tRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = piRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = snoRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = snRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
 ```
 
 
