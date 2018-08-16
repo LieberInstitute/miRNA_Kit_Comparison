@@ -49,7 +49,9 @@ library("ggplot2")
 library("reshape2")
 library("jaffelab")
 library(RColorBrewer) #set 3 or 1
-library(wesanderson)
+#library(wesanderson)
+library(data.table)
+library(sjstats)
 
 percentages <- read.table(here("competitive_percentages.csv"), sep = ",", header = TRUE)
 colnames(percentages) <-gsub("X.", "", colnames(percentages))
@@ -68,14 +70,14 @@ mp$Read_type= factor(mp$Read_type,levels = c("undetermined","rRNA","tRNA", "scaR
 pdf(file =here("Figures/Raw_plots/stackedbar_percentages.pdf"),width=10,height=8)
 ggplot(mp, aes(x = File, y = value, color = Read_type)) +geom_bar(stat  = "identity", position = "stack", aes(y =value, fill = Read_type), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 15), axis.title.y=element_text(size = 20)) +scale_x_discrete(labels= mp$name)  +ylab("Percentage of reads")   +    scale_fill_manual(values =c("gray", "lightsteelblue4","thistle4",   "maroon2", "olivedrab2", "indianred3", "steelblue2", "orange2"))
  dev.off() 
-  scale_fill_manual(values =c("snow2", "snow4","snow3",   "maroon2", "olivedrab2", "indianred3", "steelblue2", "orange2"))
+ # scale_fill_manual(values =c("snow2", "snow4","snow3",   "maroon2", "olivedrab2", "indianred3", "steelblue2", "orange2"))
 
- scale_fill_manual(values =c("gray", "lightsteelblue4","thistle4",   "maroon2", "olivedrab2", "indianred3", "steelblue2", "orange2"))
-scale_fill_manual(values =c("gray", "lightsteelblue4","thistle4",   "maroon2", "olivedrab2", "indianred3", "royalblue2", "orange2"))
- scale_fill_manual(values =c("gray", "slateblue1", "seagreen", "salmon3", "yellow2", "indianred3", "blue", "orange2"))
-scale_fill_manual(values =c("gray", "slateblue1", "seagreen", "salmon3", "yellow2", "red4", "blue", "orange2"))
-  scale_fill_manual(values = rev(brewer.pal(8, "Set2")))
-  scale_fill_brewer(rev(palette="Dark2"))
+# scale_fill_manual(values =c("gray", "lightsteelblue4","thistle4",   "maroon2", "olivedrab2", "indianred3", "steelblue2", "orange2"))
+#scale_fill_manual(values =c("gray", "lightsteelblue4","thistle4",   "maroon2", "olivedrab2", "indianred3", "royalblue2", "orange2"))
+# scale_fill_manual(values =c("gray", "slateblue1", "seagreen", "salmon3", "yellow2", "indianred3", "blue", "orange2"))
+#scale_fill_manual(values =c("gray", "slateblue1", "seagreen", "salmon3", "yellow2", "red4", "blue", "orange2"))
+#  scale_fill_manual(values = rev(brewer.pal(8, "Set2")))
+#  scale_fill_brewer(rev(palette="Dark2"))
 
 #scale_fill_manual(values = wes_palette(7, "BottleRocket"))
 #\+ scale_fill_brewer(palette="Pastel1")
@@ -104,7 +106,7 @@ dev.off()
 
 mp$Read_type= factor(mp$Read_type,levels = c("undetermined","rRNA","tRNA", "scaRNA", "snoRNA", "snRNA","piRNA","miRNA"))
 
-aggregate_1000$Read_type <- factor(aggregate_1000$Read_type, levels = c("miRNA","piRNA", "snRNA", "snoRNA", "scaRNA","rRNA","tRNA", "undetermined"))
+aggregate_1000$Read_type <- factor(aggregate_1000$Read_type, levels = c("miRNA","piRNA", "snRNA", "snoRNA", "scaRNA","tRNA","rRNA", "undetermined"))
 pdf(file = here("Figures/Raw_plots/percentages_1000ng.pdf"),width=12.5,height=5)
 
 #no_unmapped <- aggregate_1000[which(!aggregate_1000$Read_type == "unmapped"),]
@@ -122,7 +124,8 @@ percent_1000 <- percentages[which(percentages$amount == "1000"),]
 miRNA <-(aov(percent_1000$miRNA ~ percent_1000$Method)) #same as anova(lm(etc...))
 TukeyHSD(miRNA, ordered = FALSE)
 anova(lm(percent_1000$miRNA ~ percent_1000$Method))
-anova(lm(percent_1000$unmapped ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$miRNA ~ percent_1000$Method)))
+anova(lm(percent_1000$undetermined ~ percent_1000$Method))
 anova(lm(percent_1000$rRNA ~ percent_1000$Method))
 anova(lm(percent_1000$tRNA ~ percent_1000$Method))
 anova(lm(percent_1000$piRNA ~ percent_1000$Method))
@@ -133,7 +136,7 @@ percent_1000$key <- rep(c(1:4), 4)
 percent_1000<-as.data.table(percent_1000)
 
 
-unmapped<-data.frame(dcast(percent_1000, key~Method, value.var = "unmapped"))
+unmapped<-data.frame(dcast(percent_1000, key~Method, value.var = "undetermined"))
 unmapped$key<-NULL
 miRNA<-data.frame(dcast(percent_1000, key~Method, value.var = "miRNA"))
 miRNA$key<-NULL
