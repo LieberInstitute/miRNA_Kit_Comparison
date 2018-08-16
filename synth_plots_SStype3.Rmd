@@ -60,7 +60,7 @@ get_perc_diff <-function(data) {
   tested_names2<<-list()
   tested_kits<<-list()
   for(i in names(test_names)){
-    percresults[[i]]<<-(abs(colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    percresults[[i]]<<-(abs(colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])])*100
     tested_names1[[i]]<<-test_names[i][1,]
     tested_names2[[i]]<<-test_names[i][2,]
     tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
@@ -650,6 +650,10 @@ errorplot <-error
 
 errorplot$TTTT<-factor(error$TTTT)
 ggplot(data = melt(errorplot), aes(x=TTTT, y = value, fill = variable)) + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")
+
+#ggplot(data = melt(errorplot), aes(x=TTTT, y = value, fill = variable)) + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")+ geom_line(data = errorplot, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit))
+
+
 
 table(TTTT)
 
