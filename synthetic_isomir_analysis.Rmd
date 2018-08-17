@@ -147,6 +147,24 @@ pdf(file =here("Figures/Raw_plots/false_isomiR_detection_over_100reads.pdf"),wid
 ggplot(m_iso, aes(x =variable, y=value, fill = variable)) + geom_bar(stat = "identity", aes(y =value, fill = variable), color = "black") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected False IsomiR Sequences")+ scale_fill_manual(values = cols) +geom_text(aes(label = (round(value, digits =2)), size = 5, hjust = 0.5, vjust = 1.5) )
 dev.off()
 
+#percent difference of raw isomiR overall numbers
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+
+get_perc_diff(data = False_isomirs)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
 
 #howmany isomiRs are there above 10 normalized counts:
 length(which(full_norm_miR$Clontech_trimmed.4_acc.fq>10))
@@ -218,7 +236,8 @@ get_ttestStats<- function(x) {
     df = format(x$parameter, digits = 0),
     p.value = format(x$p.value, scientific = TRUE, digits = 2),
     bonferroni_thresh = format(.05/length(test_names), digits = 2),
-    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+     t.es.g = tes(x$statistic, n.1 = 4, n.2 = 4)$g)
 }
 ```
 
@@ -233,6 +252,14 @@ get_test_results(data = IsomiR_expression, test_names = test_names)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
 colnames(ttestStats_across)<-tested_kits
 ttestStats_across
+
+expressions <-lapply(IsomiR_expression, `[`, 2)
+Mean_express<-data.frame(lapply(expressions, colMeans))
+get_perc_diff(data = Mean_express)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
 ```
 
 stats on each canonical synth miRNA - how many isomirs
@@ -279,6 +306,8 @@ get_test_results(data = countper_synth, test_names = test_names)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
 colnames(ttestStats_across)<-tested_kits
 ttestStats_across
+
+
 
 countper_synth_together$Kit <- factor(countper_synth_together$Kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
 
@@ -491,8 +520,8 @@ VarExp[grep("Last", VarExp$variable),]
 
 #pheatmap(VarExp)
 
-var_Table <-read.table(here("Var_exp_Table"))
-rank_Table <-sapply((-1*var_Table), rank )
+#var_Table <-read.table(here("Var_exp_Table"))
+#rank_Table <-sapply((-1*var_Table), rank )
 ```
 
 
@@ -510,6 +539,85 @@ varexp_PctExp2<-((varexp_PctExp*variance)/mean(unlist(variance)))
 pdf(file =here("Figures/Raw_plots/isomirvariance_weighted.pdf"),width=3,height=7, onefile=FALSE)
 pheatmap(varexp_PctExp2, main = "Percent of sequence detection variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE, cluster_cols = FALSE)
 dev.off()
+```
+Counts per synth analysis
+
+
+```{r}
+library(sjstats)
+seq_counts_m<-melt(seq_counts)
+anova(lm(seq_counts_m$value~ seq_counts_m$variable)) # significant difference in the number of isomirs for each synthetic sequenec across kits F = 176.37, df = 5, p <2.2e-16
+anova_stats(anova(lm(seq_counts_m$value~ seq_counts_m$variable)))
+countper_synth <-list( Clontech =Clontech_count,Illumina = Illumina_count, NEB =NEB_count, NEXTflex =NEXTflex_count, Deduped =Deduped_count, Fivepercent =Fivepercent_count)
+
+
+get_test_results<- function(data,test_names) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    #tested_names[[i]]<<-(test_names[i][,1])
+    Kit1<-data[grep(test_names[i][1,], names(data))]
+    Kit2<-data[grep(test_names[i][2,], names(data))]
+    #Kit1<-data.frame(select(data, names(data)[names(data) %in% test_names[i][1,]]))
+    #Kit2<-data.frame(select(data, names(data)[names(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-names(Kit1)
+    tested_names2[[i]]<<-names(Kit2)
+    # colnames(Kit1)<-c("error")
+    # colnames(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = TRUE) ### may have messed things up adding paired = TRUE previously had more ))
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+library(compute.es)
+get_ttestStats<- function(x) {
+  #print(length(test_names))
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni_thresh = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+    t.es.g = tes(x$statistic, n.1 = 4, n.2 = 4)$g,
+    t.es.OR =tes(x$statistic, n.1 = 4, n.2 = 4)$OR)
+}
+
+
+get_test_names(seq_counts)
+get_test_results(data = seq_counts, test_names = test_names)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+
+get_perc_diff(data = seq_counts)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+
+countper_synth_together$Kit <- factor(countper_synth_together$Kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+
+pdf(file =here("Figures/Raw_plots/false_isomiR_counts_over_100reads_including_zeros.pdf"),width=5,height=6)
+ggplot(seq_counts_m, aes(x = variable, y = value, color = variable))  + geom_jitter(width = 0.3) + geom_boxplot( outlier.shape = NA, color = "black")+ ylab("False IsomiRs Detected for Each Synthetic Sequence")+
+  theme(axis.title.x = element_text(size =0), 
+        axis.text.x = element_text(size = 10, face = "bold",angle = 60, hjust = 1, color = "black"),
+        axis.text.y = element_text(size = 12, hjust = 0.5, color = "black"), 
+        axis.title.y = element_text(size =15), 
+        legend.position = "none") + ylim(c(0,75))
+dev.off()
+
 ```
 
 
