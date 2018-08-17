@@ -95,6 +95,9 @@ load(here("Complete_data/one_batch_thresh10across_trip.rda"))# created in miRNA_
 ```{r, echo = FALSE, message = FALSE, eval = TRUE}
 library(dplyr)
 
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(unique(names(data)), m= 2))
+}
 
 get_test_results<- function(data,test_names, pairedvalue) {
   tresults<<-list()
@@ -119,8 +122,25 @@ get_ttestStats<- function(x, tested_kits) {
     df = format(x$parameter, digits = 0),
     p.value = format(x$p.value, scientific = TRUE, digits = 2),
     bonferroni.threshold = format(.05/length(test_names), digits = 2),
-    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"), 
+    t.es.g = tes(x$statistic, n.1 = 3, n.2 = 3)$g)
 }
+
+
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+
+
 ```
 
 ```{r, echo=TRUE, message=FALSE, warning=FALSE, eval = TRUE}
@@ -304,38 +324,91 @@ test_names <- data.frame(combn(names(Clontech), m= 2))
 get_test_results(data = Clontech, test_names = test_names, pairedvalue = FALSE)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
 colnames(ttestStats_across)<-tested_kits
-ttestStats_across #lower t indicates lower error across triplicates
-
+t(ttestStats_across) #lower t indicates lower error across triplicates
 
 test_names <- data.frame(combn(names(NEB), m= 2))
 get_test_results(data = NEB, test_names = test_names, pairedvalue = FALSE)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
 colnames(ttestStats_across)<-tested_kits
-ttestStats_across #lower t indicates lower error across triplicates
+t(ttestStats_across) #lower t indicates lower error across triplicates
 
 test_names <- data.frame(combn(names(NEXTflex), m= 2))
 get_test_results(data = NEXTflex, test_names = test_names, pairedvalue = FALSE)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
 colnames(ttestStats_across)<-tested_kits
-ttestStats_across #lower t indicates lower error across triplicates
+t(ttestStats_across) #lower t indicates lower error across triplicates
 
 test_names <- data.frame(combn(names(Deduped), m= 2))
 get_test_results(data = Deduped, test_names = test_names, pairedvalue = FALSE)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
 colnames(ttestStats_across)<-tested_kits
-ttestStats_across #lower t indicates lower error across triplicates
+t(ttestStats_across) #lower t indicates lower error across triplicates
 
 
 test_names <- data.frame(combn(names(Fivepercent), m= 2))
 get_test_results(data = Fivepercent, test_names = test_names, pairedvalue = FALSE)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
 colnames(ttestStats_across)<-tested_kits
-ttestStats_across #lower t indicates lower error across triplicates
+t(ttestStats_across) #lower t indicates lower error across triplicates
 #maybe look at how the mean of the triplicates for each amounts is correlated to the mean of the other amounts- but with the raw data - not the error? to know how similar they are to one another?????
 
+#percent change
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+error_mean <-data.frame(lapply(Clontech, mean))
+names(error_mean)<-names(Clontech)
+get_perc_diff(error_mean)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+
+error_mean <-data.frame(lapply(NEXTflex, mean))
+names(error_mean)<-names(NEXTflex)
+get_perc_diff(error_mean)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+error_mean <-data.frame(lapply(Deduped, mean))
+names(error_mean)<-names(Deduped)
+get_perc_diff(error_mean)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+error_mean <-data.frame(lapply(Fivepercent, mean))
+names(error_mean)<-names(Fivepercent)
+get_perc_diff(error_mean)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
 
 
 
+get_test_names(NEB)
+error_mean <-data.frame(lapply(NEB, mean))
+names(error_mean)<-names(NEB)
+get_perc_diff(error_mean)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+```
+
+
+1000ng data
+```{r}
 # stats comparing kits should maybe only be done on 1000ng input - or does it matter?
 Error1000 <- errorAll[which(errorAll$Starting_Amount == "1000"),]
 error_1000 <-list()
