@@ -231,8 +231,8 @@ library(ggplot2)
 load(here("Complete_data/IsomiR_data/one_batch_norm_miR.rda"))
 load(here("Complete_data/IsomiR_data/total_miRNA.rda"))
 #load(here("Complete_data/IsomiR_data/Pheno.rda"))
-norm_miRDF <-data.frame(one_batch_norm_miR)
-total_isomiRs_above10 <- colSums(norm_miRDF>100)
+#norm_miRDF <-data.frame(one_batch_norm_miR)
+#total_isomiRs_above10 <- colSums(norm_miRDF>100)
 total_isomiR_reads <- colSums(norm_miRDF)
 total_isomiR_reads <-data.frame(total_isomiR_reads)
 total_isomiRs_above10<-data.frame(total_isomiRs_above10)
@@ -576,8 +576,8 @@ tes(t =-3.8, n.1 = 18, n.2 = 18)
 #NEXTflex and Fivepercent
 tes(t =-3.7, n.1 = 18, n.2 = 18)
 
-abs(mean(inconsistency$NEXTflex$X..i..) - mean(inconsistency$Deduped$X..i..))/ mean(inconsistency$NEXTflex$X..i..)*100
-
+(mean(inconsistency$NEXTflex$X..i..) - mean(inconsistency$Deduped$X..i..))/ mean(inconsistency$NEXTflex$X..i..)*100
+(mean(inconsistency$NEXTflex$X..i..) - mean(inconsistency$Fivepercent$X..i..))/ mean(inconsistency$NEXTflex$X..i..)*100
 ```
 
 ```{r}
@@ -624,12 +624,13 @@ det_Data_1000 <- detected[which(detected$det_Data.startingAmt == "1000"),]
 pdf(file =here("Figures/Raw_plots/isomiR_1000ng_inconsistency.pdf"),width=4,height=6, onefile=FALSE)
 ggplot(det_Data_1000, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit))  + geom_boxplot() + geom_jitter(width = 0.3)+ theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Percentage of Inconsistently \n Detected isomiRNA Sequences", title = "Inconsistentcy of isomiRNA Detection Across Kits")+coord_cartesian(ylim=c(0,30))
 dev.off()
-
+library(sjstats)
 summary(lm(det_Data_1000$det_Data.not_consistent~ det_Data_1000$det_Data.kit)) #sig difference in det inconsisentency across methods
+anova_stats(lm(det_Data_1000$det_Data.not_consistent~ det_Data_1000$det_Data.kit))
 #main effect of NEB??? lower than the rest
 library(tidyr)
 det_Data_1000$sample <- rep(c(1,2,3),6)
-#det_Data_1000$sample<-paste0(det_Data_1000$det_Data.kit, det_Data_1000$sample)
+# det_Data_1000$sample<-paste0(det_Data_1000$det_Data.kit, det_Data_1000$sample)
 # det_Data <-spread(det_Data_1000, sample, det_Data.not_consistent)
 # det_Data <-data.frame(t(det_Data))
 # det_Data<-det_Data[-1,]
@@ -645,6 +646,10 @@ det_Data_1000$sample <- rep(c(1,2,3),6)
 ```
 
 
+
+
+
+######################################Did not include in the manuscript#########################
 X1) number of identified isomirs - can see on first plot
 2) identity of identified isomirs - need to use annotation this could be useful - like venn diagrams ...but could just determine percentage instead?
 3) expression of identified isomirs within a kit across triplicates - this is more in depth... so maybe good just to go ahead to this??/
@@ -658,6 +663,7 @@ lapply(split_amt_thresh[[as.character(amt)]], var)
 #####start here for faster analysis
 
 ```{r}
+library(here)
 load(here("isomiR_data_extended/iso_Raw.rda"))
 load(here("isomiR_data_extended/iso_anno.rda"))
 Pheno<- read.table(here("IsomiR_data/IsoPheno.txt"), header = T)
