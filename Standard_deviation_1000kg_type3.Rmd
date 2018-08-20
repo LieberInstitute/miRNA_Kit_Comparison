@@ -151,7 +151,8 @@ get_ttestStats<- function(x, tested_kits) {
     df = format(x$parameter, digits = 0),
     p.value = format(x$p.value, scientific = TRUE, digits = 2),
     bonferroni.threshold = format(.05/length(test_names), digits = 2),
-    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+    t.es.g = tes(x$statistic, n.1 = 4, n.2 = 4)$g)
 }
 
 #higher t is worse because we are using sds
@@ -219,11 +220,31 @@ ERRORm <-melt(error_from_mean)
 
 #anova
 anova(lm(ERRORm$value~ERRORm$L1))
+library(sjstats)
+anova_stats(anova(lm(ERRORm$value~ERRORm$L1)))
 #higher t is worse because we are using variance
 get_test_results(data = data.frame(ERROR), test_names = test_names, pairedvalue = TRUE)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
 colnames(ttestStats_across)<-tested_kits
 ttestStats_across
+
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+get_perc_diff(data = ERROR)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
 pdf(file =here("Figures/Raw_plots/Fig.5.a.tall.pdf"),width=3.8,height=4, onefile=FALSE)
 ERRORm$L1<-factor(ERRORm$L1, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
 ggplot(ERRORm, aes(x = L1, y = value))+geom_jitter(aes(color = L1, alpha = 0.7), width = .3)+ geom_boxplot(notch =FALSE, outlier.shape = NA, varwidth = TRUE, position = position_dodge(1))+theme(legend.position = "none", axis.text.x = element_text(size =15, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title.y=element_text(size = 17),axis.title.x = element_text(size = 0), plot.title = element_text(size = 20), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Error from the Mean", title = " Inconsistency Across Batch")
@@ -449,7 +470,8 @@ library(pheatmap)
 varexp_PctExp3<- varexp_PctExp[-grep("Residual",rownames(varexp_PctExp)),]
 varexp_PctExp3$Fake <- c(75, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 pdf(file =here("Figures/Raw_plots/Fig.5.b.pdf"),width=3,height=7, onefile = FALSE)
-pheatmap(varexp_PctExp3, main = "Percent of batch error variance explained", cluster_cols = FALSE, cluster_rows = FALSE, myBreaks = myBreaks, myColor = myColor)
+pheatmap(varexp_PctExp3, main = "Percent of batch error variance explained", cluster_cols = FALSE, cluster_rows = FALSE))
+#pheatmap(varexp_PctExp3, main = "Percent of batch error variance explained", cluster_cols = FALSE, cluster_rows = FALSE), myBreaks = myBreaks, myColor = myColor)
 dev.off()
 
 # #myColor<-c(myColorbelow, myColorabove)
@@ -466,7 +488,7 @@ dev.off()
 varexp_PctExp2<-varexp_PctExp
 varexp_PctExp2<-((varexp_PctExp2*variance)/mean(unlist(variance)))
 
-#varexp_PctExp2<- varexp_PctExp2[-grep("Residuals",rownames(varexp_PctExp2)),]
+varexp_PctExp2<- varexp_PctExp2[-grep("Residuals",rownames(varexp_PctExp2)),]
 #varexp_PctExp2<- varexp_PctExp2[-grep("Last_4_bases",rownames(varexp_PctExp2)),]
 #varexp_PctExp2<- varexp_PctExp2[-grep("First_4_bases",rownames(varexp_PctExp2)),]
 pdf(file =here("Figures/Raw_plots/Fig.5.c.pdf"),width=3,height=7, onefile = FALSE)

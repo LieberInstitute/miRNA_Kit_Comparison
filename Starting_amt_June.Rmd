@@ -633,8 +633,8 @@ run for each kit
 ```{r}
 library(car)
 #overall variance of error
-
-variance <- lapply(split_errorAll, var)
+values<-lapply(split_errorAll, `[`, 2)
+variance <- lapply(values, var)
 boxplot(variance) # interesting the variance in error is really low for deduped - meaning error is more consistent across sequences
 
 yGene <-as.matrix(errorData_testdf$Clontech)
