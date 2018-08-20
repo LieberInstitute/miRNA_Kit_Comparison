@@ -141,7 +141,7 @@ dev.off()
 
 library(ggrepel)
 
-ranks_error<-data.frame(sapply(-error_synth[1:6], rank, ties.method = c("average")))
+ranks_error<-data.frame(sapply(-error_synth[1:6], rank, ties.method = c("random")))
 ranks_error$miRNA<-error_synth$miRNA
 
 
@@ -184,7 +184,33 @@ Illumina_miRNAs <- data.frame("Illumina"=rownames(ranks_error)[order(Illumina_ra
 ranked_miRNA <-data.frame(Clontech_miRNAs, Illumina_miRNAs, NEB_miRNAs, NEXTflex_miRNAs,  Deduped_miRNAs, Fivepercent_miRNAs)
 
 
+ranks_error_clontech <- ranks_error[order(ranks_error$Clontech),]
+write.csv(ranks_error, here("Supplement/syth_acc_ranks.csv"))
 
+library(DescTools)
+
+KendallW(ranks_error, correct = FALSE, test = TRUE)# the ranks are not similar for the methods...
+KendallW(ranks_error[1:2], correct = FALSE, test = TRUE)# Clontech and Illumina
+KendallW(ranks_error[c(1,3)], correct = FALSE, test = TRUE)# Clontech and NEB
+KendallW(ranks_error[c(1,4)], correct = FALSE, test = TRUE)# Clontech and NEXTflex # these are very similar
+KendallW(ranks_error[c(1,5)], correct = FALSE, test = TRUE)# Clontech and Deduped
+KendallW(ranks_error[c(1,6)], correct = FALSE, test = TRUE)# Clontech and Fivepercent
+
+KendallW(ranks_error[2:3], correct = FALSE, test = TRUE)# Illumina and NEB
+KendallW(ranks_error[c(2,4)], correct = FALSE, test = TRUE)# Illumina and NEXTflex
+KendallW(ranks_error[c(2,5)], correct = FALSE, test = TRUE)# Illumina and Deduped # these are very similar
+KendallW(ranks_error[c(2,6)], correct = FALSE, test = TRUE)# Illumina and Fivepercent
+
+KendallW(ranks_error[c(3,4)], correct = FALSE, test = TRUE)# NEB and NEXTflex
+KendallW(ranks_error[c(3,5)], correct = FALSE, test = TRUE)# NEB and Deduped
+KendallW(ranks_error[c(3,6)], correct = FALSE, test = TRUE)# NEBand Fivepercent # these are very similar
+
+KendallW(ranks_error[c(4,5)], correct = FALSE, test = TRUE)# NEXTflex and Deduped
+KendallW(ranks_error[c(4,6)], correct = FALSE, test = TRUE)# NEXTflex and Fivepercent
+KendallW(ranks_error[c(5,6)], correct = FALSE, test = TRUE)# Deduped and Fivepercent
+
+  
+  
 # library(GGally)
 # set.seed(42)
 # #1000ng input
@@ -205,6 +231,7 @@ plot(test)
 #rel to Clontech
 library(RColorBrewer)
 trop = cols <- brewer.pal(9, "Set1")
+pdf(file =here("Supplement/Figures/synth_rank_to_Clontech"),width=10,height=8, onefile=FALSE)
 forcatplot_1000 <- list(ranks_error$Clontech, ranks_error$Illumina, ranks_error$NEB, ranks_error$NEXTflex, ranks_error$Deduped, ranks_error$Fivepercent)
 forcatplot_1000[[7]] <- c(rep(0,962))
 catplots <-list()
@@ -218,14 +245,18 @@ lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
 lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
 lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
 lines(catplots[[7]], col=trop[9],lwd=3)
-legend(600,0.4,legend=c("Clontech_vs_Illumina","Clontech_vs_NEB", "Clontech_vs_NEXTflex","Clontech_vs_Deduped","Clontech_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
-
+legend(600,0.5,legend=c("Clontech_vs_Illumina","Clontech_vs_NEB", "Clontech_vs_NEXTflex","Clontech_vs_Deduped","Clontech_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+dev.off()
 
 #rel to NEXTflex
 forcatplot_1000 <- list( ranks_error$NEXTflex,ranks_error$Illumina, ranks_error$NEB, ranks_error$Clontech, ranks_error$Deduped, ranks_error$Fivepercent)
-forcatplot_1000[[7]] <- c(rep(0,962))
+forcatplot_1000[[7]] <- c(rep(0,962)) #allzeros for zero concordance example
+forcatplot_1000[[8]] <- c(ranks_error$NEXTflex[1:20],rep(0,942)) #example of perfect concordance of just the first 20 and then no concordance
+forcatplot_1000[[8]] <- c((ranks_error$NEXTflex[1:5]),(ranks_error$NEB[6:962])) #example of perfect concordance of just the first 20 and then no concordance
+forcatplot_1000[[8]] <- c((ranks_error$NEXTflex[1:5]), (ranks_error$NEXTflex[6:962]+1)) #example of perfect concordance of just the first 20 and then no concordance
+
 catplots <-list()
-for(i in 1:7){
+for(i in 1:8){
   catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
 }
 plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods",xlab="Rank", xlim=c(1,962))
@@ -235,7 +266,8 @@ lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
 lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
 lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
 lines(catplots[[7]], col=trop[9],lwd=3)
-legend(600,0.4,legend=c("NEXTflex_vs_Illumina","NEXTflex_vs_NEB", "NEXTflex_vs_Clontech","NEXTflex_vs_Deduped","NEXTflex_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+lines(catplots[[8]], col=trop[3],lwd=3, lty =3)
+legend(600,0.5,legend=c("NEXTflex_vs_Illumina","NEXTflex_vs_NEB", "NEXTflex_vs_Clontech","NEXTflex_vs_Deduped","NEXTflex_vs_Fivepercent", "perfect_concordance", "No_concordance", "just_top_concordance"),col=trop[c(1,2,3,4,5,7,9,3)],lty=c(1,2,1,3,1,3,1,3),lwd=3)
 
 
 #1000ng -rel to Illumina
@@ -252,7 +284,7 @@ lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
 lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
 lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
 lines(catplots[[7]], col=trop[9],lwd=3)
-legend(600,0.4,legend=c("Illumina_vs_Clontech","Illumina_vs_NEB", "Illumina_vs_NEXTflex","Illumina_vs_Deduped","Illumina_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+legend(600,0.5,legend=c("Illumina_vs_Clontech","Illumina_vs_NEB", "Illumina_vs_NEXTflex","Illumina_vs_Deduped","Illumina_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
 
 
 #1000ng -rel to NEB
@@ -269,7 +301,7 @@ lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
 lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
 lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
 lines(catplots[[7]], col=trop[9],lwd=3)
-legend(600,0.4,legend=c("NEB_vs_Clontech","NEB_vs_Illumina", "NEB_vs_NEXTflex","NEB_vs_Deduped","NEB_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+legend(600,0.5,legend=c("NEB_vs_Clontech","NEB_vs_Illumina", "NEB_vs_NEXTflex","NEB_vs_Deduped","NEB_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
 
 
 #1000ng -rel to Deduped
@@ -286,7 +318,7 @@ lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
 lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
 lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
 lines(catplots[[7]], col=trop[9],lwd=3)
-legend(600,0.4,legend=c("Deduped_vs_Clontech","Deduped_vs_Illumina","Deduped_vs_NEB", "Deduped_vs_NEXTflex","Deduped_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+legend(600,0.5,legend=c("Deduped_vs_Clontech","Deduped_vs_Illumina","Deduped_vs_NEB", "Deduped_vs_NEXTflex","Deduped_vs_Fivepercent", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
 
 #1000ng -rel to Fivepercent
 forcatplot_1000 <- list(ranks_error$Fivepercent,ranks_error$Clontech,ranks_error$Illumina, ranks_error$NEB, ranks_error$NEXTflex, ranks_error$Deduped)
@@ -303,7 +335,7 @@ lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
 lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
 lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
 lines(catplots[[7]], col=trop[9],lwd=3)
-legend(600,0.4,legend=c("Fivepercent_vs_Clontech","Fivepercent_vs_Illumina","Fivepercent_vs_NEB", "Fivepercent_vs_NEXTflex","Fivepercent_vs_Deduped", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
+legend(600,0.5,legend=c("Fivepercent_vs_Clontech","Fivepercent_vs_Illumina","Fivepercent_vs_NEB", "Fivepercent_vs_NEXTflex","Fivepercent_vs_Deduped", "perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3)
 
 ```
 
