@@ -154,13 +154,17 @@ get_perc_diff <-function(data) {
   tested_names2<<-list()
   tested_kits<<-list()
   for(i in names(test_names)){
-    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])])*100
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
     tested_names1[[i]]<<-test_names[i][1,]
     tested_names2[[i]]<<-test_names[i][2,]
     tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
     }
 }
 
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(unique(names(data)), m= 2))
+}
+get_test_names(False_isomirs)
 get_perc_diff(data = False_isomirs)
 perc_stats<-data.frame(percresults)
 colnames(perc_stats)<-tested_kits
@@ -262,7 +266,7 @@ perc_stats
 
 ```
 
-stats on each canonical synth miRNA - how many isomirs
+stats on each canonical synth miRNA - how many isomirs - this is old!!!!!!!!!!
 ```{r}
 ### try aggregating by canonical
 
@@ -594,7 +598,7 @@ get_perc_diff <-function(data) {
   tested_names2<<-list()
   tested_kits<<-list()
   for(i in names(test_names)){
-    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])])*100
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
     tested_names1[[i]]<<-test_names[i][1,]
     tested_names2[[i]]<<-test_names[i][2,]
     tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])

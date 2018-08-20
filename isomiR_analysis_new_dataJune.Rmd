@@ -231,8 +231,8 @@ library(ggplot2)
 load(here("Complete_data/IsomiR_data/one_batch_norm_miR.rda"))
 load(here("Complete_data/IsomiR_data/total_miRNA.rda"))
 #load(here("Complete_data/IsomiR_data/Pheno.rda"))
-#norm_miRDF <-data.frame(one_batch_norm_miR)
-#total_isomiRs_above10 <- colSums(norm_miRDF>100)
+norm_miRDF <-data.frame(one_batch_norm_miR)
+total_isomiRs_above10 <- colSums(norm_miRDF>100)
 total_isomiR_reads <- colSums(norm_miRDF)
 total_isomiR_reads <-data.frame(total_isomiR_reads)
 total_isomiRs_above10<-data.frame(total_isomiRs_above10)
@@ -346,11 +346,11 @@ get_ttestStats<- function(x) {
 ```
 
 ```{r}
-get_test_names(split_kit)
-get_test_results(data = split_kit, test_names = test_names)
-ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
-colnames(ttestStats_across)<-tested_kits
-ttestStats_across
+# get_test_names(split_kit)
+# get_test_results(data = split_kit, test_names = test_names)
+# ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+# colnames(ttestStats_across)<-tested_kits
+# ttestStats_across
 ```
 
 
@@ -482,7 +482,7 @@ write.csv(Fivepercent_1000_isomirs, file = here("Fivepercent_1000_isomirsfull.cs
 
 det_Data$det_across_thresh<-thresh_across_amts$t
 det_Data$not_consistent <- ((det_Data$det_indv_thresh - as.numeric(as.character(det_Data$det_across_thresh)))/det_Data$det_indv_thresh)*100
-  det_Data$not_consistent <- (abs(as.numeric(as.character(det_Data$det_indv_thresh)) -det_Data$det_across_thresh)/ det_Data$det_indv_thresh)*100
+#det_Data$not_consistent <- (abs(as.numeric(as.character(det_Data$det_indv_thresh)) -det_Data$det_across_thresh)/ det_Data$det_indv_thresh)*100
 detected <-data.frame(det_Data$kit, det_Data$startingAmt, det_Data$not_consistent)
 
 detected$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
@@ -564,6 +564,47 @@ ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
 colnames(ttestStats_across)<-tested_kits
 ttestStats_across
 
+tes(t =-0.11, n.1 = 18, n.2 = 9)
+tes(t =1.8, n.1 = 18, n.2 = 12)
+tes(t =2.4, n.1 = 18, n.2 = 18)
+tes(t =-2, n.1 = 18, n.2 = 18)
+tes(t =-1.9, n.1 = 18, n.2 = 18)
+
+
+tes(t =1.7, n.1 = 9, n.2 = 12)
+tes(t =2, n.1 = 9, n.2 = 18)
+tes(t =-1.7, n.1 = 9, n.2 = 18)
+tes(t =-1.6, n.1 = 9, n.2 = 18)
+
+tes(t =-0.33, n.1 = 12, n.2 = 18)
+tes(t =-3, n.1 = 12, n.2 = 18)
+tes(t =-3, n.1 = 12, n.2 = 18)
+
+tes(t =-3.8, n.1 = 18, n.2 = 18)
+tes(t =-3.7, n.1 = 18, n.2 = 18)
+
+tes(t =0.021, n.1 = 18, n.2 = 18)
+
+Means<-unlist(lapply(inconsistency, colMeans))
+test_names<-names(Means)
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((data[ which(names(data)==test_names[i][1,])]-data[ which(names(data)==test_names[i][2,])]))/ data[ which(names(data)==test_names[i][2,])]*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+get_test_names(Means)
+get_perc_diff(data = Means)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
 #grid.draw(vp_alpha);
 #venn.plot <- venn.diagram(
 # x = miRNA_det,
@@ -575,7 +616,7 @@ ttestStats_across
 tes(t =-3.8, n.1 = 18, n.2 = 18)
 #NEXTflex and Fivepercent
 tes(t =-3.7, n.1 = 18, n.2 = 18)
-
+#get_perc
 (mean(inconsistency$NEXTflex$X..i..) - mean(inconsistency$Deduped$X..i..))/ mean(inconsistency$NEXTflex$X..i..)*100
 (mean(inconsistency$NEXTflex$X..i..) - mean(inconsistency$Fivepercent$X..i..))/ mean(inconsistency$NEXTflex$X..i..)*100
 ```
