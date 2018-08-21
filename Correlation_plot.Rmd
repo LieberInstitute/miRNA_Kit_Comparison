@@ -76,6 +76,10 @@ thresh_miR_counts <- miR_counts[index,] # CHANGE TO NORM MIR COUNTS!!!
 dim(thresh_miR_counts)
 ```
 
+
+
+
+
 ###correlationplot
 ```{r, eval = TRUE}
 library(GGally)
@@ -97,6 +101,115 @@ ggpairs(avg_1000ng)
 dev.off()
 # estimated density in diagonal
 ```
+
+##MA plot
+```{r}
+library(limma)
+#NEBvsNEXT
+lm(avg_1000ng$Clontech, avg_1000ng$NEB)
+plotMA(object = thresh_miR_counts)#plotMA expects the data frame to have 3 columns, two numeric ones for mean and log fold change, and a logical one for significance
+
+library(edgeR)
+#matrix(avg_1000ng$Clontech, avg_1000ng$NEB, ncol =2)
+
+maPlot(x =avg_1000ng$Clontech, y =avg_1000ng$NEB,lowess = TRUE) 
+maPlot(x =avg_1000ng$Clontech, y =avg_1000ng$NEXTflex,lowess = TRUE )
+maPlot(x =avg_1000ng$Clontech, y =avg_1000ng$Illumina,lowess = TRUE )
+maPlot(x =avg_1000ng$Clontech, y =avg_1000ng$Deduped,lowess = TRUE )
+maPlot(x =avg_1000ng$Clontech, y =avg_1000ng$Fivepercent,lowess = TRUE )
+maPlot(x =avg_1000ng$NEB, y =avg_1000ng$Illumina ,lowess = TRUE)
+maPlot(x =avg_1000ng$NEB, y =avg_1000ng$NEXTflex ,lowess = TRUE)
+maPlot(x =avg_1000ng$NEB, y =avg_1000ng$Deduped ,lowess = TRUE)
+maPlot(x =avg_1000ng$NEB, y =avg_1000ng$Fivepercent ,lowess = TRUE)
+
+maPlot(x =avg_1000ng$NEXTflex, y =avg_1000ng$Illumina ,lowess = TRUE)
+maPlot(x =avg_1000ng$NEXTflex, y =avg_1000ng$Deduped ,lowess = TRUE)
+maPlot(x =avg_1000ng$NEXTflex, y =avg_1000ng$Fivepercent ,lowess = TRUE)
+maPlot(x =avg_1000ng$Deduped, y =avg_1000ng$Fivepercent ,lowess = TRUE)
+
+data_1000ng<-as.matrix(avg_1000ng)
+ maPlot(data_1000ng[,3], data_1000ng[,3], lowess = TRUE)
+#example...
+y <- matrix(rnbinom(10000,mu=5,size=2),ncol=4)
+ maPlot(y[,3], y[,4], lowess = TRUE)
+library(affy)
+ma.plot( rowMeans((avg_1000ng[c(1,3)])), (avg_1000ng$Clontech)-(avg_1000ng$NEB), cex=1 )
+
+
+##another example
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5) +
+geom_hline(color = "blue3") + stat_smooth(se = FALSE, method = "loess", color = "red3")
+
+
+
+#with Limma
+A <- runif(1000,4,16)
+y <- A + matrix(rnorm(1000*3,sd=0.2),1000,3)
+status <- rep(c(0,-1,1),c(950,40,10))
+y[,1] <- y[,1] + status
+limma::plotMA(y, array=1, status=status, values=c(-1,1), hl.col=c("blue","red"))
+
+##### manually
+x = data_1000ng[, 1]#clontech
+y = data_1000ng[, 2]#Illumina
+M = x - y
+A = (x + y)/2
+df = data.frame(A, M)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")
+
+x = data_1000ng[, 1]#clontech
+y = data_1000ng[, 3]#NEB
+M = x - y
+A = (x + y)/2
+df = data.frame(A, M)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")
+
+x = data_1000ng[, 1]#clontech
+y = data_1000ng[, 4]#NEXTflex
+M = x - y
+A = (x + y)/2
+df = data.frame(A, M)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")
+
+
+x = data_1000ng[, 1]#Clontech
+y = data_1000ng[, 5]#Deduped
+M = x - y
+A = (x + y)/2
+df = data.frame(A, M)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")
+
+
+x = data_1000ng[, 1]#Clontech
+y = data_1000ng[, 6]#Fivepercent
+M = x - y
+A = (x + y)/2
+df = data.frame(A, M)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")
+
+x = data_1000ng[, 5]#Deduped
+y = data_1000ng[, 6]#Fivepercent
+M = x - y
+A = (x + y)/2
+df = data.frame(A, M)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")
+
+x = data_1000ng[, 4]#NEXTflex
+y = data_1000ng[, 5]#Deduped
+M = x - y
+A = (x + y)/2
+df = data.frame(A, M)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")
+
+x = data_1000ng[, 4]#NEXTflex
+y = data_1000ng[, 6]#Fivepercent
+M = x - y
+A = (x + y)/2
+df = data.frame(A, M)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")
+
+```
+
 ###Dendrogram to see how data clusters after normalization of counts
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
 library(rafalib)
