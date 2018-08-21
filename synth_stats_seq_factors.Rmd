@@ -298,12 +298,16 @@ for(i in factordata$kit) {
   split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
 } 
 
-run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+#run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+run_model <-function(x){(lm(x$value~x$factor))}
 model_stats<-lapply(split_data,run_model)
-
-
 lapply(model_stats, summary)
 
+run_model <-function(x){(cor(x$value,x$factor))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+lapply(model_stats, anova_stats)
 # run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
 # quad_model_stats<-lapply(split_data,run_model_quad)
 # lapply(quad_model_stats, summary)
@@ -577,11 +581,12 @@ for(i in factordata$kit) {
  run_model <-function(x){(lm(x[[3]]~x[[1]]))}
 model_stats<-lapply(split_data,run_model)
 lapply(model_stats, summary)
-
+run_model <-function(x){(cor(x[[3]], x[[1]]))}
+model_stats<-lapply(split_data,run_model)
 
 run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
 quad_model_stats<-lapply(split_data,run_model_quad)
-
+lapply(quad_model_stats, summary)
  anova(model_stats$Clontech, quad_model_stats$Clontech)
  anova(model_stats$Illumina, quad_model_stats$Illumina)#sig
  anova(model_stats$NEB, quad_model_stats$NEB)#sig
