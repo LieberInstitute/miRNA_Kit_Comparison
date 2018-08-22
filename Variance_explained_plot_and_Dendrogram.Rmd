@@ -94,16 +94,18 @@ varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
 labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
 colnames(labels_varexp)<-c("miRNA", "variable")
 VarExp<-cbind(labels_varexp,varexp$PctExp)
-Method<-VarExp[which(VarExp$variable == "Method"),]
- VarExp$variable <- factor(VarExp$variable,
-                         levels = c('Method','Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
-plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = "red"), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
-pdf(file =here("Figures/Raw_plots/Fig.2.b.pdf"),width=6,height=4)
-plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
+VarExp$variable<-gsub("Total_miRNA_Mapped_Reads", "Total miRNA\nMapped Reads", VarExp$variable)
+VarExp$variable<-gsub("Starting_Amount", "Starting\nAmount", VarExp$variable)
+
+VarExp$variable <- factor(VarExp$variable,
+                         levels = c('Method','Starting\nAmount', 'Batch', 'Total miRNA\nMapped Reads','Residuals'),ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = "red"), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=3)
+pdf(file =here("Figures/Raw_plots/Fig.2.variance.pdf"),width=8,height=9)
+plotfull  +
   labs(y="Percent of Variance Explained", x ="none") + 
   scale_fill_manual(values = c("red"))+
-  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
-        axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
+  theme(legend.position = "none", axis.title.x=element_blank() , axis.text.y=element_text(size = 30, angle = 0, face = "bold", color = "black"), axis.text.x=element_text(size = 20, angle = 30, face = "bold", colour = "black", hjust = 1), 
+        axis.title.y=element_text(size=30, color = "black", face = "bold"), plot.title = element_text(size = 20, face = "bold"))
 dev.off()
 ```
 
