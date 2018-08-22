@@ -103,6 +103,7 @@ get_test_results<- function(data,test_names, pairedvalue) {
   tresults<<-list()
   tested_names1<<-list()
   tested_names2<<-list()
+  length_kits <<-list()
   for(i in names(test_names)){
     Kit1 <-data[which(names(data) %in% test_names[i][1,])]
     Kit2 <-data[which(names(data) %in% test_names[i][2,])]
@@ -114,6 +115,7 @@ get_test_results<- function(data,test_names, pairedvalue) {
     #colnames(Kit2)<-c("error")
     tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
     tested_kits <<-paste0(tested_names1, "&", tested_names2)
+    length_kits[[i]]<<-c(length(Kit1[[1]]), length(Kit2[[1]]))
   }
 }
 
@@ -122,10 +124,17 @@ get_ttestStats<- function(x, tested_kits) {
     df = format(x$parameter, digits = 0),
     p.value = format(x$p.value, scientific = TRUE, digits = 2),
     bonferroni.threshold = format(.05/length(test_names), digits = 2),
-    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+    mean_1st_method = format(x$estimate[[1]], digits =2), 
+    mean_2nd_method =format(x$estimate[[2]], digits =2))
 }
 
-
+get_t.es.g <- function(ts){
+  t.es.g <<-list()
+  for(i in names(length_kits)){
+  t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
+  }
+}
 get_perc_diff <-function(data) {
   percresults<<-list()
   tested_names1<<-list()
@@ -245,7 +254,8 @@ anova_stats(anova(lm(errorAll$value~ errorAll$Method)))
 split_errorAll <-list()
 for(kit in errorAll$Method){
  split_errorAll[[kit]]<- errorAll[which(errorAll$Method == kit),]$value}
-test_names <- data.frame(combn(names(split_errorAll), m= 2))
+
+get_test_names(split_errorAll)
 
 get_test_results(data = split_errorAll, test_names = test_names, pairedvalue = FALSE)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
@@ -283,7 +293,8 @@ ggplot(msplit_errorAll, aes(x = L1, y = value))+ geom_jitter(width = .3, size = 
             legend.position= "none")
 dev.off()
 
-
+ get_t.es.g(ts = tresults)
+ t(data.frame(t.es.g))
 ```
 1000ng data
 ```{r}
@@ -325,6 +336,24 @@ t.es.g[[1]]<-tes(t = as.numeric(as.character(stats$t.t[which(rownames(stats) =="
 
 
 ```
+
+are high error miRNAs the same for different methods? #### working here!!!
+```{r}
+error_1000 <-lapply(error_1000, data.frame)
+ranks_error<-data.frame(sapply(-error_1000[1], rank))#ranked so 1 is the highest error
+rownames(ranks_error)<-rownames(errorData_testdf)
+Clontech_ranks <-(ranks_error[grep("Clontech", colnames(ranks_error))])
+Illumina_ranks <-(ranks_error[grep("Illumina", colnames(ranks_error))])
+NEB_ranks <-(ranks_error[grep("NEB", colnames(ranks_error))])
+NEXTflex_ranks <-(ranks_error[grep("NEXTflex", colnames(ranks_error))])
+Deduped_ranks <-(ranks_error[grep("Deduped", colnames(ranks_error))])
+Fivepercent_ranks <-(ranks_error[grep("Fivepercent", colnames(ranks_error))])
+ranked_miRNA<-list()
+```
+
+
+
+
 How is each method influenced by starting amount
 ```{r}
 for(kit in errorAll$Method){
@@ -444,28 +473,7 @@ colnames(perc_stats)<-tested_kits
 t(perc_stats)
 
 ```
-Plots across amounts
 
-```{r}
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-}
-
-n = 6
-cols = gg_color_hue(n)
-
-make_plot <- function(data) {
-    data$Starting_Amount <- factor(data$Starting_Amount, levels =c("100", "250", "500","1000" ,"1500", "2000"), order = TRUE)
-  plot1000<<-ggplot(data = data, aes(x = Starting_Amount, y = value)) +geom_jitter(color = cols[1],aes( alpha =.7)) + geom_boxplot( outlier.shape = NA)+ geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+
-  theme(axis.title.x = element_text(size =0), 
-        plot.title = element_text(size = 18, face = "bold", hjust = 0.1), 
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10), 
-        axis.title.y = element_text(size =18), legend.position = "none")
-}
-make_plot(data = split_errorAll$Clontech)
-```
 
 
 1000ng data
@@ -658,8 +666,8 @@ run for each kit
 ```{r}
 library(car)
 #overall variance of error
-values<-lapply(split_errorAll, `[`, 2)
-variance <- lapply(values, var)
+#values<-lapply(split_errorAll, `[`, 2)
+variance <- lapply(split_errorAll, var)
 boxplot(variance) # interesting the variance in error is really low for deduped - meaning error is more consistent across sequences
 
 yGene <-as.matrix(errorData_testdf$Clontech)
