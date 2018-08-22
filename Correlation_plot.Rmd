@@ -116,7 +116,7 @@ M = x - y
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_Illumina.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+ geom_hline(color = "blue3", yintercept = 0) + xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+ geom_hline(color = "blue3", yintercept = 0) + xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 x = data_1000ng[, 1]#clontech
 y = data_1000ng[, 3]#NEB
@@ -124,15 +124,14 @@ M = x - y
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_NEB.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3") + ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
-dev.off()
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3") + ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 x = data_1000ng[, 1]#clontech
 y = data_1000ng[, 4]#NEXTflex
 M = x - y
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_NEXTflex.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 
 x = data_1000ng[, 1]#Clontech
@@ -141,7 +140,7 @@ M = x - y
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_Deduped.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 
 
@@ -152,7 +151,7 @@ M = x - y
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7)) +geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7)) +geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 
 x = data_1000ng[, 2]#Illumina
@@ -161,7 +160,7 @@ M = x - y
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_NEB.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 x = data_1000ng[, 2]#Illumina
 y = data_1000ng[, 4]#NEXTflex
@@ -169,14 +168,14 @@ M = x - y
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_NEXTflex.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 x = data_1000ng[, 2]#Illumina
 y = data_1000ng[, 5]#Deduped
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_Deduped.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 
 x = data_1000ng[, 2]#Illumina
@@ -184,7 +183,7 @@ y = data_1000ng[, 6]#Fivepercent
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 
 x = data_1000ng[, 3]#NEB
@@ -192,21 +191,21 @@ y = data_1000ng[, 4]#NEXTflex
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEB_NEXTflex.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 x = data_1000ng[, 3]#NEB
 y = data_1000ng[, 5]#Deduped
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEB_Deduped.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 x = data_1000ng[, 3]#NEB
 y = data_1000ng[, 6]#Fivepercent
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEB_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 
 x = data_1000ng[, 4]#NEXTflex
@@ -215,7 +214,7 @@ M = x - y
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEXTflex_Deduped.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+ theme(axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20), axis.title.x = element_text(size = 20), axis.title.y = element_text(size = 20))
 dev.off()
 x = data_1000ng[, 4]#NEXTflex
 y = data_1000ng[, 6]#Fivepercent
@@ -223,7 +222,7 @@ M = x - y
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEXTflex_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 
 x = avg_1000ng$Deduped
@@ -233,7 +232,7 @@ M = x - y
 A = (x + y)/2
 df = data.frame(A, M)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Deduped_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
-ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5)+ stat_smooth(se = FALSE, method = "loess", color = "red3")+ ylim(c(-7,7))+geom_hline(color = "blue3", yintercept = 0)+ xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))
 dev.off()
 ```
 
