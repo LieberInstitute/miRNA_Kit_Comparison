@@ -94,18 +94,7 @@ get_t.es.g <- function(ts){
   t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
   }
 }
-get_perc_diff <-function(data) {
-  percresults<<-list()
-  tested_names1<<-list()
-  tested_names2<<-list()
-  tested_kits<<-list()
-  for(i in names(test_names)){
-    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
-    tested_names1[[i]]<<-test_names[i][1,]
-    tested_names2[[i]]<<-test_names[i][2,]
-    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
-    }
-}
+
 
 ```
 
@@ -200,7 +189,7 @@ ggplot(thresh_number_df, aes(x =kit, y = value), fill = "kit") +geom_boxplot(col
 dev.off()
 
 pdf(file =here("Supplement/Figures/line_graph_miRNA_Det_across_thresh_all_amounts.pdf"),width=10,height=6)
-ggplot(thresh_number_df, aes(x =variable, y=value, fill = kit)) + geom_point(aes(color = kit, cex = 2)) + facet_grid(.~kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, aes(group=1, color = kit))
+ggplot(thresh_number_df, aes(x =variable, y=value, fill = kit)) + geom_point(aes(color = kit, cex = 2)) + facet_grid(.~kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 20, face = "bold"), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection >10 reads in all triplicates") +geom_smooth(method = "loess", se=TRUE, aes(group=1, color = kit))
 dev.off()
 
 anova(lm(thresh_number_df$value~ thresh_number_df$kit))
@@ -319,6 +308,22 @@ inconsistency<-lapply(inconsistency, data.frame)
 names(inconsistency)<-c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
 
 get_test_names(inconsistency)
+
+get_test_results<- function(data,test_names, pairedvalue) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  length_kits <<-list()
+  for(i in names(test_names)){
+    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+    length_kits[[i]]<<-c(length(Kit1[[1]][[1]]), length(Kit2[[1]][[1]]))
+  }
+}
 
 get_test_results(data = inconsistency, test_names = test_names, pairedvalue = FALSE)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
