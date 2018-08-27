@@ -1,0 +1,177 @@
+---
+title: "synth_preprocessing"
+author: "Carrie Wright"
+date: "May 30, 2018"
+output: html_document
+---
+
+Code to clean fasta file to only include unique sequnces and create a new one:
+```{r, eval =FALSE}
+library(here)
+#using an excel given to us from Miltenyi we created fasta files for each species, then we merged, then we did this
+library("Biostrings")
+s = readDNAStringSet(here("synthetic_allspecies.fa"))
+
+#s = readDNAStringSet("/Users//carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/synthetic_allspecies.fa")
+s<- unique(s)
+newnames <-(gsub(" ", "", names(s)))
+newnames<-sapply(strsplit(names(s), ":"), `[`, 1) #just to grab the first object
+number<-seq(1,962,1)
+newnames<-paste(number,newnames,sep = "-")
+newnames<-paste("synth_miRNA",newnames,sep = "-")
+names(s)<-newnames
+#Biostrings::writeXStringSet(seqs,format = "fasta", filepath = "/Users//carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/synth_seqs_named.fa")
+
+
+```
+Check Raw Data
+```{r, eval = TRUE}
+library(here)
+###anymatches with grep
+any_Clontech<-read.table(here("anyMatch_Clontech.txt") , header = TRUE, sep = ",")
+any_Illumina<-read.table(here("anyMatch_Illumina.txt") , header = TRUE, sep = ",")
+any_NEB<-read.table(here("anyMatch_NEB.txt") , header = TRUE, sep = ",")
+any_NEXTflex<-read.table(here("anyMatch_NEXTflex.txt") , header = TRUE, sep = ",")
+
+###onlymatches in the location the are supposed to be 
+ideal_Clontech<-read.table(here("idealMatch_Clontech.txt") , header = TRUE, sep = ",")
+ideal_Illumina<-read.table(here("idealMatch_Illumina.txt") , header = TRUE, sep = ",")
+ideal_NEB<-read.table(here("idealMatch_NEB.txt") , header = TRUE, sep = ",")
+ideal_NEXTflex<-read.table(here("idealMatch_NEXTflex.txt") , header = TRUE, sep = ",")
+
+###need to reorder everything the same
+ordered_any_Clontech <- any_Clontech[order(any_Clontech$names),]
+ordered_any_Illumina <- any_Illumina[order(any_Illumina$names),]
+ordered_any_NEB <- any_NEB[order(any_NEB$names),]
+ordered_any_NEXTflex <- any_NEXTflex[order(any_NEXTflex$names),]
+
+ordered_ideal_Clontech <- ideal_Clontech[order(ideal_Clontech$names),]
+ordered_ideal_Illumina <- ideal_Illumina[order(ideal_Illumina$names),]
+ordered_ideal_NEB <- ideal_NEB[order(ideal_NEB$names),]
+ordered_ideal_NEXTflex <- ideal_NEXTflex[order(ideal_NEXTflex$names),]
+
+#check ordering
+identical(ordered_ideal_Clontech$names, ordered_any_Clontech$names)
+identical(ordered_ideal_Clontech$names, ordered_any_Illumina$names)
+any_Clontech[which(any_Clontech$names =="EBV-MIR-BART12: EBV-MIR-BART12."),]
+ordered_any_Clontech[which(ordered_any_Clontech$names =="EBV-MIR-BART12: EBV-MIR-BART12."),]
+```
+
+check raw data ratios
+```{r, eval = TRUE}
+library(reshape2)
+Correct_Clontech_percent<-data.frame(names =ordered_ideal_Clontech$names, percent = ((ordered_ideal_Clontech$X0 / ordered_any_Clontech$X0)*100))
+Correct_NEB_percent<-data.frame(names =ordered_ideal_NEB$names, percent = ((ordered_ideal_NEB$X0 / ordered_any_NEB$X0)*100))
+Correct_NEXTflex_percent<-data.frame(names =ordered_ideal_NEXTflex$names, percent = ((ordered_ideal_NEXTflex$X0 / ordered_any_NEXTflex$X0)*100))
+Correct_Illumina_percent<-data.frame(names =ordered_ideal_Illumina$names, percent = ((ordered_ideal_Illumina$X0 / ordered_any_Illumina$X0)*100))
+
+ratios <-data.frame(Clontech =Correct_Clontech_percent$percent, Illumina =Correct_Illumina_percent$percent, NEB =Correct_NEB_percent$percent, NEXTflex =Correct_NEXTflex_percent$percent)
+rownames(ratios) <-Correct_Clontech_percent$names
+
+any_Reads <-data.frame(names = ordered_any_Clontech$names, Clontech = ordered_any_Clontech$X0, Illumina = ordered_any_Illumina$X0, NEB = ordered_any_NEB$X0, NEXTflex= ordered_any_NEXTflex$X0)
+
+ideal_Reads <-data.frame(names = ordered_ideal_Clontech$names, Clontech = ordered_ideal_Clontech$X0, Illumina = ordered_ideal_Illumina$X0, NEB = ordered_ideal_NEB$X0, NEXTflex= ordered_ideal_NEXTflex$X0)
+
+
+mratios <-melt(ratios)
+colMeans(ratios)
+NEB_ratio <-Correct_NEB_percent[-71,]
+mean(NEB_ratio$percent)
+
+which(any_NEB$X0 ==0) # no reads mapped to KSHV-MIR-K12-9*: KSHV-MIR-K12-9* for the raw data with grep
+#seqs[which(names(seqs) == "KSHV-MIR-K12-9-71"),] #this corresponds to this sequence which was difficult for most kits
+ordered_any_NEB[71,]
+ordered_any_Illumina[71,]
+ordered_any_NEXTflex[71,]
+ordered_any_Clontech[71,]
+
+#did miRge count this as zero for NEB?
+
+mean(any_NEB$X0)
+mean(any_NEXTflex$X0)
+mean(any_Illumina$X0)
+mean(any_Clontech$X0)
+
+anova(lm(mratios$value ~ mratios$variable ))
+t<-(lm(mratios$value ~ mratios$variable ))
+
+```
+```{r}
+library(ggplot2)
+test_names <- data.frame(combn(names(ratios)[c(1,2,4)], m= 2))
+
+get_test_results<- function(data,test_names, pairedvalue) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+    names(Kit1)<-c("error")
+    names(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x, tested_kits) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+}
+
+#higher t is worse because we are using sds
+get_test_results(data = ratios, test_names = test_names, pairedvalue = TRUE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+ratios$NEB[71]
+ratios_incomplete <-ratios[-71,]
+test_names <- data.frame(combn(names(ratios_incomplete), m= 2))
+
+get_test_results(data = ratios_incomplete, test_names = test_names, pairedvalue = TRUE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 6
+cols = gg_color_hue(n)
+
+test_names <- data.frame(combn(names(ratios)[c(1,2,4)], m= 2))
+ggplot(mratios, aes(x = variable, y = value))+geom_jitter(aes(color = variable, alpha=0.1), width = .3)+geom_boxplot( outlier.shape = NA, notch = TRUE, color = "black")+scale_color_manual(values = c(cols[1:4])) +ggtitle(label = "Percentage of Correct Location of miRNAs Within Reads")+ 
+  ylab("Percentage correct")+
+  xlab("Kit")+
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 15, face = "bold", hjust = 0.5, color = "black"), 
+        axis.text.x = element_text(size = 20, color = "black"),
+        axis.text.y = element_text(size = 20, color= "black"), 
+        axis.title.y = element_text(size =20),
+        legend.position= "none")
+pdf(file =here("Figures/Raw_plots/Fig.2.a.pdf"),width=6,height=4) 
+ggplot(mratios, aes(x = variable, y = value))+geom_jitter(aes(color = variable, alpha=0.1), width = .2)+geom_boxplot(notch =TRUE, outlier.shape = NA, varwidth = TRUE) +scale_fill_manual(values = c(cols[1:4])) +scale_color_manual(values = c(cols[1:4])) +ggtitle(label = "Percentage of Correct Location of miRNAs Within Reads")+ 
+  ylab("Percentage correct")+
+  xlab("Kit")+
+  theme(axis.title.x = element_text(size =0), 
+        plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20), 
+        axis.title.y = element_text(size =20),
+        legend.position= "none")
+dev.off()
+write.table(ratios, here("ratios.txt"), sep="\t")
+write.table(any_Reads, here("any_Reads.txt"), sep="\t")
+write.table(ideal_Reads, here("ideal_Reads.txt"), sep="\t")
+```
+
+
+
