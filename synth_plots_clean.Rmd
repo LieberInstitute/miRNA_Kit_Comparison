@@ -47,11 +47,8 @@ get_ttestStats<- function(x) {
     bonferroni_thresh = format(.05/length(test_names), digits = 2),
     sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
     t.es.g = tes(x$statistic, n.1 = 962, n.2 = 962)$g,
-    t.es.OR =tes(x$statistic, n.1 = 962, n.2 = 962)$OR, 
-    mean_1st_method = format(x$estimate[[1]], digits =2), 
-    mean_2nd_method =format(x$estimate[[2]], digits =2))
+    t.es.OR =tes(x$statistic, n.1 = 962, n.2 = 962)$OR)
 }
-
 
 
 get_perc_diff <-function(data) {
@@ -94,6 +91,8 @@ get_perc_diff(data = error_synth)
 perc_stats<-data.frame(percresults)
 colnames(perc_stats)<-tested_kits
 perc_stats
+
+sapply(error_synth, mean)
 ```
 
 #### Main Plot###########
