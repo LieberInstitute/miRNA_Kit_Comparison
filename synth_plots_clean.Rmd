@@ -35,7 +35,7 @@ get_test_results<- function(data,test_names) {
     tested_names2[[i]]<<-colnames(Kit2)
     colnames(Kit1)<-c("error")
     colnames(Kit2)<-c("error")
-    tresults[[i]]<<-t.test(x=Kit1$error, y=Kit2$error, paired = TRUE) ### may have messed things up adding paired = TRUE previously had more ))
+    tresults[[i]]<<-t.test(x=Kit1$error, y=Kit2$error, paired = TRUE)
     tested_kits <<-paste0(tested_names1, "&", tested_names2)
   }
 }
