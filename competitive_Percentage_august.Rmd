@@ -35,14 +35,8 @@ get_ttestStats<- function(x, tested_kits) {
     bonferroni.threshold = format(.05/length(test_names), digits = 2),
     sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
     mean_1st_method = format(x$estimate[[1]], digits =2), 
-    mean_2nd_method =format(x$estimate[[2]], digits =2))
-}
-
-get_t.es.g <- function(ts){
-  t.es.g <<-list()
-  for(i in names(length_kits)){
-  t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
-  }
+    mean_2nd_method =format(x$estimate[[2]], digits =2), 
+    t.es.g=tes(x$statistic, n.1 = 4, n.2 = 4)$g)
 }
 
 
