@@ -57,16 +57,13 @@ dim(norm_miR_counts)
 ###genefilter
 ```{r, eval=TRUE, echo = FALSE}
 library(genefilter)
-#poverafun <- genefilter::pOverA(p = .5, A = 529)# at least 529 reads for 50% of samples
+
 poverafun <- genefilter::pOverA(p = 1, A = 1)#at least one raw read in all samples #379
-#poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 raw reads in all samples #292
-#poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 raw reads in all samples #125
 
 ffun <- filterfun(poverafun)
 index <- genefilter(miR_counts, ffun)
 thresh_miR_counts <- norm_miR_counts[index,]
 dim(thresh_miR_counts)
-#thresh_miR_1000 <-  finding_rows(norm_miR_1000) could do this if we decide we need to be consistent with later analyses - but not much diff
 
 ```
 
@@ -138,10 +135,7 @@ gg_color_hue <- function(n) {
 
 n = 6
 cols = gg_color_hue(n)
-# repeat_colors <-function(x){rep(x,6)}
-# cols2 <- lapply(cols, repeat_colors)
-# cols2<-unlist(cols2)
-# cols2 <-cols2[order(miRNAc$order)]
+
 
 cols2<-gsub("Clontech","#F8766D" ,pdD$Kit)
 cols2<-gsub("Illumina","#B79F00" ,cols2)
@@ -152,10 +146,6 @@ cols2<-gsub("Fivepercent","#F564E3" ,cols2)
 
 Pheno<-read.table(here("Pheno_Dendrogram.csv"), header =TRUE, sep = ",")
 pdf(file =here("Figures/Raw_plots/Fig.2.d.pdf"),width=13,height=4.25) 
-# png(here("Dendrogram.png"), width = 1000, height = 800)
-# png(here("Dendrogram.png"), width = 5000, height = 3000)
-# png(here("Dendrogram.png"), width = 1000, height = 800)
-#myplclust(miRNAc, labels=Pheno$Groups,lab.col=(cols2), main = "Counts Generally Cluster by Method", cex =.4)
 myplclust(miRNAc, labels=Pheno$Trip_Group,lab.col=(cols2), cex =.6)
 dev.off()
 ```
