@@ -59,18 +59,13 @@ get_perc_diff <-function(data) {
     }
 }
 
-
-
-#get_lmStats <-function(x) {
-#  c(p=x$coefficients[2,4], scientific = TRUE, digits =2)
-#}
 ```
 
 ```{r}
-library("here")
-library("ggplot2")
-library("reshape2")
-library("jaffelab")
+library(here)
+library(ggplot2)
+library(reshape2)
+library(jaffelab)
 library(RColorBrewer) #set 3 or 1
 library(data.table)
 library(sjstats)
@@ -110,20 +105,19 @@ n = 6
 cols = gg_color_hue(n)
 cols<-cols[1:4]
 
-pdf(file =here("Figures/Raw_plots/percentages_1000ng.pdf"),width=10,height=6)
-ggplot(aggregate_1000, aes(x = Read_type, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 18)) +ylab("Percentage of reads")+ facet_grid(.~Method)  +scale_fill_manual(values = cols)
-dev.off()
+# ggplot(aggregate_1000, aes(x = Read_type, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 18)) +ylab("Percentage of reads")+ facet_grid(.~Method)  +scale_fill_manual(values = cols)
 
 mp$Read_type= factor(mp$Read_type,levels = c("undetermined","rRNA","tRNA", "scaRNA", "snoRNA", "snRNA","piRNA","miRNA"))
 
 aggregate_1000$Read_type <- factor(aggregate_1000$Read_type, levels = c("miRNA","piRNA", "snRNA", "snoRNA", "scaRNA","tRNA","rRNA", "undetermined"))
-pdf(file = here("Figures/Raw_plots/percentages_1000ng.pdf"),width=12.5,height=5)
 
+pdf(file = here("Figures/Raw_plots/percentages_1000ng.pdf"),width=12.5,height=5)
 ggplot(aggregate_1000, aes(x = Method, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 15, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 16)) +ylab("Percentage of reads")+ facet_grid(.~Read_type)  +scale_fill_manual(values = cols)
 dev.off()
-ggplot(aggregate_1000, aes(x = Method, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 18)) +ylab("Percentage of reads")+ facet_grid(Read_type~., scales = "free")  +scale_fill_manual(values = cols)
 
-ggplot(mp1000, aes(x = Read_type, y = value, color = Method)) +geom_boxplot(aes(y =value, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15), axis.title.y=element_text(size = 20), legend.position = "none") +ylab("Percentage of reads")+ facet_grid(~Method)  +scale_fill_manual(values = cols)
+# ggplot(aggregate_1000, aes(x = Method, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 18)) +ylab("Percentage of reads")+ facet_grid(Read_type~., scales = "free")  +scale_fill_manual(values = cols)
+
+# ggplot(mp1000, aes(x = Read_type, y = value, color = Method)) +geom_boxplot(aes(y =value, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15), axis.title.y=element_text(size = 20), legend.position = "none") +ylab("Percentage of reads")+ facet_grid(~Method)  +scale_fill_manual(values = cols)
 
 #stats
 percentages$Method <- ss(percentages$name, "_", 1)
