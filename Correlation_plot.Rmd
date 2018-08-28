@@ -65,11 +65,8 @@ dim(norm_miR_counts)
 ###genefilter
 ```{r, eval=TRUE, echo = FALSE}
 library(genefilter)
-#poverafun <- genefilter::pOverA(p = .5, A = 529)# at least 529 reads for 50% of samples
-poverafun <- genefilter::pOverA(p = 1, A = 1)#at least one raw read in all samples #379
-#poverafun <- genefilter::pOverA(p = 1, A = 10)#at least 10 raw reads in all samples #292
-#poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 raw reads in all samples #125
 
+poverafun <- genefilter::pOverA(p = 1, A = 1)#at least one raw read in all samples #379
 ffun <- filterfun(poverafun)
 index <- genefilter(miR_counts, ffun)
 thresh_miR_counts <- norm_miR_counts[index,]
@@ -94,8 +91,6 @@ for(i in Pheno$Kit) {
 
 avg_1000ng <-lapply(split_kit,rowMeans)
 avg_1000ng<-data.frame(avg_1000ng)
-# avg_1000ng<-sapply(avg_1000ng, log2)
-# avg_1000ng<- data.frame(avg_1000ng)
 pdf(file =here("Figures/Raw_plots/correlation.pdf"),width=10.5,height=7)
 ggpairs(avg_1000ng)
 dev.off()
@@ -108,88 +103,88 @@ library(ggplot2)
 
 data_1000ng<-as.matrix(avg_1000ng)
 
-make_plot<-function(df){ggplot(df, aes(x = A, y = M)) +geom_hline(color = "blue3", yintercept = 0, size=2)+ geom_point(size = 3)+ stat_smooth(se = FALSE, method = "loess", color = "red", size=2)+ ylim(c(-7,7))+  xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))}
+make_plot<-function(dfma){ggplot(dfma, aes(x = A, y = M)) +geom_hline(color = "blue3", yintercept = 0, size=2)+ geom_point(size = 3)+ stat_smooth(se = FALSE, method = "loess", color = "red", size=2)+ ylim(c(-7,7))+  xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))}
 
 make_MA_df <- function(x, y){
 M = x - y
 A = (x + y)/2
-df <<- data.frame(A, M)}
+dfma <<- data.frame(A, M)}
 
 ##### manually
 make_MA_df(x =avg_1000ng$Clontech, y = avg_1000ng$Illumina)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_Illumina.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$Clontech, y = avg_1000ng$NEB)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_NEB.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 
 make_MA_df(x =avg_1000ng$Clontech, y = avg_1000ng$NEXTflex)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_NEXTflex.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$Clontech, y = avg_1000ng$Deduped)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_Deduped.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$Clontech, y = avg_1000ng$Fivepercent)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$Illumina, y = avg_1000ng$NEB)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_NEB.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$Illumina, y = avg_1000ng$NEXTflex)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_NEXTflex.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$Illumina, y = avg_1000ng$Deduped)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_Deduped.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$Illumina, y = avg_1000ng$Fivepercent)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$NEB, y = avg_1000ng$NEXTflex)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEB_NEXTflex.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$NEB, y = avg_1000ng$Deduped)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEB_Deduped.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$NEB, y = avg_1000ng$Fivepercent)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEB_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$NEXTflex, y = avg_1000ng$Deduped)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEXTflex_Deduped.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$NEXTflex, y = avg_1000ng$Fivepercent)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEXTflex_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 
 make_MA_df(x =avg_1000ng$Deduped, y = avg_1000ng$Fivepercent)
 pdf(file =here("Figures/Raw_plots/MA_plots/MA_Deduped_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
-make_plot(df)
+make_plot(dfma)
 dev.off()
 ```
 
@@ -198,9 +193,6 @@ dev.off()
 library(rafalib)
 library(dendextend)
 library(reshape2)
-
-#thresh_miR_1000 <-  finding_rows(norm_miR_1000) could do this if we decide we need to be consistent with later analyses - but not much diff
-
 
 
 yGene <-as.matrix(thresh_miR_counts)
