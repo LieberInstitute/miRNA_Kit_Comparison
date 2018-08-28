@@ -40,6 +40,8 @@ get_test_results<- function(data,test_names) {
   }
 }
 
+#test
+
 get_ttestStats<- function(x) {
   c(t =format(x$statistic, digits = 2),
     df = format(x$parameter, digits = 0),
