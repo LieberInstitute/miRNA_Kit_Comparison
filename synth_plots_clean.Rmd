@@ -40,7 +40,6 @@ get_test_results<- function(data,test_names) {
   }
 }
 
-#test
 
 get_ttestStats<- function(x) {
   c(t =format(x$statistic, digits = 2),
@@ -83,22 +82,22 @@ ttestStats<-data.frame(lapply(tresults, get_ttestStats))
 colnames(ttestStats)<-tested_kits
 ttestStats
 
-synth <-melt(error_synth)
-fit = lm(synth$value ~ synth$variable)
-anova(fit)
-sjstats::anova_stats(aov(fit)) # get effect size
-
-#calculate percent differences
-get_perc_diff(data = error_synth)
-perc_stats<-data.frame(percresults)
-colnames(perc_stats)<-tested_kits
-perc_stats
-
-sapply(error_synth, mean)
+# synth <-melt(error_synth)
+# fit = lm(synth$value ~ synth$variable)
+# anova(fit)
+# sjstats::anova_stats(aov(fit)) # get effect size
+# 
+# #calculate percent differences
+# get_perc_diff(data = error_synth)
+# perc_stats<-data.frame(percresults)
+# colnames(perc_stats)<-tested_kits
+# perc_stats
+# 
+# sapply(error_synth, mean)
 ```
 
 #### Main Plot###########
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 library(jaffelab)
 library(ggplot2)
 library(ggpubr)
@@ -122,7 +121,7 @@ dev.off()
 ```
 
 Are high error miRNAs the same across methods?
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 library(ggrepel)
 
 ranks_error<-data.frame(sapply(-error_synth[1:6], rank, ties.method = c("random")))#ranked so 1 is the highest error
@@ -173,7 +172,7 @@ KendallW(ranks_error[c(5,6)], correct = FALSE, test = TRUE)# Deduped and Fiveper
 ```
 
 CATplots
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 library(ffpe)
 
 #rel to Clontech
@@ -317,14 +316,14 @@ dev.off()
 
 ####################Sequence Feature Plots ######################################
 relative consistency
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 errorData_toplot<-log2(miRge_synth+1)
 get_perc<-function(x) {(x/mean(x))*100}
 errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
 ```
 
 GC line plot
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 errorGC <-cbind(seqs$GC, errorData_toplot)
 errorGC$`seqs$GC`<-as.factor(errorGC$`seqs$GC`)
 errorGC<-melt(errorGC)
@@ -346,7 +345,7 @@ colnames(errorGC)<-c("GC_Content", "Kit", "expression")
 #####Heatmap############
 
 Last and First good Plots of expression relative to the mean!
-```{r, eval = TRUE}
+```{r, echo=FALSE, eval=FALSE}
 library(pheatmap)
 ###get seq info
 lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
@@ -399,7 +398,7 @@ myColor<-c(myColorbelow, myColorabove)
 ```
 
 relative percentage heatmaps
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 library(pheatmap)
 make_heatmap <-function(Data, title){
 aggdata <-aggregate(Data[-1], by=list(Data$x), FUN=mean)
@@ -438,7 +437,7 @@ dev.off()
 
 
 Length based on log2 expression +1
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 library(ggpubr)
 errorData_toplot<-log2(miRge_synth+1)
 errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
@@ -482,7 +481,7 @@ dev.off()
 
 
 GC
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 errorData_toplot<-log2(miRge_synth+1)
 errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
 
@@ -528,7 +527,7 @@ dev.off()
 
 
 Fold
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 errorData_toplot<-log2(miRge_synth+1)
 errorData_toplot<-(errorData_toplot /colMeans(errorData_toplot))*100
 
@@ -573,7 +572,7 @@ table(round(seqs$FoldG))
 
 
 Repeats
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 TTTT<-sapply(gregexpr("TTTT", seqs$x), function(x) sum(x != -1))
 GGGG<-sapply(gregexpr("GGGG", seqs$x), function(x) sum(x != -1))
 AAAA<-sapply(gregexpr("AAAA", seqs$x), function(x) sum(x != -1))
@@ -588,7 +587,7 @@ anyA<-sapply(gregexpr("A", seqs$x), function(x) sum(x != -1))
 ```
 
 Duplets
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 errorData_toplot<-log2(miRge_synth+1)
 errorData_toplot<-(errorData_toplot /colMeans(errorData_toplot))*100
 
@@ -633,7 +632,7 @@ table(round(seqs$FoldG))
 ```
 
 TTTT
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 errorData_toplot<-log2(miRge_synth+1)
 errorData_toplot<-(errorData_toplot /colMeans(errorData_toplot))*100
 
@@ -677,7 +676,7 @@ table(TTTT)
 ```
 
 anyC
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 errorData_toplot<-log2(miRge_synth+1)
 errorData_toplot<-(errorData_toplot /colMeans(errorData_toplot))*100
 
@@ -741,7 +740,7 @@ table(anyC)
 
 
 Variance Plot
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 library(ggplot2)
 library(car)
 yGene<-as.matrix(log2(miRge_synth+1))
@@ -827,7 +826,7 @@ rank_Table <-sapply((-1*var_Table), rank )
 ```
 
 
-```{r, eval=TRUE}
+```{r, echo=FALSE, eval=FALSE}
 library(pheatmap)
 varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
 varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
@@ -844,7 +843,7 @@ dev.off()
 
 Radar plot of variance
 
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 library(fmsb)
 data=as.data.frame(matrix( sample( 2:20 , 10 , replace=T) , ncol=10))
 colnames(data)=c("math" , "english" , "biology" , "music" , "R-coding", "data-viz" , "french" , "physic", "statistic", "sport" )
