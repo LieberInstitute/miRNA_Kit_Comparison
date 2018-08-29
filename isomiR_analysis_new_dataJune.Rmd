@@ -5,126 +5,27 @@ date: "2/22/2018"
 output: html_document
 ---
 
-Trimming code on SRV4 /media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq_liberal
-```{bash, eval = FALSE}
-< trim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -a TGGAATTCTCGGGTGCCAAGG -o $outDir/NEXT_trim1.{}.fq $inDir/NEXTFlex{}_*_R1_001.fastq.gz"
-
-< NEXTtrim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -u 4 -o NEXT_trim2.{}.fq NEXT_trim1.{}.fq"
-
-< NEXTtrim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -m 16 -u -4 -o NEXT_trimmed.{}.fq NEXT_trim2.{}.fq"
-
-< trim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -m 16 -u 3 -a AAAAAAAAAA -o  $outDir/Clontech_trimmed.{}.fq $inDir/Clontech{}_*_R1_001.fastq.gz"
-
-< trim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -m 16 -a TGGAATTCTCGGGTGCCAAGG -o $outDir/Illumina_trimmed.{}.fq $inDir/Illumina{}_*_R1_001.fastq.gz"
-
-< trim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -m 16 -a AGATCGGAAGAGCACACGTCT -o $outDir/NEB_trimmed.{}.fq $inDir/NEB{}_*_R1_001.fastq.gz"
-```
-
-UMI Script for isomiRs on SRV4
-
-```{bash, eval =FALSE}
-mkdir UMI_duplicates_rem
-
-inDir=/media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq_liberal
-outDir=/media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq_liberal/UMI_duplicates_rem
-
-#reading every 4th line starting with line 2, get first 4 characters of sequence
-awk2='NR%4==2'
-< list_for_UMI.txt parallel -P4 "cat $inDir/NEXT_trim1.{}.fq | awk '$awk2' | cut -d' ' -f2 | cut -c1-4 > $outDir/first4_{}.txt"
-
-#reading every 4th line starting with line 2, get last 4 characters of sequence
-< list_for_UMI.txt parallel -P4 "cat $inDir/NEXT_trim1.{}.fq | awk '$awk2' | sed 's/^.*\(.\{4\}\)/\1/' > $outDir/last4_{}.txt"
-
-#pasting first UMI 4 nuc. with last UMI 4 nuc.
-< list_for_UMI.txt parallel -P4 "paste -d'\0' $outDir/first4_{}.txt $outDir/last4_{}.txt > $outDir/UMI_{}.txt"
-
-#quadruple UMIs
-< list_for_UMI.txt parallel -P4 "awk '{for(i=0;i<4;i++)print}' $outDir/UMI_{}.txt >$outDir/quad_UMI_{}.txt"
-
-# add an "_" to the front of every UMI line
-awk3='$0="_"$0'
-< list_for_UMI.txt parallel -P4 "awk '$awk3'  $outDir/quad_UMI_{}.txt > $outDir/final_UMI_{}.txt"
-
-# add the UMI to the fastq file identifier line
-awk4='{getline p<f} (NR%4==1){$1=$1" "$2;$2=p}1'
-< list_for_UMI.txt parallel -P4 "awk '$awk4' OFS= f=$outDir/final_UMI_{}.txt $inDir/NEXT_trim1.{}.fq > $outDir/NEXT_{}_UMItools_R1.fq"
-
-#remove reads from fastq with Ns in the UMI:
-#< list_for_UMI.txt parallel -P4 "sed -e '/_N\|_.*N/,+3d' $outDir/NEXT_{}_UMItools_R1.fq > $outDir/NEXT_Ns_rem_{}_UMItools_R1.fq"
-
-#remove random 4 base pair seqs that make up the UMI from the fastq read sequence line:
-< list_for_UMI.txt parallel -P4 "/home/carrie/cutadapt -u 4 -o $outDir/trim2_{}_Ns_kept_forUMI_tools.fq $outDir/NEXT_{}_UMItools_R1.fq"
-
-< list_for_UMI.txt parallel -P4 "/home/carrie/cutadapt -m 16 -u  -4 -o $outDir/trimmed_{}_Ns_kept_forUMI_tools.fq $outDir/trim2_{}_Ns_kept_forUMI_tools.fq"
-
-
-#remove space form the identifier of the fastq
-< list_for_UMI.txt parallel -P4 "sed 's/ /-/' $outDir/trimmed_{}_Ns_kept_forUMI_tools.fq > $outDir/nospace_trimmed_{}_Ns_kept_forUMI_tools.fq"
-
-#bowtie alignment
-< list_for_UMI.txt parallel -P3 "/usr/bin/bowtie /media/DATA/carrie/miRge/miRge-master/miRge.seqLibs/human/mirna --fullref  -S $outDir/nospace_trimmed_{}_Ns_kept_forUMI_tools.fq $outDir/NEXT_{}_Ns_kept_readyforUMItools.sam"
-
-#convert to bams
-< list_for_UMI.txt parallel -P3 "samtools view -bS -o $outDir/NEXT_{}_Ns_kept_readyforUMItools.bam $outDir/NEXT_{}_Ns_kept_readyforUMItools.sam"
-
-#index and sort bams
-< list_for_UMI.txt parallel -P3 "samtools sort $outDir/NEXT_{}_Ns_kept_readyforUMItools.bam $outDir/NEXT_{}_Ns_kept_readyforUMItools_sorted"
-< list_for_UMI.txt parallel -P3 "samtools index $outDir/NEXT_{}_Ns_kept_readyforUMItools_sorted.bam"
-
-#UMItools
-< list_for_UMI.txt parallel -P3 "umi_tools dedup --method directional -I $outDir/NEXT_{}_Ns_kept_readyforUMItools_sorted.bam -S $outDir/directional_deduped_Ns_kept_{}_UMItools.bam"
-
-
-#convert deduped bam files to fastq files
-<list_for_UMI.txt parallel -P3 "bam2fastx -q -Q -A -o $outDir/directional_dedupped_Ns_kept_{}_TEST.fq $outDir/directional_deduped_Ns_kept_{}_UMItools.bam"
-```
-
-
-miRge command on SRV2
-```{bash, eval = FALSE}
-#located here: carrie@srv02:~/miRge/miRge-master/isomiR_study_2_20_18
-<<<<<<< HEAD
-perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles Clontech_trimmed.1.fq,Clontech_trimmed.2.fq,Clontech_trimmed.3.fq,Clontech_trimmed.4.fq,Clontech_trimmed.5.fq,Clontech_trimmed.6.fq,Clontech_trimmed.7.fq,Clontech_trimmed.8.fq,Clontech_trimmed.9.fq,Clontech_trimmed.10.fq,Clontech_trimmed.11.fq,Clontech_trimmed.12.fq,Clontech_trimmed.13.fq,Clontech_trimmed.14.fq,Clontech_trimmed.15.fq,Clontech_trimmed.16.fq,Clontech_trimmed.17.fq,Clontech_trimmed.18.fq,Clontech_trimmed.1_acc.fq,Clontech_trimmed.2_acc.fq,Clontech_trimmed.3_acc.fq,Illumina_trimmed.1.fq,Illumina_trimmed.2.fq,Illumina_trimmed.3.fq,Illumina_trimmed.4.fq,Illumina_trimmed.5.fq,Illumina_trimmed.6.fq,Illumina_trimmed.7.fq,Illumina_trimmed.8.fq,Illumina_trimmed.9.fq,Illumina_trimmed.1_acc.fq,Illumina_trimmed.2_acc.fq,Illumina_trimmed.3_acc.fq,NEB_trimmed.1.fq,NEB_trimmed.2.fq,NEB_trimmed.3.fq,NEB_trimmed.4.fq,NEB_trimmed.5.fq,NEB_trimmed.6.fq,NEB_trimmed.7.fq,NEB_trimmed.8.fq,NEB_trimmed.9.fq,NEB_trimmed.10.fq,NEB_trimmed.11.fq,NEB_trimmed.12.fq,NEB_trimmed.1_acc.fq,NEB_trimmed.2_acc.fq,NEB_trimmed.3_acc.fq,NEXT_trimmed.1.fq,NEXT_trimmed.2.fq,NEXT_trimmed.3.fq,NEXT_trimmed.4.fq,NEXT_trimmed.5.fq,NEXT_trimmed.6.fq,NEXT_trimmed.7.fq,NEXT_trimmed.8.fq,NEXT_trimmed.9.fq,NEXT_trimmed.10.fq,NEXT_trimmed.11.fq,NEXT_trimmed.12.fq,NEXT_trimmed.13.fq,NEXT_trimmed.14.fq,NEXT_trimmed.15.fq,NEXT_trimmed.16.fq,NEXT_trimmed.17.fq,NEXT_trimmed.18.fq,NEXT_trimmed.1_acc.fq,NEXT_trimmed.2_acc.fq,NEXT_trimmed.3_acc.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_2_TEST.fq,directional_dedupped_Ns_kept_3_TEST.fq,directional_dedupped_Ns_kept_4_TEST.fq,directional_dedupped_Ns_kept_5_TEST.fq,directional_dedupped_Ns_kept_6_TEST.fq,directional_dedupped_Ns_kept_7_TEST.fq,directional_dedupped_Ns_kept_8_TEST.fq,directional_dedupped_Ns_kept_9_TEST.fq,directional_dedupped_Ns_kept_10_TEST.fq,directional_dedupped_Ns_kept_11_TEST.fq,directional_dedupped_Ns_kept_12_TEST.fq,directional_dedupped_Ns_kept_13_TEST.fq,directional_dedupped_Ns_kept_14_TEST.fq,directional_dedupped_Ns_kept_15_TEST.fq,directional_dedupped_Ns_kept_16_TEST.fq,directional_dedupped_Ns_kept_17_TEST.fq,directional_dedupped_Ns_kept_18_TEST.fq,directional_dedupped_Ns_kept_1_acc_TEST.fq,directional_dedupped_Ns_kept_2_acc_TEST.fq,directional_dedupped_Ns_kept_3_acc_TEST.fq
-
-
-=======
-perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles Clontech_trimmed.1.fq,Clontech_trimmed.2.fq,Clontech_trimmed.3.fq,Clontech_trimmed.4.fq,Clontech_trimmed.5.fq,Clontech_trimmed.6.fq,Clontech_trimmed.7.fq,Clontech_trimmed.8.fq,Clontech_trimmed.9.fq,Clontech_trimmed.10.fq,Clontech_trimmed.11.fq,Clontech_trimmed.12.fq,Clontech_trimmed.13.fq,Clontech_trimmed.14.fq,Clontech_trimmed.15.fq,Clontech_trimmed.16.fq,Clontech_trimmed.17.fq,Clontech_trimmed.18.fq,Clontech_trimmed.1_acc.fq,Clontech_trimmed.2_acc.fq,Clontech_trimmed.3_acc.fq,Illumina_trimmed.1.fq,Illumina_trimmed.2.fq,Illumina_trimmed.3.fq,Illumina_trimmed.4.fq,Illumina_trimmed.5.fq,Illumina_trimmed.6.fq,Illumina_trimmed.7.fq,Illumina_trimmed.8.fq,Illumina_trimmed.9.fq,Illumina_trimmed.1_acc.fq,Illumina_trimmed.2_acc.fq,Illumina_trimmed.3_acc.fq,NEB_trimmed.1.fq,NEB_trimmed.2.fq,NEB_trimmed.3.fq,NEB_trimmed.4.fq,NEB_trimmed.5.fq,NEB_trimmed.6.fq,NEB_trimmed.7.fq,NEB_trimmed.8.fq,NEB_trimmed.9.fq,NEB_trimmed.10.fq,NEB_trimmed.11.fq,NEB_trimmed.12.fq,NEB_trimmed.1_acc.fq,NEB_trimmed.2_acc.fq,NEB_trimmed.3_acc.fq,NEXT_trimmed.1.fq,NEXT_trimmed.1.fq,NEXT_trimmed.2.fq,NEXT_trimmed.3.fq,NEXT_trimmed.4.fq,NEXT_trimmed.5.fq,NEXT_trimmed.6.fq,NEXT_trimmed.7.fq,NEXT_trimmed.8.fq,NEXT_trimmed.9.fq,NEXT_trimmed.10.fq,NEXT_trimmed.11.fq,NEXT_trimmed.12.fq,NEXT_trimmed.13.fq,NEXT_trimmed.14.fq,NEXT_trimmed.15.fq,NEXT_trimmed.16.fq,NEXT_trimmed.17.fq,NEXT_trimmed.18.fq,NEXT_trimmed.1_acc.fq,NEXT_trimmed.2_acc.fq,NEXT_trimmed.3_acc.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_2_TEST.fq,directional_dedupped_Ns_kept_3_TEST.fq,directional_dedupped_Ns_kept_4_TEST.fq,directional_dedupped_Ns_kept_5_TEST.fq,directional_dedupped_Ns_kept_6_TEST.fq,directional_dedupped_Ns_kept_7_TEST.fq,directional_dedupped_Ns_kept_8_TEST.fq,directional_dedupped_Ns_kept_9_TEST.fq,directional_dedupped_Ns_kept_10_TEST.fq,directional_dedupped_Ns_kept_11_TEST.fq,directional_dedupped_Ns_kept_12_TEST.fq,directional_dedupped_Ns_kept_13_TEST.fq,directional_dedupped_Ns_kept_14_TEST.fq,directional_dedupped_Ns_kept_15_TEST.fq,directional_dedupped_Ns_kept_16_TEST.fq,directional_dedupped_Ns_kept_17_TEST.fq,directional_dedupped_Ns_kept_18_TEST.fq,directional_dedupped_Ns_kept_1_acc_TEST.fq,directional_dedupped_Ns_kept_2_acc_TEST.fq,directional_dedupped_Ns_kept_3_acc_TEST.fq
-
-
-#redoing
-perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles Clontech_trimmed.1.fq,Clontech_trimmed.2.fq,Clontech_trimmed.3.fq,Clontech_trimmed.4.fq,Clontech_trimmed.5.fq,Clontech_trimmed.6.fq,Clontech_trimmed.7.fq,Clontech_trimmed.8.fq,Clontech_trimmed.9.fq,Clontech_trimmed.10.fq,Clontech_trimmed.11.fq,Clontech_trimmed.12.fq,Clontech_trimmed.13.fq,Clontech_trimmed.14.fq,Clontech_trimmed.15.fq,Clontech_trimmed.16.fq,Clontech_trimmed.17.fq,Clontech_trimmed.18.fq,Clontech_trimmed.1_acc.fq,Clontech_trimmed.2_acc.fq,Clontech_trimmed.3_acc.fq,Illumina_trimmed.1.fq,Illumina_trimmed.2.fq,Illumina_trimmed.3.fq,Illumina_trimmed.4.fq,Illumina_trimmed.5.fq,Illumina_trimmed.6.fq,Illumina_trimmed.7.fq,Illumina_trimmed.8.fq,Illumina_trimmed.9.fq,Illumina_trimmed.1_acc.fq,Illumina_trimmed.2_acc.fq,Illumina_trimmed.3_acc.fq,NEB_trimmed.1.fq,NEB_trimmed.2.fq,NEB_trimmed.3.fq,NEB_trimmed.4.fq,NEB_trimmed.5.fq,NEB_trimmed.6.fq,NEB_trimmed.7.fq,NEB_trimmed.8.fq,NEB_trimmed.9.fq,NEB_trimmed.10.fq,NEB_trimmed.11.fq,NEB_trimmed.12.fq,NEB_trimmed.1_acc.fq,NEB_trimmed.2_acc.fq,NEB_trimmed.3_acc.fq,NEXT_trimmed.1.fq,NEXT_trimmed.2.fq,NEXT_trimmed.3.fq,NEXT_trimmed.4.fq,NEXT_trimmed.5.fq,NEXT_trimmed.6.fq,NEXT_trimmed.7.fq,NEXT_trimmed.8.fq,NEXT_trimmed.9.fq,NEXT_trimmed.10.fq,NEXT_trimmed.11.fq,NEXT_trimmed.12.fq,NEXT_trimmed.13.fq,NEXT_trimmed.14.fq,NEXT_trimmed.15.fq,NEXT_trimmed.16.fq,NEXT_trimmed.17.fq,NEXT_trimmed.18.fq,NEXT_trimmed.1_acc.fq,NEXT_trimmed.2_acc.fq,NEXT_trimmed.3_acc.fq,directional_dedupped_Ns_kept_1_TEST.fq,directional_dedupped_Ns_kept_2_TEST.fq,directional_dedupped_Ns_kept_3_TEST.fq,directional_dedupped_Ns_kept_4_TEST.fq,directional_dedupped_Ns_kept_5_TEST.fq,directional_dedupped_Ns_kept_6_TEST.fq,directional_dedupped_Ns_kept_7_TEST.fq,directional_dedupped_Ns_kept_8_TEST.fq,directional_dedupped_Ns_kept_9_TEST.fq,directional_dedupped_Ns_kept_10_TEST.fq,directional_dedupped_Ns_kept_11_TEST.fq,directional_dedupped_Ns_kept_12_TEST.fq,directional_dedupped_Ns_kept_13_TEST.fq,directional_dedupped_Ns_kept_14_TEST.fq,directional_dedupped_Ns_kept_15_TEST.fq,directional_dedupped_Ns_kept_16_TEST.fq,directional_dedupped_Ns_kept_17_TEST.fq,directional_dedupped_Ns_kept_18_TEST.fq,directional_dedupped_Ns_kept_1_acc_TEST.fq,directional_dedupped_Ns_kept_2_acc_TEST.fq,directional_dedupped_Ns_kept_3_acc_TEST.fq
-
-#redoing again
-
-
-carrie@srv02:~/miRge/miRge-master$ perl miRge.pl --species human --diff-isomirs --phred64 --bowtie /usr/bin/bowtie --CPU 10 --SampleFiles Clontech_trimmed.1_acc.fq,Clontech_trimmed.2_acc.fq,Clontech_trimmed.3_acc.fq,Illumina_trimmed.1_acc.fq,Illumina_trimmed.2_acc.fq,Illumina_trimmed.3_acc.fq,NEB_trimmed.1_acc.fq,NEB_trimmed.2_acc.fq,NEB_trimmed.3_acc.fq,NEXT_trimmed.1_acc.fq,NEXT_trimmed.2_acc.fq,NEXT_trimmed.3_acc.fq,directional_deduped_int_trim_Ns_rem_1_acc.fq,directional_deduped_int_trim_Ns_rem_2_acc.fq,directional_deduped_int_trim_Ns_rem_3_acc.fq,Clontech_trimmed.1.fq,Clontech_trimmed.2.fq,Clontech_trimmed.3.fq,Clontech_trimmed.4.fq,Clontech_trimmed.5.fq,Clontech_trimmed.6.fq,Clontech_trimmed.7.fq,Clontech_trimmed.8.fq,Clontech_trimmed.9.fq,Clontech_trimmed.10.fq,Clontech_trimmed.11.fq,Clontech_trimmed.12.fq,Clontech_trimmed.13.fq,Clontech_trimmed.14.fq,Clontech_trimmed.15.fq,Clontech_trimmed.16.fq,Clontech_trimmed.17.fq,Clontech_trimmed.18.fq,Illumina_trimmed.1.fq,Illumina_trimmed.2.fq,Illumina_trimmed.3.fq,Illumina_trimmed.4.fq,Illumina_trimmed.5.fq,Illumina_trimmed.6.fq,Illumina_trimmed.7.fq,Illumina_trimmed.8.fq,Illumina_trimmed.9.fq,NEB_trimmed.1.fq,NEB_trimmed.2.fq,NEB_trimmed.3.fq,NEB_trimmed.4.fq,NEB_trimmed.5.fq,NEB_trimmed.6.fq,NEB_trimmed.7.fq,NEB_trimmed.8.fq,NEB_trimmed.9.fq,NEB_trimmed.10.fq,NEB_trimmed.11.fq,NEB_trimmed.12.fq,NEXT_trimmed.1.fq,NEXT_trimmed.2.fq,NEXT_trimmed.3.fq,NEXT_trimmed.4.fq,NEXT_trimmed.5.fq,NEXT_trimmed.6.fq,NEXT_trimmed.7.fq,NEXT_trimmed.8.fq,NEXT_trimmed.9.fq,NEXT_trimmed.10.fq,NEXT_trimmed.11.fq,NEXT_trimmed.12.fq,NEXT_trimmed.13.fq,NEXT_trimmed.14.fq,NEXT_trimmed.15.fq,NEXT_trimmed.16.fq,NEXT_trimmed.17.fq,NEXT_trimmed.18.fq,directional_deduped_int_trim_Ns_rem_1.fq,directional_deduped_int_trim_Ns_rem_2.fq,directional_deduped_int_trim_Ns_rem_3.fq,directional_deduped_int_trim_Ns_rem_4.fq,directional_deduped_int_trim_Ns_rem_5.fq,directional_deduped_int_trim_Ns_rem_6.fq,directional_deduped_int_trim_Ns_rem_7.fq,directional_deduped_int_trim_Ns_rem_8.fq,directional_deduped_int_trim_Ns_rem_9.fq,directional_deduped_int_trim_Ns_rem_10.fq,directional_deduped_int_trim_Ns_rem_11.fq,directional_deduped_int_trim_Ns_rem_12.fq,directional_deduped_int_trim_Ns_rem_13.fq,directional_deduped_int_trim_Ns_rem_14.fq,directional_deduped_int_trim_Ns_rem_15.fq,directional_deduped_int_trim_Ns_rem_16.fq,directional_deduped_int_trim_Ns_rem_17.fq,directional_deduped_int_trim_Ns_rem_18.fq
-```
 
 #Generate count data
 ```{r}
 library(here)
 
-isomiR_Counts <-read.table(here("Complete_data/IsomiR_data/isomirs.csv"), header = TRUE, sep = ",", row.names = NULL)
-colnames(isomiR_Counts)<-colnames(isomiR_Counts)[-(grep("row.names", colnames(isomiR_Counts)))]# shift everything to right
-isomiR_Counts<-as.data.frame(isomiR_Counts)
-# Entropy <- isomiR_Counts$Entropy
+# isomiR_Counts <-read.table(here("Complete_data/IsomiR_data/isomirs.csv"), header = TRUE, sep = ",", row.names = NULL)
+# colnames(isomiR_Counts)<-colnames(isomiR_Counts)[-(grep("row.names", colnames(isomiR_Counts)))]# shift everything to right
+# isomiR_Counts<-as.data.frame(isomiR_Counts)
+# Pheno<- read.table(here("Complete_data/Pheno.txt"), header = T)
+# Pheno <- Pheno[-2,]
+# Pheno$Kit <- gsub("Five_double","Fivepercent", Pheno$Kit)
+# Pheno$Kit <- gsub("NEXTflex_deduped","Deduped", Pheno$Kit)
+# Counts <-isomiR_Counts[3:(length(isomiR_Counts) -2)]
+# Counts <-Counts[,-2]
 # 
-Pheno<- read.table(here("Complete_data/Pheno.txt"), header = T)
-Pheno <- Pheno[-2,]
-Pheno$Kit <- gsub("Five_double","Fivepercent", Pheno$Kit)
-Pheno$Kit <- gsub("NEXTflex_deduped","Deduped", Pheno$Kit)
-Counts <-isomiR_Counts[3:(length(isomiR_Counts) -2)]
-Counts <-Counts[,-2]
- #Counts <-Counts[6:length(Counts)]# to remove extra files.....
+#  colnames(Counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(Counts))
+#  colnames(Counts)<-gsub("NEXT_", "NEXTflex_", colnames(Counts))
+#  annotation <-isomiR_Counts[1:2]
 # 
- colnames(Counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(Counts))
- colnames(Counts)<-gsub("NEXT_", "NEXTflex_", colnames(Counts))
- annotation <-isomiR_Counts[1:2]
-
-save(Counts, file =here("Complete_data/IsomiR_data/Counts.rda"))
-#save(Entropy, file = here("Complete_data/IsomiR_data/Entropy.rda"))
-save(annotation, file = here("Complete_data/IsomiR_data/annotation.rda"))
-#save(Pheno, file = here("IsomiR_data/Pheno.rda"))
+# save(Counts, file =here("Complete_data/IsomiR_data/Counts.rda"))
+# save(annotation, file = here("Complete_data/IsomiR_data/annotation.rda"))
 ```
 
 Need to convert from RPM to raw counts
@@ -132,44 +33,44 @@ Need to convert from RPM to raw counts
 ```{r}
 library(here)
 load(here("Complete_data/IsomiR_data/Counts.rda"))
-iso_RPM <-Counts
-
-library(XML)
-report_url<-here("Complete_data/report.html")# from miRge
-urltxt <- readLines(report_url)
-report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
-report <- report [-length(report)]
-report <-as.data.frame(report)
-report <-report[1:9]
-report <-report[seq(from =1, to = nrow(report), by = 5),]# remove extra empty lines
-report <-report[-2,]
-#report <- report[6:length(report$NULL.File.name.s.),]#remove extra files
-total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))# all isomir and canoncial reads
-total_miRNA<-vapply(strsplit(as.character(report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads),"/"),`[`, 2, FUN.VALUE=character(1))#need to use the filtered number of miRNA reads
-total_miRNA<-gsub("[[:blank:]]", "", total_miRNA)
-total_miRNA<-as.numeric(as.character(total_miRNA))
-
-rep.row<-function(x,n){
-   matrix(rep(x,each=n),nrow=n)
-}
-dimensions<-dim(iso_RPM)
-Totalmatrix<-rep.row((total_miRNA/1000000), dimensions[1])#width of isoRPM2
-
-iso_Raw<- (iso_RPM)*(as.numeric(Totalmatrix))
-iso_Raw <- round(iso_Raw,digits = 0)
-save(iso_Raw, file = here("Complete_data/IsomiR_data/Iso_raw.rda"))
-save(Pheno, file = here("Complete_data/IsomiR_data/Pheno.rda"))
-save(total_miRNA, report, file = here("Complete_data/IsomiR_data/total_miRNA.rda"))
+# iso_RPM <-Counts
+# 
+# library(XML)
+# report_url<-here("Complete_data/report.html")# from miRge
+# urltxt <- readLines(report_url)
+# report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
+# report <- report [-length(report)]
+# report <-as.data.frame(report)
+# report <-report[1:9]
+# report <-report[seq(from =1, to = nrow(report), by = 5),]# remove extra empty lines
+# report <-report[-2,]
+# #report <- report[6:length(report$NULL.File.name.s.),]#remove extra files
+# total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))# all isomir and canoncial reads
+# total_miRNA<-vapply(strsplit(as.character(report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads),"/"),`[`, 2, FUN.VALUE=character(1))#need to use the filtered number of miRNA reads
+# total_miRNA<-gsub("[[:blank:]]", "", total_miRNA)
+# total_miRNA<-as.numeric(as.character(total_miRNA))
+# 
+# rep.row<-function(x,n){
+#    matrix(rep(x,each=n),nrow=n)
+# }
+# dimensions<-dim(iso_RPM)
+# Totalmatrix<-rep.row((total_miRNA/1000000), dimensions[1])#width of isoRPM2
+# 
+# iso_Raw<- (iso_RPM)*(as.numeric(Totalmatrix))
+# iso_Raw <- round(iso_Raw,digits = 0)
+# save(iso_Raw, file = here("Complete_data/IsomiR_data/Iso_raw.rda"))
+# save(Pheno, file = here("Complete_data/IsomiR_data/Pheno.rda"))
+# save(total_miRNA, report, file = here("Complete_data/IsomiR_data/total_miRNA.rda"))
 ```
 
 #load processed data
 ```{r,eval = TRUE}
-library(here)
-#load(here("IsomiR_data/Entropy.rda"))
-load(here("Complete_data/IsomiR_data/Iso_raw.rda"))
-load(here("Complete_data/IsomiR_data/annotation.rda"))
-load(here("Complete_data/IsomiR_data/Pheno.rda"))
-load(here("Complete_data/IsomiR_data/total_miRNA.rda"))
+# library(here)
+# 
+# load(here("Complete_data/IsomiR_data/Iso_raw.rda"))
+# load(here("Complete_data/IsomiR_data/annotation.rda"))
+# load(here("Complete_data/IsomiR_data/Pheno.rda"))
+# load(here("Complete_data/IsomiR_data/total_miRNA.rda"))
 ```
 
 Normalization... I think I only need to do by kit...
@@ -178,47 +79,37 @@ Normalization... I think I only need to do by kit...
 library(DESeq2)
 library(reshape2)
 library(ggplot2)
-full_norm_miR <-list()
-Pheno$Kit<- factor(Pheno$Kit)
-dds<-DESeqDataSetFromMatrix(countData = iso_Raw, colData = Pheno, design = ~ Kit)
-dds <- estimateSizeFactors(dds)
-full_norm_miR<-data.frame(counts(dds, normalized = TRUE))
-save(Pheno, full_norm_miR, file = here("Complete_data/IsomiR_data/fullnorm_miR.rda"))
-
-Pheno<-Pheno[7:99,]
-iso_Raw<-iso_Raw[,7:99]
-one_batch_norm_miR <-list()
-Pheno$Kit<- factor(Pheno$Kit)
-dds<-DESeqDataSetFromMatrix(countData = iso_Raw, colData = Pheno, design = ~ Kit)
-dds <- estimateSizeFactors(dds)
-one_batch_norm_miR<-data.frame(counts(dds, normalized = TRUE))
-save(Pheno, one_batch_norm_miR, file = here("Complete_data/IsomiR_data/one_batch_norm_miR.rda"))
+# full_norm_miR <-list()
+# Pheno$Kit<- factor(Pheno$Kit)
+# dds<-DESeqDataSetFromMatrix(countData = iso_Raw, colData = Pheno, design = ~ Kit)
+# dds <- estimateSizeFactors(dds)
+# full_norm_miR<-data.frame(counts(dds, normalized = TRUE))
+# save(Pheno, full_norm_miR, file = here("Complete_data/IsomiR_data/fullnorm_miR.rda"))
+# 
+# Pheno<-Pheno[7:99,]
+# iso_Raw<-iso_Raw[,7:99]
+# one_batch_norm_miR <-list()
+# Pheno$Kit<- factor(Pheno$Kit)
+# dds<-DESeqDataSetFromMatrix(countData = iso_Raw, colData = Pheno, design = ~ Kit)
+# dds <- estimateSizeFactors(dds)
+# one_batch_norm_miR<-data.frame(counts(dds, normalized = TRUE))
+# save(Pheno, one_batch_norm_miR, file = here("Complete_data/IsomiR_data/one_batch_norm_miR.rda"))
 
 ```
 
 Could do fancier normalization
 ```{r, eval = FALSE, echo = FALSE}
-Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
-###split the data by starting Amount
-split_startingAmt <- list() 
-for(i in Pheno$startingAmt) { 
-  split_startingAmt[[i]] <- data.frame(iso_Raw[which(Pheno$startingAmt==i)])
-}
-###split the pheno by starting Amount
-Pheno_Amt <- list() 
-for(i in Pheno$startingAmt) { 
-  Pheno_Amt[[i]] <- data.frame(Pheno[which(Pheno$startingAmt==i),])
-}
-
-# library(edgeR)
-# norm_miR <-list()
-# for(i in unique(Pheno$startingAmt)){
-# d<-DGEList(counts = split_startingAmt[[i]], group = Pheno$Kit[which(Pheno$startingAmt==i)])
-# miR_TMM_edgeR_factors <-calcNormFactors(d, method = "TMM")
-# TMM <-estimateCommonDisp(miR_TMM_edgeR_factors)
-# norm_miR[[i]] <-data.frame(TMM$pseudo.counts)
+# Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
+# ###split the data by starting Amount
+# split_startingAmt <- list() 
+# for(i in Pheno$startingAmt) { 
+#   split_startingAmt[[i]] <- data.frame(iso_Raw[which(Pheno$startingAmt==i)])
 # }
-
+# ###split the pheno by starting Amount
+# Pheno_Amt <- list() 
+# for(i in Pheno$startingAmt) { 
+#   Pheno_Amt[[i]] <- data.frame(Pheno[which(Pheno$startingAmt==i),])
+# }
 
 ```
 
@@ -232,13 +123,13 @@ load(here("Complete_data/IsomiR_data/one_batch_norm_miR.rda"))
 load(here("Complete_data/IsomiR_data/total_miRNA.rda"))
 #load(here("Complete_data/IsomiR_data/Pheno.rda"))
 norm_miRDF <-data.frame(one_batch_norm_miR)
-total_isomiRs_above10 <- colSums(norm_miRDF>100)
+total_isomiRs_above100 <- colSums(norm_miRDF>100)
 total_isomiR_reads <- colSums(norm_miRDF)
 total_isomiR_reads <-data.frame(total_isomiR_reads)
-total_isomiRs_above10<-data.frame(total_isomiRs_above10)
-total_isomiR<-cbind(total_isomiR_reads, total_isomiRs_above10)
+total_isomiRs_above100<-data.frame(total_isomiRs_above100)
+total_isomiR<-cbind(total_isomiR_reads, total_isomiRs_above100)
 
-isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above10$total_isomiRs_above10, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
+isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above100$total_isomiRs_above100, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
 isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
 
 #ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, fill = Kit)) +geom_boxplot()+facet_grid(.~StartingAmt)
@@ -307,38 +198,32 @@ t.test(split_amt$`100`$total_isomiRs[grep("Clontech",split_amt$`100`$Kit)], spli
 
 
 ```{r, echo = TRUE, eval=TRUE}
-library(dplyr)
-get_test_names <- function(data){
-  test_names <<- data.frame(combn(unique(names(data)), m= 2))
-}
-
-get_test_results<- function(data,test_names) {
-  tresults<<-list()
-  tested_names1<<-list()
-  tested_names2<<-list()
-  for(i in names(test_names)){
-    #tested_names[[i]]<<-(test_names[i][,1])
-    Kit1<-data[grep(test_names[i][1,], names(data))]
-    Kit2<-data[grep(test_names[i][2,], names(data))]
-    #Kit1<-data.frame(select(data, names(data)[names(data) %in% test_names[i][1,]]))
-    #Kit2<-data.frame(select(data, names(data)[names(data) %in% test_names[i][2,]]))
-    tested_names1[[i]]<<-names(Kit1)
-    tested_names2[[i]]<<-names(Kit2)
-    # colnames(Kit1)<-c("error")
-    # colnames(Kit2)<-c("error")
-    tresults[[i]]<<-t.test(x=Kit1[[1]][4], y=Kit2[[1]][4], paired = FALSE) ### may have messed things up adding paired = TRUE previously had more ))
-    tested_kits <<-paste0(tested_names1, "&", tested_names2)
-  }
-}
-
-get_ttestStats<- function(x) {
-  #print(length(test_names))
-  c(t =format(x$statistic, digits = 2),
-    df = format(x$parameter, digits = 0),
-    p.value = format(x$p.value, scientific = TRUE, digits = 2),
-    bonferroni_thresh = format(.05/length(test_names), digits = 2),
-    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
-}
+# library(dplyr)
+# get_test_names <- function(data){
+#   test_names <<- data.frame(combn(unique(names(data)), m= 2))
+# }
+# 
+# get_test_results<- function(data,test_names) {
+#   tresults<<-list()
+#   tested_names1<<-list()
+#   tested_names2<<-list()
+#   for(i in names(test_names)){
+#     Kit1<-data[grep(test_names[i][1,], names(data))]
+#     Kit2<-data[grep(test_names[i][2,], names(data))]
+#     tested_names1[[i]]<<-names(Kit1)
+#     tested_names2[[i]]<<-names(Kit2)
+#     tresults[[i]]<<-t.test(x=Kit1[[1]][4], y=Kit2[[1]][4], paired = FALSE) ### may have messed things up adding paired = TRUE previously had more ))
+#     tested_kits <<-paste0(tested_names1, "&", tested_names2)
+#   }
+# }
+# 
+# get_ttestStats<- function(x) {
+#   c(t =format(x$statistic, digits = 2),
+#     df = format(x$parameter, digits = 0),
+#     p.value = format(x$p.value, scientific = TRUE, digits = 2),
+#     bonferroni_thresh = format(.05/length(test_names), digits = 2),
+#     sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+# }
 
 
 library(dplyr)
@@ -355,12 +240,8 @@ get_test_results<- function(data,test_names, pairedvalue) {
   for(i in names(test_names)){
     Kit1 <-data[which(names(data) %in% test_names[i][1,])]
     Kit2 <-data[which(names(data) %in% test_names[i][2,])]
-    #Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
-    #Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
     tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
     tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
-    #colnames(Kit1)<-c("error")
-    #colnames(Kit2)<-c("error")
     tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
     tested_kits <<-paste0(tested_names1, "&", tested_names2)
     length_kits[[i]]<<-c(length(Kit1[[1]]), length(Kit2[[1]]))
@@ -415,7 +296,7 @@ Threshold across triplicates
 library(genefilter)
 library(reshape2)
 norm_miR <- one_batch_norm_miR
-isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above10$total_isomiRs_above10, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
+isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above100$total_isomiRs_above100, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
 isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
 
 isomiR_DATA$StartingAmt<-paste0("starting_amt_", isomiR_DATA$StartingAmt)
@@ -559,8 +440,8 @@ library(ggplot2)
 library(tidyr)
 
 ##filter each sample individually
-total_isomiRs_above10
-det_Data <- cbind(total_isomiRs_above10, Pheno$startingAmt, Pheno$Kit) # its really a hundred... not ten
+total_isomiRs_above100
+det_Data <- cbind(total_isomiRs_above100, Pheno$startingAmt, Pheno$Kit) # its really a hundred... not ten
 colnames(det_Data)<- c("det_indv_thresh", "startingAmt", "kit")
 
 #filter across triplicates
