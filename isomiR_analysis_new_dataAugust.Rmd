@@ -106,7 +106,7 @@ library(here)
 library(ggplot2)
 load(here("Complete_data/IsomiR_data/one_batch_norm_miR.rda"))
 load(here("Complete_data/IsomiR_data/total_miRNA.rda"))
-#load(here("Complete_data/IsomiR_data/Pheno.rda"))
+
 norm_miRDF <-data.frame(one_batch_norm_miR)
 total_isomiRs_above100 <- colSums(norm_miRDF>100)
 total_isomiR_reads <- colSums(norm_miRDF)
@@ -117,24 +117,9 @@ total_isomiR<-cbind(total_isomiR_reads, total_isomiRs_above100)
 isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above100$total_isomiRs_above100, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
 isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
 
-#ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, fill = Kit)) +geom_boxplot()+facet_grid(.~StartingAmt)
-#ggplot(data =isomiR_DATA, aes(x = Kit, y = total_isomiRs, fill = Kit)) +geom_boxplot()+facet_grid(StartingAmt~.) + geom_jitter(aes(color = Kit))
-#ggplot(data =isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, fill = Kit)) +geom_point(aes(x = StartingAmt, y = total_isomiRs))+facet_grid(.~Kit) + geom_jitter(aes(color = Kit))
+#ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = StartingAmt)) + geom_jitter(aes(color = Kit))+ geom_boxplot(aes(fill = Kit)) + facet_grid(.~Kit) + scale_x_continuous(breaks=unique(isomiR_DATA$StartingAmt)) + theme(legend.position = "none", axis.text.x = element_text(size =14, angle = 60, hjust = 1), axis.text.y = element_text(size =14, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 20)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "isomiRNA Detection across kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))  
 
-ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = StartingAmt)) + geom_jitter(aes(color = Kit))+ geom_boxplot(aes(fill = Kit)) + facet_grid(.~Kit) + scale_x_continuous(breaks=unique(isomiR_DATA$StartingAmt)) + theme(legend.position = "none", axis.text.x = element_text(size =14, angle = 60, hjust = 1), axis.text.y = element_text(size =14, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 20)) + labs(y = " Number of Uniquely Detected miRNA Sequences", title = "isomiRNA Detection across kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))  
-
-
-ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = StartingAmt)) + geom_jitter(aes(color = Kit))+ geom_boxplot(outlier.shape = NA, aes(fill = Kit)) + facet_grid(.~Kit) + scale_x_continuous(breaks=unique(isomiR_DATA$StartingAmt)) + theme(legend.position = "none", axis.text.x = element_text(size =10, angle = 60, hjust = 1,face = "bold"), axis.text.y = element_text(size =20, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 20), strip.text.x = element_text(size = 20), axis.title.x = element_text(size = 0), axis.title.y= element_text(size = 17)) + labs(y = " Uniquely Detected isomiRs", title = "isomiRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1, fill = Kit))
-
-
-#total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
-
-
-#summarized_Data <- data.frame(total_miRNA=(as.data.frame(total_miRNA)), totalreads =report$NULL.Total.Input.Reads)
-#summarized_Data$percentmiRNA <- (as.numeric(summarized_Data$total_miRNA)/as.numeric(as.character(summarized_Data$totalreads)))*100
-#summarized_Data$Kit <- Pheno$Kit
-
-
+#ggplot(data = isomiR_DATA, aes(x = StartingAmt, y = total_isomiRs, group = StartingAmt)) + geom_jitter(aes(color = Kit))+ geom_boxplot(outlier.shape = NA, aes(fill = Kit)) + facet_grid(.~Kit) + scale_x_continuous(breaks=unique(isomiR_DATA$StartingAmt)) + theme(legend.position = "none", axis.text.x = element_text(size =10, angle = 60, hjust = 1,face = "bold"), axis.text.y = element_text(size =20, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 20), strip.text.x = element_text(size = 20), axis.title.x = element_text(size = 0), axis.title.y= element_text(size = 17)) + labs(y = " Uniquely Detected isomiRs", title = "isomiRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1, fill = Kit))
 
 ```
 #stats
@@ -150,7 +135,6 @@ split_kit <-list()
 for(i in isomiR_DATA$Kit) { 
   split_kit[[i]] <- data.frame(isomiR_DATA[which(isomiR_DATA$Kit==i),])
 } 
-#Det_data$Starting_Amount<-factor(Det_data$Starting_Amount)
  run_model <-function(x){(lm(x[["total_isomiRs"]]~x[["StartingAmt"]]))}
 model_stats<-lapply(split_kit,run_model)
 model_summary<-lapply(model_stats, summary)
@@ -172,91 +156,6 @@ t.test(split_kit$Clontech$total_isomiRs, split_kit$NEXTflex$total_isomiRs)
 t.test(split_amt$`100`$total_isomiRs[grep("Clontech",split_amt$`100`$Kit)], split_amt$`100`$total_isomiRs[grep("NEB", split_amt$`100`$Kit)])
 
 ```
-
-
-```{r, echo = TRUE, eval=TRUE}
-# library(dplyr)
-# get_test_names <- function(data){
-#   test_names <<- data.frame(combn(unique(names(data)), m= 2))
-# }
-# 
-# get_test_results<- function(data,test_names) {
-#   tresults<<-list()
-#   tested_names1<<-list()
-#   tested_names2<<-list()
-#   for(i in names(test_names)){
-#     Kit1<-data[grep(test_names[i][1,], names(data))]
-#     Kit2<-data[grep(test_names[i][2,], names(data))]
-#     tested_names1[[i]]<<-names(Kit1)
-#     tested_names2[[i]]<<-names(Kit2)
-#     tresults[[i]]<<-t.test(x=Kit1[[1]][4], y=Kit2[[1]][4], paired = FALSE) ### may have messed things up adding paired = TRUE previously had more ))
-#     tested_kits <<-paste0(tested_names1, "&", tested_names2)
-#   }
-# }
-# 
-# get_ttestStats<- function(x) {
-#   c(t =format(x$statistic, digits = 2),
-#     df = format(x$parameter, digits = 0),
-#     p.value = format(x$p.value, scientific = TRUE, digits = 2),
-#     bonferroni_thresh = format(.05/length(test_names), digits = 2),
-#     sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
-# }
-
-
-# library(dplyr)
-# 
-# get_test_names <- function(data){
-#   test_names <<- data.frame(combn(unique(names(data)), m= 2))
-# }
-# 
-# get_test_results<- function(data,test_names, pairedvalue) {
-#   tresults<<-list()
-#   tested_names1<<-list()
-#   tested_names2<<-list()
-#   length_kits <<-list()
-#   for(i in names(test_names)){
-#     Kit1 <-data[which(names(data) %in% test_names[i][1,])]
-#     Kit2 <-data[which(names(data) %in% test_names[i][2,])]
-#     tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
-#     tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
-#     tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
-#     tested_kits <<-paste0(tested_names1, "&", tested_names2)
-#     length_kits[[i]]<<-c(length(Kit1[[1]]), length(Kit2[[1]]))
-#   }
-# }
-# 
-# get_ttestStats<- function(x, tested_kits) {
-#   c(t =format(x$statistic, digits = 2),
-#     df = format(x$parameter, digits = 0),
-#     p.value = format(x$p.value, scientific = TRUE, digits = 2),
-#     bonferroni.threshold = format(.05/length(test_names), digits = 2),
-#     sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
-#     mean_1st_method = format(x$estimate[[1]], digits =2), 
-#     mean_2nd_method =format(x$estimate[[2]], digits =2))
-# }
-# 
-# get_t.es.g <- function(ts){
-#   t.es.g <<-list()
-#   for(i in names(length_kits)){
-#   t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
-#   }
-# }
-# get_perc_diff <-function(data) {
-#   percresults<<-list()
-#   tested_names1<<-list()
-#   tested_names2<<-list()
-#   tested_kits<<-list()
-#   for(i in names(test_names)){
-#     percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
-#     tested_names1[[i]]<<-test_names[i][1,]
-#     tested_names2[[i]]<<-test_names[i][2,]
-#     tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
-#     }
-# }
-
-```
-
-
 
 
 #dont run too slow
@@ -326,7 +225,7 @@ anova(lm(thresh_number$value~thresh_number$variable)) # no difference across sta
 
 ```
 
-Pairwise comparisons of isomiR detection
+Pairwise comparisons of isomiR detection using all starting amounts and threshold across all triplicates
 ```{r}
 library(dplyr)
 library(reshape2)
@@ -397,10 +296,11 @@ t(perc_stats)
 
  get_t.es.g(ts = tresults)
  t(data.frame(t.es.g))
+ length_kits
 ```
 
 
-How consistent are the results...
+How consistent are the results using all starting amounts and create 1000ng venn diagram
 ```{r}
 
 library(genefilter)
@@ -424,9 +324,10 @@ NEB<-data.frame(t=unlist(lapply(thresh_kits$NEB[1:4], to_repeat)))
 NEXTflex<-data.frame(t=unlist(lapply(thresh_kits$NEXTflex[1:6], to_repeat)))
 Deduped<-data.frame(t=unlist(lapply(thresh_kits$Deduped[1:6], to_repeat)))
 Fivepercent<- data.frame(t=unlist(lapply(thresh_kits$Fivepercent[1:6], to_repeat)))
-
 thresh_across_amts<-rbind(Clontech, Illumina, NEB, NEXTflex, Deduped, Fivepercent)
 
+
+#get sequence info
 load(here("Complete_data/IsomiR_data/annotation.rda"))
 Clontech1000_anno <-annotation[thresh$`1000`$Clontech,]
 Illumina1000_anno <-annotation[thresh$`1000`$Illumina,]
@@ -459,10 +360,9 @@ NEXTflex_1000_isomirs <- NEXTflex1000_anno$sequence
 Deduped_1000_isomirs <- Deduped1000_anno$sequence
 Fivepercent_1000_isomirs <- Fivepercent1000_anno$sequence
 
-Library(venn.diagram)
-somirseqs <-list(Clontech = Clontech_1000_isomirs, Illumina = Illumina_1000_isomirs, NEB = NEB_1000_isomirs, NEXTFlex = NEXTflex_1000_isomirs, Deduped = Deduped_1000_isomirs, Fivepercent = Fivepercent_1000_isomirs)
+library(VennDiagram)
+Isomirseqs <-list(Clontech = Clontech_1000_isomirs, Illumina = Illumina_1000_isomirs, NEB = NEB_1000_isomirs, NEXTFlex = NEXTflex_1000_isomirs, Deduped = Deduped_1000_isomirs, Fivepercent = Fivepercent_1000_isomirs)
 calculate.overlap(Isomirseqs[1:5])
-
 
 
 write.table(Clontech_1000_isomirs, file = here("Clontech_1000_isomirsfull.csv"), sep="\t")
@@ -472,6 +372,8 @@ write.csv(NEXTflex_1000_isomirs, file = here("NEXTflex_1000_isomirsfull.csv"))
 write.csv(Deduped_1000_isomirs, file = here("Deduped_1000_isomirsfull.csv"))
 write.csv(Fivepercent_1000_isomirs, file = here("Fivepercent_1000_isomirsfull.csv"))
 
+
+#Make plot
 det_Data$det_across_thresh<-thresh_across_amts$t
 det_Data$not_consistent <- ((det_Data$det_indv_thresh - as.numeric(as.character(det_Data$det_across_thresh)))/det_Data$det_indv_thresh)*100
 #det_Data$not_consistent <- (abs(as.numeric(as.character(det_Data$det_indv_thresh)) -det_Data$det_across_thresh)/ det_Data$det_indv_thresh)*100
@@ -482,12 +384,6 @@ detected$det_Data.startingAmt <-gsub("starting_amt_", "",detected$det_Data.start
 detected$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("100", "250", "500", "1000", "1500","2000"))
 
 
-
-
-
-
-
-
 ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()+ facet_grid(.~det_Data.startingAmt)
 
 pdf(file =here("Figures/Raw_plots/isomiR_inconsistency.pdf"),width=10,height=6, onefile=FALSE)
@@ -496,7 +392,7 @@ dev.off()
 
 ggplot(detected, aes(x =det_Data.kit, y=det_Data.not_consistent, fill = det_Data.kit)) + geom_boxplot()
 
-
+####Inconsistency Stats
 #miRNA_det<-list("Clontech" = Clontech, "Illumina" = Illumina, "NEB" = NEB, "NextFlex" =NEXTflex)
 
 miRNA_det<-list("Clontech\n(N=427)" = Clontech, "Illumina\n(N=443)" = Illumina, "NEB\n(N=450)" = NEB, "NextFlex\n(N=380)" =NEXTflex, "Deduped\n(N=427)" = Deduped)
@@ -548,23 +444,6 @@ get_test_results<- function(data,test_names, pairedvalue) {
   }
 }
 
-# get_ttestStats<- function(x, tested_kits) {
-#   c(t =format(x$statistic, digits = 2),
-#     df = format(x$parameter, digits = 0),
-#     p.value = format(x$p.value, scientific = TRUE, digits = 2),
-#     bonferroni.threshold = format(.05/length(test_names), digits = 2),
-#     sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
-#     mean_1st_method = format(x$estimate[[1]], digits =2), 
-#     mean_2nd_method =format(x$estimate[[2]], digits =2))
-# }
-# 
-# get_t.es.g <- function(ts){
-#   t.es.g <<-list()
-#   for(i in names(length_kits)){
-#   t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
-#   }
-# }
-
 
 get_test_results(data = inconsistency, test_names = test_names, pairedvalue = FALSE)
 ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
@@ -582,12 +461,8 @@ perc_stats<-data.frame(percresults)
 colnames(perc_stats)<-tested_kits
 t(perc_stats)
 
-#grid.draw(vp_alpha);
-#venn.plot <- venn.diagram(
-# x = miRNA_det,
-#  filename = NULL
-#)
-#grid.draw(venn.plot)
+
+#Venn Diagram of Isomirs detected across 1000ng samples
 gg_color_hue <- function(n) {
   hues = seq(15, 375, length = n + 1)
   hcl(h = hues, l = 65, c = 100)[1:n]
@@ -610,14 +485,13 @@ pdf(file =here("Supplement/Figures/IsomiRVenn.pdf"),width=6,height=6,onefile=FAL
 grid.draw(vd_iso);
 dev.off()
 
-```
+Stats and plots for 1000ng data 
 
 ```{r}
 head(det_Data)
 
 across <- data.frame(det_Data$kit, det_Data$startingAmt, det_Data$det_across_thresh)
 raw_det<- data.frame(det_Data$kit, det_Data$startingAmt, det_Data$det_indv_thresh)
-#across<-across[seq(from =1, t = length(det_Data$det_indv_thresh) , by = 3),]
 across$det_Data.det_across_thresh<-as.numeric(as.character(across$det_Data.det_across_thresh))
 
 across$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
@@ -626,9 +500,9 @@ across$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("1
 raw_det$det_Data.kit<-factor(detected$det_Data.kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped","Fivepercent"))
 raw_det$det_Data.startingAmt<-factor(detected$det_Data.startingAmt, levels = c("100", "250", "500", "1000", "1500","2000"))
 
-ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter(aes(color = det_Data.kit))+ facet_grid(.~det_Data.kit, scales="free") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1.0001, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
+#ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter(aes(color = det_Data.kit))+ facet_grid(.~det_Data.kit, scales="free") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1.0001, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
 
-ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =10, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected isomiRNA Sequences", title = " isomiRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
+#ggplot(raw_det, aes(x =det_Data.startingAmt, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + facet_grid(.~det_Data.kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =10, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected isomiRNA Sequences", title = " isomiRNA Detection Across Kits") +geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1))+ geom_line(data = across, linetype =2, size =1, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, colour=det_Data.kit)) + geom_point(data = across, aes(x=det_Data.startingAmt, y=det_Data.det_across_thresh, group=det_Data.kit, color = det_Data.kit), shape=24)
 
 #was 10 by 4
 
@@ -645,7 +519,7 @@ across_1000<-aggregate(across_det_1000, by = list(across_det_1000$det_Data.kit),
 across_1000<-data.frame(Kit =across_1000$Group.1, Detection =across_1000$det_Data.det_across_thresh)
 
 
-ggplot(raw_det_1000, aes(x =det_Data.kit, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter()  + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits")  + geom_boxplot(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit, alpha = 0.7), color = "black") + geom_point(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit), color = "black", shape=24)
+#ggplot(raw_det_1000, aes(x =det_Data.kit, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter()  + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits")  + geom_boxplot(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit, alpha = 0.7), color = "black") + geom_point(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit), color = "black", shape=24)
 
 pdf(file =here("Figures/Raw_plots/isomiR_1000ng_Det.pdf"),width=4,height=6, onefile=FALSE)
 ggplot(across_1000, aes(x =Kit, y=Detection, fill = Kit)) + geom_bar(stat = "identity", aes(y =Detection, fill = Kit)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected Unique isomiRNA Sequences") +coord_cartesian(ylim=c(200,720))+ geom_text(aes(label = (Detection), size = 6, hjust = 0.5, vjust = 1.5) )
@@ -661,7 +535,7 @@ summary(lm(det_Data_1000$det_Data.not_consistent~ det_Data_1000$det_Data.kit)) #
 anova_stats(lm(det_Data_1000$det_Data.not_consistent~ det_Data_1000$det_Data.kit))
 #main effect of NEB??? lower than the rest
 library(tidyr)
-det_Data_1000$sample <- rep(c(1,2,3),6)
+#det_Data_1000$sample <- rep(c(1,2,3),6)
 # det_Data_1000$sample<-paste0(det_Data_1000$det_Data.kit, det_Data_1000$sample)
 # det_Data <-spread(det_Data_1000, sample, det_Data.not_consistent)
 # det_Data <-data.frame(t(det_Data))
