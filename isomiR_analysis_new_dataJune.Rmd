@@ -97,21 +97,6 @@ library(ggplot2)
 
 ```
 
-Could do fancier normalization
-```{r, eval = FALSE, echo = FALSE}
-# Pheno$startingAmt<-paste0("starting_amt_", Pheno$startingAmt)
-# ###split the data by starting Amount
-# split_startingAmt <- list() 
-# for(i in Pheno$startingAmt) { 
-#   split_startingAmt[[i]] <- data.frame(iso_Raw[which(Pheno$startingAmt==i)])
-# }
-# ###split the pheno by starting Amount
-# Pheno_Amt <- list() 
-# for(i in Pheno$startingAmt) { 
-#   Pheno_Amt[[i]] <- data.frame(Pheno[which(Pheno$startingAmt==i),])
-# }
-
-```
 
 
 #################################################################START HERE####################
@@ -182,17 +167,9 @@ model_summary<-lapply(model_stats, summary)
 lapply(model_summary, glance)# all significant
 
 
-  t.test(split_kit$Clontech$total_isomiRs, split_kit$NEXTflex$total_isomiRs)
+t.test(split_kit$Clontech$total_isomiRs, split_kit$NEXTflex$total_isomiRs)
 
 t.test(split_amt$`100`$total_isomiRs[grep("Clontech",split_amt$`100`$Kit)], split_amt$`100`$total_isomiRs[grep("NEB", split_amt$`100`$Kit)])
-
-#Det <-t(detected)
-#colnames(Det)<- Pheno$Kit
-#split_amt <-list()
-#for(i in unique(Pheno$startingAmt)) { 
-#    split_amt[[i]] <- data.frame(Det[,which(Pheno$startingAmt==i), drop = FALSE])
-#    colnames(split_amt[[i]]) <- Pheno$Kit[which(Pheno$startingAmt==i)]}
-
 
 ```
 
@@ -226,68 +203,60 @@ t.test(split_amt$`100`$total_isomiRs[grep("Clontech",split_amt$`100`$Kit)], spli
 # }
 
 
-library(dplyr)
+# library(dplyr)
+# 
+# get_test_names <- function(data){
+#   test_names <<- data.frame(combn(unique(names(data)), m= 2))
+# }
+# 
+# get_test_results<- function(data,test_names, pairedvalue) {
+#   tresults<<-list()
+#   tested_names1<<-list()
+#   tested_names2<<-list()
+#   length_kits <<-list()
+#   for(i in names(test_names)){
+#     Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+#     Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+#     tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+#     tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+#     tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
+#     tested_kits <<-paste0(tested_names1, "&", tested_names2)
+#     length_kits[[i]]<<-c(length(Kit1[[1]]), length(Kit2[[1]]))
+#   }
+# }
+# 
+# get_ttestStats<- function(x, tested_kits) {
+#   c(t =format(x$statistic, digits = 2),
+#     df = format(x$parameter, digits = 0),
+#     p.value = format(x$p.value, scientific = TRUE, digits = 2),
+#     bonferroni.threshold = format(.05/length(test_names), digits = 2),
+#     sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+#     mean_1st_method = format(x$estimate[[1]], digits =2), 
+#     mean_2nd_method =format(x$estimate[[2]], digits =2))
+# }
+# 
+# get_t.es.g <- function(ts){
+#   t.es.g <<-list()
+#   for(i in names(length_kits)){
+#   t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
+#   }
+# }
+# get_perc_diff <-function(data) {
+#   percresults<<-list()
+#   tested_names1<<-list()
+#   tested_names2<<-list()
+#   tested_kits<<-list()
+#   for(i in names(test_names)){
+#     percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+#     tested_names1[[i]]<<-test_names[i][1,]
+#     tested_names2[[i]]<<-test_names[i][2,]
+#     tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+#     }
+# }
 
-get_test_names <- function(data){
-  test_names <<- data.frame(combn(unique(names(data)), m= 2))
-}
-
-get_test_results<- function(data,test_names, pairedvalue) {
-  tresults<<-list()
-  tested_names1<<-list()
-  tested_names2<<-list()
-  length_kits <<-list()
-  for(i in names(test_names)){
-    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
-    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
-    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
-    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
-    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
-    tested_kits <<-paste0(tested_names1, "&", tested_names2)
-    length_kits[[i]]<<-c(length(Kit1[[1]]), length(Kit2[[1]]))
-  }
-}
-
-get_ttestStats<- function(x, tested_kits) {
-  c(t =format(x$statistic, digits = 2),
-    df = format(x$parameter, digits = 0),
-    p.value = format(x$p.value, scientific = TRUE, digits = 2),
-    bonferroni.threshold = format(.05/length(test_names), digits = 2),
-    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
-    mean_1st_method = format(x$estimate[[1]], digits =2), 
-    mean_2nd_method =format(x$estimate[[2]], digits =2))
-}
-
-get_t.es.g <- function(ts){
-  t.es.g <<-list()
-  for(i in names(length_kits)){
-  t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
-  }
-}
-get_perc_diff <-function(data) {
-  percresults<<-list()
-  tested_names1<<-list()
-  tested_names2<<-list()
-  tested_kits<<-list()
-  for(i in names(test_names)){
-    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
-    tested_names1[[i]]<<-test_names[i][1,]
-    tested_names2[[i]]<<-test_names[i][2,]
-    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
-    }
-}
-#get_lmStats <-function(x) {
-#  c(p=x$coefficients[2,4], scientific = TRUE, digits =2)
-#}
 ```
 
-```{r}
-# get_test_names(split_kit)
-# get_test_results(data = split_kit, test_names = test_names)
-# ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
-# colnames(ttestStats_across)<-tested_kits
-# ttestStats_across
-```
+
 
 
 #dont run too slow
@@ -295,51 +264,51 @@ Threshold across triplicates
 ```{r, eval = FALSE}
 library(genefilter)
 library(reshape2)
-norm_miR <- one_batch_norm_miR
-isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above100$total_isomiRs_above100, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
-isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
-
-isomiR_DATA$StartingAmt<-paste0("starting_amt_", isomiR_DATA$StartingAmt)
-
-
-Pheno$startingAmt <-factor(Pheno$startingAmt)
-split_kit_isoData <- list()
-for(i in unique(Pheno$startingAmt)) {
-  for(kit in unique(Pheno$Kit)){
-  split_kit_isoData[[i]][[kit]] <- data.frame(norm_miR[which(Pheno$startingAmt == as.character(i) & Pheno$Kit == as.character(kit))])}
-}
-
-poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 normalized reads in all samples of the set... 
-ffun <- filterfun(poverafun)
-genefilt_fun<- function(x){genefilter(x, ffun)}
-
-thresh <-list()
-for(amt in names(split_kit_isoData)){
-thresh[[amt]]<-lapply(split_kit_isoData[[as.character(amt)]], genefilt_fun)}
-
-test <-split_kit_isoData$`100`$Clontech[thresh$`100`$Clontech,]
-
-split_amt_thresh <-list()
-for(amt in names(split_kit_isoData)){
-for(kit in names(split_kit_isoData[[amt]])){
- split_amt_thresh[[amt]][[kit]]<- split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],]}
-}
-
-thresh_number <- list()
-for(amt in names(split_kit_isoData)){
-for(kit in names(split_kit_isoData[[amt]])){
-thresh_number[[amt]][[kit]]<- dim(split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],])[1]}
-}
-
-thresh_number <-data.frame(thresh_number)
-colnames(thresh_number) <-c("100", "250", "500", "1000", "1500", "2000")
-thresh_number$kit <- rownames(thresh_number)
-thresh_number <-melt(thresh_number)
-thresh_number$variable <-as.numeric(as.character(thresh_number$variable))
-thresh_number<-thresh_number[-which(thresh_number$value =="0"),]
-thresh_number$kit <- factor(thresh_number$kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
-
-save(thresh, thresh_number, file = here("Complete_data/IsomiR_data/thresh_number.rda") )
+# norm_miR <- one_batch_norm_miR
+# isomiR_DATA <- data.frame(total_isomiRs = total_isomiRs_above100$total_isomiRs_above100, Kit = Pheno$Kit, StartingAmt =Pheno$startingAmt)
+# isomiR_DATA$Kit <- factor(isomiR_DATA$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
+# 
+# isomiR_DATA$StartingAmt<-paste0("starting_amt_", isomiR_DATA$StartingAmt)
+# 
+# 
+# Pheno$startingAmt <-factor(Pheno$startingAmt)
+# split_kit_isoData <- list()
+# for(i in unique(Pheno$startingAmt)) {
+#   for(kit in unique(Pheno$Kit)){
+#   split_kit_isoData[[i]][[kit]] <- data.frame(norm_miR[which(Pheno$startingAmt == as.character(i) & Pheno$Kit == as.character(kit))])}
+# }
+# 
+# poverafun <- genefilter::pOverA(p = 1, A = 100)#at least 100 normalized reads in all samples of the set... 
+# ffun <- filterfun(poverafun)
+# genefilt_fun<- function(x){genefilter(x, ffun)}
+# 
+# thresh <-list()
+# for(amt in names(split_kit_isoData)){
+# thresh[[amt]]<-lapply(split_kit_isoData[[as.character(amt)]], genefilt_fun)}
+# 
+# test <-split_kit_isoData$`100`$Clontech[thresh$`100`$Clontech,]
+# 
+# split_amt_thresh <-list()
+# for(amt in names(split_kit_isoData)){
+# for(kit in names(split_kit_isoData[[amt]])){
+#  split_amt_thresh[[amt]][[kit]]<- split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],]}
+# }
+# 
+# thresh_number <- list()
+# for(amt in names(split_kit_isoData)){
+# for(kit in names(split_kit_isoData[[amt]])){
+# thresh_number[[amt]][[kit]]<- dim(split_kit_isoData[[amt]][[kit]][thresh[[amt]][[kit]],])[1]}
+# }
+# 
+# thresh_number <-data.frame(thresh_number)
+# colnames(thresh_number) <-c("100", "250", "500", "1000", "1500", "2000")
+# thresh_number$kit <- rownames(thresh_number)
+# thresh_number <-melt(thresh_number)
+# thresh_number$variable <-as.numeric(as.character(thresh_number$variable))
+# thresh_number<-thresh_number[-which(thresh_number$value =="0"),]
+# thresh_number$kit <- factor(thresh_number$kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+# 
+# save(thresh, thresh_number, file = here("Complete_data/IsomiR_data/thresh_number.rda") )
 ```
 
 plot of threshold across Triplicates
@@ -361,6 +330,7 @@ Pairwise comparisons of isomiR detection
 ```{r}
 library(dplyr)
 library(reshape2)
+library(compute.es)
 thresh_number_kit<-split(thresh_number$value, thresh_number$kit)
 get_test_names <- function(data){
   test_names <<- data.frame(combn(unique(names(data)), m= 2))
@@ -572,22 +542,22 @@ get_test_results<- function(data,test_names, pairedvalue) {
   }
 }
 
-get_ttestStats<- function(x, tested_kits) {
-  c(t =format(x$statistic, digits = 2),
-    df = format(x$parameter, digits = 0),
-    p.value = format(x$p.value, scientific = TRUE, digits = 2),
-    bonferroni.threshold = format(.05/length(test_names), digits = 2),
-    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
-    mean_1st_method = format(x$estimate[[1]], digits =2), 
-    mean_2nd_method =format(x$estimate[[2]], digits =2))
-}
-
-get_t.es.g <- function(ts){
-  t.es.g <<-list()
-  for(i in names(length_kits)){
-  t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
-  }
-}
+# get_ttestStats<- function(x, tested_kits) {
+#   c(t =format(x$statistic, digits = 2),
+#     df = format(x$parameter, digits = 0),
+#     p.value = format(x$p.value, scientific = TRUE, digits = 2),
+#     bonferroni.threshold = format(.05/length(test_names), digits = 2),
+#     sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+#     mean_1st_method = format(x$estimate[[1]], digits =2), 
+#     mean_2nd_method =format(x$estimate[[2]], digits =2))
+# }
+# 
+# get_t.es.g <- function(ts){
+#   t.es.g <<-list()
+#   for(i in names(length_kits)){
+#   t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
+#   }
+# }
 
 
 get_test_results(data = inconsistency, test_names = test_names, pairedvalue = FALSE)
@@ -600,24 +570,24 @@ get_t.es.g(ts = tresults)
  #check length_kits!
 
 Means<-unlist(lapply(inconsistency, colMeans))
-test_names<-names(Means)
-get_perc_diff <-function(data) {
-  percresults<<-list()
-  tested_names1<<-list()
-  tested_names2<<-list()
-  tested_kits<<-list()
-  for(i in names(test_names)){
-    percresults[[i]]<<-((data[ which(names(data)==test_names[i][1,])]-data[ which(names(data)==test_names[i][2,])]))/ data[ which(names(data)==test_names[i][2,])]*100
-    tested_names1[[i]]<<-test_names[i][1,]
-    tested_names2[[i]]<<-test_names[i][2,]
-    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
-    }
-}
+# test_names<-names(Means)
+# get_perc_diff <-function(data) {
+#   percresults<<-list()
+#   tested_names1<<-list()
+#   tested_names2<<-list()
+#   tested_kits<<-list()
+#   for(i in names(test_names)){
+#     percresults[[i]]<<-((data[ which(names(data)==test_names[i][1,])]-data[ which(names(data)==test_names[i][2,])]))/ data[ which(names(data)==test_names[i][2,])]*100
+#     tested_names1[[i]]<<-test_names[i][1,]
+#     tested_names2[[i]]<<-test_names[i][2,]
+#     tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+#     }
+# }
 get_test_names(Means)
 get_perc_diff(data = Means)
 perc_stats<-data.frame(percresults)
 colnames(perc_stats)<-tested_kits
-perc_stats
+t(perc_stats)
 
 #grid.draw(vp_alpha);
 #venn.plot <- venn.diagram(
