@@ -219,6 +219,42 @@ colnames(perc_stats)<-tested_kits
 t(perc_stats)
 
 ```
+
+
+Why does clontech have similar detection despite low mapping? - is it the normalization?????
+
+
+```{r}
+
+Means_counts <- lapply(split_amt_thresh$`1000`, rowMeans)
+lapply(Means_counts, range)
+get_num_less_than_100 <- function(x){length(which(x<100))}
+lapply(Means_counts,get_num_less_than_100)
+
+# maybe it is the normalization???
+
+split_kit_raw <- list()
+for(i in unique(Pheno$startingAmt)) {
+  for(kit in unique(Pheno$Kit)){
+  split_kit_raw[[i]][[kit]] <- data.frame(miR_counts[which(Pheno$startingAmt == as.character(i) & Pheno$Kit == as.character(kit))])}
+}
+
+Means_raw <- lapply(split_amt_thresh$`1000`, rowMeans)
+#What percentage of miRNAs account for 50% of the reads
+lapply(Means_raw,get_num_less_than_100)
+lapply(Means_raw, range)
+```
+
+
+
+
+
+
+
+
+
+
+
 How consistent are the results...
 ```{r}
 
