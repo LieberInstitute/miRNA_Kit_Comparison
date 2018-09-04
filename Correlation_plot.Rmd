@@ -81,7 +81,9 @@ dim(thresh_miR_counts)
 ```{r, eval = TRUE}
 library(GGally)
 set.seed(42)
-thresh_miR_counts <-sapply(thresh_miR_counts, log2)
+log_thresh_miR_counts <-sapply(thresh_miR_counts, log2)
+rownames(log_thresh_miR_counts)<-rownames(thresh_miR_counts)
+thresh_miR_counts<-log_thresh_miR_counts
 thresh_miR_counts<-data.frame(thresh_miR_counts)
 # make average for miR_Counts by kit
 split_kit <- list() 
@@ -187,6 +189,7 @@ pdf(file =here("Figures/Raw_plots/MA_plots/MA_Deduped_Fivepercent.pdf"),width=6,
 make_plot(dfma)
 dev.off()
 ```
+
 
 ###Dendrogram to see how data clusters after normalization of counts
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
