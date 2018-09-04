@@ -105,6 +105,7 @@ dim(norm_miR_counts)
 #num_greater<-t(data.frame(lapply(greater_vals, length)))
 
 
+
 ```
 
 
@@ -218,6 +219,14 @@ perc_stats<-data.frame(percresults)
 colnames(perc_stats)<-tested_kits
 t(perc_stats)
 
+#detection diversity loss with lower inputs?
+thresh_number_df$variable<- as.numeric(as.character(thresh_number_df$variable))
+summary(lm(thresh_number_df$value~ thresh_number_df$variable))
+cor.test(thresh_number_df$value, thresh_number_df$variable)
+
+split_thresh_number_df<-split(thresh_number_df, thresh_number_df$kit)
+get_cor <-function(x){cor.test(x$value, x$variable)}
+lapply(split_thresh_number_df, get_cor)
 ```
 
 
@@ -231,6 +240,55 @@ lapply(Means_counts, range)
 get_num_less_than_100 <- function(x){length(which(x<100))}
 lapply(Means_counts,get_num_less_than_100)
 
+#top isomiRs
+
+Clontech_top <- data.frame(rownames(data.frame(Means_counts$Clontech[order(-rank(Means_counts$Clontech))]))[1:10])
+Illumina_top <- data.frame(rownames(data.frame(Means_counts$Illumina[order(-rank(Means_counts$Illumina))]))[1:10])
+NEB_top <- data.frame(rownames(data.frame(Means_counts$NEB[order(-rank(Means_counts$NEB))]))[1:10])
+NEXTflex_top <- data.frame(rownames(data.frame(Means_counts$NEXTflex[order(-rank(Means_counts$NEXTflex))]))[1:10])
+Deduped_top <- data.frame(rownames(data.frame(Means_counts$Deduped[order(-rank(Means_counts$Deduped))]))[1:10])
+Fivepercent_top <- data.frame(rownames(data.frame(Means_counts$Fivepercent[order(-rank(Means_counts$Fivepercent))]))[1:10])
+
+
+Clontech_top <- data.frame(rownames(data.frame(Means_counts$Clontech[order(-rank(Means_counts$Clontech))]))[1:20])
+Illumina_top <- data.frame(rownames(data.frame(Means_counts$Illumina[order(-rank(Means_counts$Illumina))]))[1:20])
+NEB_top <- data.frame(rownames(data.frame(Means_counts$NEB[order(-rank(Means_counts$NEB))]))[1:20])
+NEXTflex_top <- data.frame(rownames(data.frame(Means_counts$NEXTflex[order(-rank(Means_counts$NEXTflex))]))[1:20])
+Deduped_top <- data.frame(rownames(data.frame(Means_counts$Deduped[order(-rank(Means_counts$Deduped))]))[1:20])
+Fivepercent_top <- data.frame(rownames(data.frame(Means_counts$Fivepercent[order(-rank(Means_counts$Fivepercent))]))[1:20])
+
+
+
+Clontech_top <- data.frame(rownames(data.frame(Means_counts$Clontech[order(-rank(Means_counts$Clontech))]))[1:50])
+Illumina_top <- data.frame(rownames(data.frame(Means_counts$Illumina[order(-rank(Means_counts$Illumina))]))[1:50])
+NEB_top <- data.frame(rownames(data.frame(Means_counts$NEB[order(-rank(Means_counts$NEB))]))[1:50])
+NEXTflex_top <- data.frame(rownames(data.frame(Means_counts$NEXTflex[order(-rank(Means_counts$NEXTflex))]))[1:50])
+Deduped_top <- data.frame(rownames(data.frame(Means_counts$Deduped[order(-rank(Means_counts$Deduped))]))[1:50])
+Fivepercent_top <- data.frame(rownames(data.frame(Means_counts$Fivepercent[order(-rank(Means_counts$Fivepercent))]))[1:50])
+
+Clontech_top <- data.frame(rownames(data.frame(Means_counts$Clontech[order(-rank(Means_counts$Clontech))]))[1:5])
+Illumina_top <- data.frame(rownames(data.frame(Means_counts$Illumina[order(-rank(Means_counts$Illumina))]))[1:5])
+NEB_top <- data.frame(rownames(data.frame(Means_counts$NEB[order(-rank(Means_counts$NEB))]))[1:5])
+NEXTflex_top <- data.frame(rownames(data.frame(Means_counts$NEXTflex[order(-rank(Means_counts$NEXTflex))]))[1:5])
+Deduped_top <- data.frame(rownames(data.frame(Means_counts$Deduped[order(-rank(Means_counts$Deduped))]))[1:5])
+Fivepercent_top <- data.frame(rownames(data.frame(Means_counts$Fivepercent[order(-rank(Means_counts$Fivepercent))]))[1:5])
+
+Top<-data.frame(Clontech_top, Illumina_top, NEB_top, NEXTflex_top, Deduped_top, Fivepercent_top)
+names(Top)<- names(Means_counts)
+data.frame(lapply(Top, sort))
+library(VennDiagram)
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 6
+cols = gg_color_hue(n)
+cols <-cols[1:5]
+#vp_1000 <- venn.diagram(Top[c(1:4, 6)], fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.3,.3,.3, .3, .3))# for checking fivepercent
+#vp_1000 <- venn.diagram(Top[2:6], fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.3,.3,.3, .3, .3))#for checking fivepercent
+vp_1000 <- venn.diagram(Top[1:5], fill = c(cols), alpha = 0.5, filename = NULL, margin = 0.2, cat.dist = c(.3,.3,.3, .3, .3))
+
 # maybe it is the normalization???
 
 split_kit_raw <- list()
@@ -242,10 +300,13 @@ for(i in unique(Pheno$startingAmt)) {
 Means_raw <- lapply(split_amt_thresh$`1000`, rowMeans)
 #What percentage of miRNAs account for 50% of the reads
 lapply(Means_raw,get_num_less_than_100)
-lapply(Means_raw, range)
+
 ```
 
 
+pdf(file =here("Figures/Raw_plots/Venn_of_top_expressed.pdf"),width=6,height=6,onefile=FALSE)
+grid.draw(vp_1000);
+dev.off()
 
 
 
