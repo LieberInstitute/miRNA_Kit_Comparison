@@ -20,6 +20,7 @@ load(here("normalized_synth.rmd"))
 ###FUNCTIONS to get ttests results and output nicely
 ```{r, echo = TRUE, eval=TRUE}
 library(dplyr)
+library(compute.es)
 get_test_names <- function(data){
   test_names <<- data.frame(combn(names(data), m= 2))
 }
