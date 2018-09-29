@@ -110,7 +110,9 @@ library(ggplot2)
 
 data_1000ng<-as.matrix(avg_1000ng)
 
-make_plot<-function(dfma){ggplot(dfma, aes(x = A, y = M)) +geom_hline(color = "blue3", yintercept = 0, size=2)+ geom_point(size = 3)+ stat_smooth(se = FALSE, method = "loess", color = "red", size=2)+ ylim(c(-7,7))+  xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))}
+make_plot<-function(dfma){ggplot(dfma, aes(x = A, y = M)) +geom_hline(color = "blue3", yintercept = 0, size=2)+ geom_point(size = 3)+ stat_smooth(se = FALSE, method = "loess", color = "red", size=2)+ ylim(c(-10,10))+  xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))}
+
+
 
 make_MA_df <- function(x, y){
 M = x - y
@@ -273,15 +275,34 @@ top overlaps
 Top <- data.frame(Clontech_top, Illumina_top, NEB_top, NEXTflex_top, Deduped_top, Fivepercent_top)
 colnames(Top)<-c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
 # I could do this for each triplicate instead of the average... and then I could actually do stats on it... 
-Top5<-Top[1:5,]#1
-Top10<-Top[1:10,]#2
-Top20<-Top[1:20,]#6
-Top50<-Top[1:50,]#24
-Top100<-Top[1:100,]#48
+Top5<-Top[1:5,]#1 20 percent
+Top10<-Top[1:10,]#2 20 percent
+Top20<-Top[1:20,]#6 30 percent
+Top50<-Top[1:50,]#24 48 percent
+Top100<-Top[1:100,]#48 48 percent
 get_num_unique <-function(x){(length(unique(x)))}
 merged_top5<-data.frame(unlist(Top5))
 
 overlap_data<-data.frame(overlaps =c(1,2,6,24,48), top_amount= c(5,10,20,50,100), percent_overlap = c(20, 20, 30, 48, 48))
+
+
+
+#Top20
+identical(Top20$NEXTflex, Top20$Fivepercent)
+length(intersect(Top20$Clontech, Top20$Illumina))#Clontech and illumina = 9 (45%)
+length(intersect(Top20$Clontech, Top20$NEB))#Clontech and NEB = 9 (45%)
+length(intersect(Top20$Clontech, Top20$NEXTflex))#Clontech and NEXTflex= 11 (55%)
+length(intersect(Top20$Clontech, Top20$Deduped))#Clontech and Deduped = 9 (45%)
+
+length(intersect(Top20$NEB, Top20$Illumina))#NEB and Illumina = 12(60%)
+length(intersect(Top20$NEB, Top20$NEXTflex))#NEB and NEXTflex= 12(60%)
+length(intersect(Top20$NEB, Top20$Deduped))#NEB and Deduped = 12 (60%)
+
+length(intersect(Top20$Illumina, Top20$NEXTflex))#Illumina and NEXTflex = 13(65%)
+length(intersect(Top20$Illumina, Top20$Deduped))#Illumina and Deduped = 13 (65%)
+
+length(intersect(Top20$NEXTflex, Top20$Deduped))#Deduped and NEXTflex = 17 (85%)
+
 ```
 
 
