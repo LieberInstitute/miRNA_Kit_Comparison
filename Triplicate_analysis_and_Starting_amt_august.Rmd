@@ -673,7 +673,7 @@ Fivepercent_exp <-data.frame(Error =Error$Fivepercent, Expression =avg_Express$F
 
 exp_error <- rbind(Clontech_exp, Illumina_exp, NEB_exp, NEXTflex_exp, Deduped_exp, Fivepercent_exp)
 pdf(file =here("Figures/Raw_plots/Fig.5.g.pdf"),width=10,height=4, onefile=FALSE)
-ggplot(exp_error, aes(x = Expression, y = Error, col = Kit)) + geom_point(aes(alpha = 0.4))+ stat_smooth(method = "loess")+ facet_grid(.~Kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Expression", y = " Error across triplicates", title = " Relationship of Error and Expression") + stat_cor(method = "pearson", label.x = 10, label.y = 16, size =3.5)
+ggplot(exp_error, aes(x = Expression, y = Error, col = Kit)) + geom_point(aes(alpha = 0.4))+ stat_smooth(method = "loess")+ facet_grid(.~Kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Expression", y = " Error across triplicates", title = " Relationship of Error and Expression") + stat_cor(method = "pearson", label.x = 10, label.y = 15, size =4.5, col = "black", label.sep = "\n")
 dev.off()
 summary(lm(Clontech_exp$Error ~ Clontech_exp$Expression))
 summary(lm(Illumina_exp$Error ~ Illumina_exp$Expression))
