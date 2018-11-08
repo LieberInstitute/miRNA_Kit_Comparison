@@ -85,10 +85,6 @@ ggplot(mp, aes(x = File, y = value, color = Read_type)) +geom_bar(stat  = "ident
 
 mp1000 <- mp[which(mp$amount == "1000"),]
 mp1000$toagg<-paste0(mp1000$Method,"_", mp1000$Read_type)
-aggregate_1000 <- aggregate(mp1000$value, by=list(mp1000$toagg), FUN = mean)
-aggregate_1000$Method <- ss(aggregate_1000$Group.1, "_", 1)
-aggregate_1000$Read_type <- ss(aggregate_1000$Group.1, "_", 2)
-aggregate_1000$Read_type <- factor(aggregate_1000$Read_type, levels=(aggregate_1000$Read_type)[c(8,1,3,7,2,5,6,4)])
 
 gg_color_hue <- function(n) {
   hues = seq(15, 375, length = n + 1)
@@ -98,6 +94,28 @@ gg_color_hue <- function(n) {
 n = 6
 cols = gg_color_hue(n)
 cols<-cols[1:4]
+
+
+
+aggregate_1000 <- aggregate(mp1000$value, by=list(mp1000$toagg), FUN = mean)
+aggregateSD_1000 <- aggregate(mp1000$value, by=list(mp1000$toagg), FUN = sd)
+aggregate_1000$Method <- ss(aggregate_1000$Group.1, "_", 1)
+aggregate_1000$Read_type <- ss(aggregate_1000$Group.1, "_", 2)
+aggregate_1000$Read_type <- factor(aggregate_1000$Read_type, levels=(aggregate_1000$Read_type)[c(8,1,3,7,2,5,6,4)])
+mp1000$Read_type <- factor(mp1000$Read_type, levels=c("miRNA","piRNA", "snRNA", "snoRNA", "scaRNA","tRNA","rRNA", "undetermined"))
+aggregate_1000$sd <- aggregateSD_1000$x
+aggregate_1000$Read_type <- factor(aggregate_1000$Read_type, levels=c("miRNA","piRNA", "snRNA", "snoRNA", "scaRNA","tRNA","rRNA", "undetermined"))
+aggregate_1000<-aggregate_1000[order(aggregate_1000$Read_type),]
+
+pdf(file =here("Figures/Raw_plots/mapped_types_boxplot_1000.pdf"),width=12.5,height=5)
+ggplot(mp1000, aes(x = Method, y = value, color = Method)) +geom_boxplot(fill = "white", color = "black") +geom_jitter(width = 0.02, size = 3)  +facet_grid(.~Read_type) + scale_color_manual(values = cols)+theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 15, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 16)) +ylab("Percentage of reads") 
+ dev.off() 
+
+pdf(file =here("Figures/Raw_plots/mapped_types_barplot_1000.pdf"),width=12.5,height=5)
+ggplot(aggregate_1000, aes(x = Method, y = x, color = Method))  +geom_bar(stat  = "identity", position = position_dodge(width = 0.9), aes(y =x, fill = Method), color = "black") +geom_errorbar(aes(ymin =aggregate_1000$x-aggregate_1000$sd, ymax=aggregate_1000$x +aggregate_1000$sd),color = "black", position=position_dodge(width = 0.9))+ facet_grid(.~aggregate_1000$Read_type) + geom_jitter(data = mp1000, aes(x = Method, y =value),color = "black", width = 0.02) + facet_grid(.~Read_type) +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 15, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 16)) +ylab("Percentage of reads")  +scale_fill_manual(values = cols)
+dev.off() 
+
+ggplot(aggregate_1000, aes(x = Method, y = x, color = Method))  +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black")+ facet_grid(.~Read_type) + geom_jitter(data = mp1000, aes(x = Method, y =value),color = "black", width = 0.02) + facet_grid(.~Read_type) +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 15, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 16)) +ylab("Percentage of reads")  +scale_fill_manual(values = cols)
 
 # ggplot(aggregate_1000, aes(x = Read_type, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 18)) +ylab("Percentage of reads")+ facet_grid(.~Method)  +scale_fill_manual(values = cols)
 
