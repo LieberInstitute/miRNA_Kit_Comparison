@@ -96,6 +96,10 @@ get_t.es.g <- function(ts){
 ###DESeq2
 ```{r, eval=TRUE,warning=FALSE, message=FALSE, echo =FALSE}
 library(DESeq2)
+#miR_counts<- miR_counts[-c(1:18, 58:93)]
+#Pheno <- Pheno[-c(1:18, 68:93),]
+# miR_counts<- miR_counts[,c(19:57)]
+# Pheno <- Pheno[c(19:57),]
 dds<-DESeqDataSetFromMatrix(countData = miR_counts, colData = Pheno, design = ~ Kit)
 dds <- estimateSizeFactors(dds)
 norm_miR_counts<-data.frame(counts(dds, normalized = TRUE))
@@ -104,7 +108,9 @@ dim(norm_miR_counts)
 #greater_vals <- lapply(norm_miR_counts, get_greaterthan65536)
 #num_greater<-t(data.frame(lapply(greater_vals, length)))
 
-
+# get_thresh_number <-function(x){length(which(x>10))}
+# lapply(norm_miR_counts, get_thresh_number)
+# lapply(miR_counts, get_thresh_number)
 
 ```
 
@@ -235,12 +241,12 @@ Why does clontech have similar detection despite low mapping? - is it the normal
 
 ```{r}
 
-Means_counts <- lapply(split_amt_thresh$`1000`, rowMeans)
+ Means_counts <- lapply(split_amt_thresh$`1000`, rowMeans)
 lapply(Means_counts, range)
-get_num_less_than_100 <- function(x){length(which(x<100))}
-lapply(Means_counts,get_num_less_than_100)
+ get_num_less_than_100 <- function(x){length(which(x<100))}
+ lapply(Means_counts,get_num_less_than_100)
 
-#top isomiRs
+
 
 Clontech_top <- data.frame(rownames(data.frame(Means_counts$Clontech[order(-rank(Means_counts$Clontech))]))[1:10])
 Illumina_top <- data.frame(rownames(data.frame(Means_counts$Illumina[order(-rank(Means_counts$Illumina))]))[1:10])
@@ -297,10 +303,63 @@ for(i in unique(Pheno$startingAmt)) {
   split_kit_raw[[i]][[kit]] <- data.frame(miR_counts[which(Pheno$startingAmt == as.character(i) & Pheno$Kit == as.character(kit))])}
 }
 
-Means_raw <- lapply(split_amt_thresh$`1000`, rowMeans)
+Means_raw <- lapply(split_kit_raw$`1000`, rowMeans)
 #What percentage of miRNAs account for 50% of the reads
 lapply(Means_raw,get_num_less_than_100)
+melted_raw<-melt(Means_raw)
+melted_counts<-melt(Means_counts)
+ # melted_raw$value<- log2(melted_raw$value)
+ # melted_counts$value<- log2(melted_counts$value)
 
+library(gridExtra)
+library(grid)
+library(lattice)
+norm <-ggplot(melted_counts[which(melted_counts$value>10),], aes(x = L1, y = value, color = L1)) + geom_boxplot()+theme(legend.position = "none")
+raw <-ggplot(melted_raw[which(melted_counts$value>10),], aes(x = L1, y = value, color = L1)) + geom_boxplot() +theme(legend.position = "none")
+grid.arrange(norm, raw, ncol = 2)
+
+
+rownames(Means_counts)<-NULL
+norm_ordered <-lapply(Means_counts, sort, decreasing = TRUE)
+raw_ordered <-lapply(Means_raw, sort, decreasing = TRUE)
+
+length(which(raw_ordered$Clontech>10))
+length(which(raw_ordered$Illumina>10))
+length(which(raw_ordered$NEB>10))
+length(which(raw_ordered$NEXTflex>10))
+length(which(raw_ordered$Deduped>10))
+
+length(which(raw_ordered$Clontech>1000))
+length(which(raw_ordered$Illumina>1000))
+length(which(raw_ordered$NEB>1000))
+length(which(raw_ordered$NEXTflex>1000))
+length(which(raw_ordered$Deduped>1000))
+
+length(which(raw_ordered$Clontech>2000))
+length(which(raw_ordered$Illumina>2000))
+length(which(raw_ordered$NEB>2000))
+length(which(raw_ordered$NEXTflex>2000))
+length(which(raw_ordered$Deduped>2000))
+
+ length(which(raw_ordered$Clontech>100000))
+ length(which(raw_ordered$Illumina>100000))
+ length(which(raw_ordered$NEB>10000))
+ length(which(raw_ordered$NEXTflex>10000))
+ length(which(raw_ordered$Deduped>10000))
+ 
+ 
+ length(which(norm_ordered$Clontech>100000))
+ length(which(norm_ordered$Illumina>100000))
+ length(which(norm_ordered$NEB>10000))
+ length(which(norm_ordered$NEXTflex>10000))
+ length(which(norm_ordered$Deduped>10000))
+
+ get_percentage <-function(x){x/(sum(x)*100)}
+norm_percent_reads <-lapply(norm_ordered, get_percentage)
+raw_percent_reads <-lapply(raw_ordered, get_percentage)
+
+head(Means_counts$Clontech)
+sum(norm_ordered$Clontech)
 ```
 
 
@@ -484,8 +543,7 @@ raw_det_1000 <- raw_det[which(raw_det$det_Data.startingAmt == "1000"),]
 across_det_1000 <- across[which(across$det_Data.startingAmt == "1000"),]
 across_1000<-aggregate(across_det_1000, by = list(across_det_1000$det_Data.kit), FUN = mean)
 across_1000<-data.frame(Kit =across_1000$Group.1, Detection =across_1000$det_Data.det_across_thresh)
-
-
+across_1000$sd<-aggregate(raw_det_1000$det_Data.det_indv_thresh, by = list(raw_det_1000$det_Data.kit), FUN = sd)
 
 # ggplot(raw_det_1000, aes(x =det_Data.kit, y=det_Data.det_indv_thresh, fill = det_Data.kit)) + geom_boxplot() + geom_jitter()  + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Starting Amount", y = " Detected miRNA Sequences", title = " miRNA Detection Across Kits")  + geom_boxplot(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit, alpha = 0.7), color = "black") + geom_point(data = across, aes(x=det_Data.kit, y=det_Data.det_across_thresh, group=det_Data.kit), color = "black", shape=24)
 # 
@@ -496,10 +554,18 @@ across_1000<-data.frame(Kit =across_1000$Group.1, Detection =across_1000$det_Dat
 
 #1000ng across miRNA Detection
 pdf(file =here("Figures/Raw_plots/miRNA_1000ng_detection.pdf"),width=4,height=6)
-ggplot(across_1000, aes(x =Kit, y=Detection, fill = Kit)) + geom_bar(stat = "identity", aes(y =Detection, fill = Kit)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected Unique miRNA Sequences") +coord_cartesian(ylim=c(300,600))+ geom_text(aes(label = (Detection), size = 6, hjust = 0.5, vjust = 1.5) )
+ggplot(across_1000, aes(x =Kit, y=Detection, fill = Kit)) + geom_bar(stat = "identity", aes(y =Detection, fill = Kit)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected Unique miRNA Sequences") +coord_cartesian(ylim=c(300,600))+ geom_text(aes(label = (Detection), size = 6, hjust = 0.5, vjust = 1.5) ) 
 dev.off()
 
 
+names(raw_det_1000) <- c("Kit", "amt", "value")
+across_1000$mean <- aggregate(raw_det_1000$value, by = list(raw_det_1000$Kit), FUN = mean)
+across_1000$up <-across_1000$mean+across_1000$sd
+across_1000$down <-across_1000$mean-across_1000$sd
+#adding jitter and error bar
+pdf(file =here("Figures/Raw_plots/miRNA_1000ng_detection_bar_with_error.pdf"),width=4,height=6)
+ggplot(across_1000, aes(x =Kit, y=Detection, fill = Kit)) + geom_bar(stat = "identity", aes(y =Detection, fill = Kit), position=position_dodge(width = 0.9)) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected Unique miRNA Sequences") +coord_cartesian(ylim=c(300,725))+ geom_text(aes(label = (Detection), size = 6, hjust = 0.5, vjust = 1.5 )) +geom_jitter(data = raw_det_1000, aes(x = Kit, y =value),color = "black", width = 0.02) +geom_errorbar(aes(ymin =across_1000$up$x, ymax=across_1000$down$x, x = across_1000$Kit, y = across_1000$Detection),color = "black", position=position_dodge(width = 0.9))
+dev.off()
 
 
 
@@ -560,6 +626,8 @@ get_perc_diff <-function(data) {
     tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
     }
 }
+
+raw_det_1000 <- raw_det[which(raw_det$det_Data.startingAmt == "1000"),]
 anova(lm(raw_det_1000$det_Data.det_indv_thresh ~ raw_det_1000$det_Data.kit))# significant difference between kits for raw detection
 raw_det_1000$number <-rep(c(1:3),6)
 raw_1000<-dcast(raw_det_1000, number~det_Data.kit , value.var = "det_Data.det_indv_thresh") # to wide format
