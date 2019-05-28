@@ -1,0 +1,627 @@
+---
+title: "synth_stats_may30"
+author: "Carrie Wright"
+date: "May 30, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+```{r}
+library(here)
+load(here("normalized_synth.rmd"))
+```
+
+###FUNCTIONS to get ttests results and output nicely
+```{r, echo = TRUE, eval=TRUE}
+library(dplyr)
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(names(data), m= 2))
+}
+
+get_test_results<- function(data,test_names) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  for(i in names(test_names)){
+    Kit1<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][1,]]))
+    Kit2<-data.frame(select(data, colnames(data)[colnames(data) %in% test_names[i][2,]]))
+    tested_names1[[i]]<<-colnames(Kit1)
+    tested_names2[[i]]<<-colnames(Kit2)
+    colnames(Kit1)<-c("error")
+    colnames(Kit2)<-c("error")
+    tresults[[i]]<<-t.test(x=Kit1$error, y=Kit2$error, paired = TRUE) ### may have messed things up adding paired = TRUE previously had more ))
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }
+}
+
+get_ttestStats<- function(x) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni_thresh = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"))
+}
+
+
+```
+overall stats
+```{r}
+library(reshape2)
+get_test_names(data = error_synth)
+
+get_test_results(test_names = test_names, data = error_synth)
+
+ttestStats<-data.frame(lapply(tresults, get_ttestStats))
+
+colnames(ttestStats)<-tested_kits
+
+ttestStats
+synth <-melt(error_synth)
+fit = lm(synth$value ~ synth$variable)
+anova(fit)
+
+```
+
+
+
+
+Base stats
+```{r}
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last <- data.frame(x =lastStuff(str=seqs$RNA, 1))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first <-data.frame(x =strtrim(seqs$RNA, c(1)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+errorData_toplot<-log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
+errorLast<-cbind(seqs_last, errorData_toplot)
+errorFirst<-cbind(seqs_first, errorData_toplot)
+
+
+firstdata <-melt(errorFirst)
+lastdata <-melt(errorLast)
+
+split_last <- list() 
+for(i in lastdata$variable) { 
+  split_last[[i]] <- data.frame(lastdata[which(lastdata$variable==i),])
+} 
+
+split_first <- list() 
+for(i in firstdata$variable) { 
+  split_first[[i]] <- data.frame(firstdata[which(firstdata$variable==i),])
+} 
+run_anova<-function(x){anova(lm(x[[3]]~x[[1]]))}
+last_f_stats<-lapply(split_last,run_anova)
+first_f_stats<-lapply(split_first,run_anova)
+get_fStats<- function(x) {
+  #print(length(test_names))
+  c(F =format(x$`F value`, digits = 0),
+    p.value = format(x$`Pr(>F)`, scientific = TRUE, digits = 2),
+    bonferroni_thresh = format(.05/6, digits = 2),
+    sig = ifelse(x$`Pr(>F)`<(.05/6), "yes", "no"))
+}
+last_f_stats<-data.frame(t(data.frame(lapply(last_f_stats, get_fStats))))
+first_f_stats<-data.frame(t(data.frame(lapply(first_f_stats, get_fStats))))
+
+first_f_stats
+last_f_stats
+
+#geom_text(data = last_f_stats, aes(y = 25, label = p.value1, family = "serif"), 
+          #color = 'blue',  parse = TRUE)
+get_base_results<- function(data,kit_name) {
+  tested_names1 <<-list()
+  tested_names2 <<-list()
+  tresults<<-list()
+  for(i in names(data)){
+    Kit_of_interest<-data[colnames(data) %in% kit_name]
+    Adata <-Kit_of_interest[which(data$x =="A"),]
+    Cdata <-Kit_of_interest[which(data$x =="C"),]
+    Gdata <-Kit_of_interest[which(data$x =="G"),]
+    Tdata <-Kit_of_interest[which(data$x =="U"),]
+    BaseData <<- list(Adata, Cdata, Gdata, Tdata)
+    names(BaseData) <<-c("A", "C", "G", "U")
+  }
+  test_names <- get_test_names(data = BaseData)
+  for(i in names(test_names)){ 
+    Base1<-data.frame(BaseData[names(BaseData) %in% test_names[i][1,]])
+    Base2<-data.frame(BaseData[names(BaseData) %in% test_names[i][2,]])
+    tested_names1[[i]]<<-colnames(Base1)
+    tested_names2[[i]]<<-colnames(Base2)    
+    colnames(Base1)<-c("error")
+    colnames(Base2)<-c("error")
+    tresults[[i]]<<-t.test(x=Base1$error, y=Base2$error, paired = FALSE)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+  }}
+
+####Firstbase
+get_base_results(data = errorFirst, kit_name = "Clontech")
+ttestStats<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats)<-tested_kits
+ttestStats
+
+get_base_results(data = errorFirst, kit_name = "Fivepercent")
+ttestStats<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats)<-tested_kits
+ttestStats
+
+####Lastbase
+
+get_base_results(data = errorLast, kit_name = "Illumina")
+ttestStats<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats)<-tested_kits
+ttestStats
+
+anova(lm(split_last$Illumina$value ~ split_last$Illumina$x))
+```
+
+LengthStats
+
+```{r}
+library(limma)
+library(broom)
+
+GC <-seqs$length
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+model_summary<-lapply(model_stats, summary)
+lapply(model_summary, glance)
+
+
+run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+quad_summary<-lapply(quad_model_stats, summary)
+lapply(quad_summary, glance)
+
+anova(model_stats$Clontech, quad_model_stats$Clontech)
+anova(model_stats$Illumina, quad_model_stats$Illumina)
+anova(model_stats$NEB, quad_model_stats$NEB)#only one not sig - thus poly model better for other kits
+anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)
+anova(model_stats$Deduped, quad_model_stats$Deduped)
+anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+#this should do the same
+#poly_model <- function(x){summary(lm(x[[3]]~I(x[[1]]^2))}
+#poly_model <- function(x){summary(lm(x[[3]]~poly(x[[1]],2, raw = TRUE))}
+#poly_model_stats<-lapply(split_data,poly_model )
+#poly_model_stats
+summary(model_stats$NEB)#not sig for linear
+```
+
+
+https://www.theanalysisfactor.com/r-tutorial-4/
+GCStats
+```{r}
+library(limma)
+#want to know for each kit- is there a sig difference in detection of miRNAS of  different lengths ?
+#or
+#want to know for each length is there a sig difference bewteen kits... This could also be interesting
+GC <-seqs$GC
+
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+
+#length_f_stats<-data.frame(t(data.frame(lapply(length_f_stats, get_fStats))))
+
+#lapply(model_stats, summary)
+
+run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+lapply(quad_model_stats, summary)
+
+#sig better fit for all kits
+anova(model_stats$Clontech, quad_model_stats$Clontech)
+anova(model_stats$Illumina, quad_model_stats$Illumina)
+anova(model_stats$NEB, quad_model_stats$NEB)
+anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)
+anova(model_stats$Deduped, quad_model_stats$Deduped)
+anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+table(round(GC, digits = 1))
+```
+
+FoldStats
+```{r}
+library(limma)
+library(sjstats)
+#want to know for each kit- is there a sig difference in detection of miRNAS of  different lengths ?
+#or
+#want to know for each length is there a sig difference bewteen kits... This could also be interesting
+GC <-seqs$FoldG
+#abs_error<-cbind(factor(GC), error_synth[1:6])
+
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+
+#run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+run_model <-function(x){(lm(x$value~x$factor))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+run_model <-function(x){(cor(x$value,x$factor))}
+model_stats<-lapply(split_data,run_model)
+#lapply(model_stats, anova)
+
+#lapply(model_stats, anova_stats)
+# run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+# quad_model_stats<-lapply(split_data,run_model_quad)
+# lapply(quad_model_stats, summary)
+
+# NOT sig better fit for all kits
+# anova(model_stats$Clontech, quad_model_stats$Clontech)
+# anova(model_stats$Illumina, quad_model_stats$Illumina)
+# anova(model_stats$NEB, quad_model_stats$NEB)
+# anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)
+# anova(model_stats$Deduped, quad_model_stats$Deduped)
+# anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+
+table(round(GC, digits = 1))
+```
+
+
+
+repeat stats
+Repeats
+```{r}
+TTTT<-sapply(gregexpr("TTTT", seqs$x), function(x) sum(x != -1))
+GGGG<-sapply(gregexpr("GGGG", seqs$x), function(x) sum(x != -1))
+AAAA<-sapply(gregexpr("AAAA", seqs$x), function(x) sum(x != -1))
+CCCC<-sapply(gregexpr("CCCC", seqs$x), function(x) sum(x != -1))
+patterns <- c("TT", "GG", "CC", "AA")
+dublets <- sapply(gregexpr(paste(patterns,collapse="|"), 
+                        seqs$x), function(x) sum(x != -1))
+anyT<-sapply(gregexpr("T", seqs$x), function(x) sum(x != -1))
+anyG<-sapply(gregexpr("G", seqs$x), function(x) sum(x != -1))
+anyC<-sapply(gregexpr("C", seqs$x), function(x) sum(x != -1))
+anyA<-sapply(gregexpr("A", seqs$x), function(x) sum(x != -1))
+```
+
+Dublets
+```{r}
+library(limma)
+#want to know for each kit- is there a sig difference in detection of miRNAS of  different lengths ?
+#or
+#want to know for each length is there a sig difference bewteen kits... This could also be interesting
+GC <-dublets
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+
+run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+
+ anova(model_stats$Clontech, quad_model_stats$Clontech)
+ anova(model_stats$Illumina, quad_model_stats$Illumina)
+ anova(model_stats$NEB, quad_model_stats$NEB)
+ anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)# sig 
+ anova(model_stats$Deduped, quad_model_stats$Deduped)# sig
+ anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+ summary(quad_model_stats$Deduped)
+ summary(quad_model_stats$NEXTflex)
+ table(GC)
+```
+
+quad
+```{r}
+library(limma)
+#want to know for each kit- is there a sig difference in detection of miRNAS of  different lengths ?
+#or
+#want to know for each length is there a sig difference bewteen kits... This could also be interesting
+GC <-TTTT
+#abs_error<-cbind(factor(GC), error_synth[1:6])
+
+#abs_error<-cbind(factor(GC), log2(miRge_synth +1))
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+
+run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+
+ anova(model_stats$Clontech, quad_model_stats$Clontech)
+ anova(model_stats$Illumina, quad_model_stats$Illumina)
+ anova(model_stats$NEB, quad_model_stats$NEB)
+ anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)# sig
+ anova(model_stats$Deduped, quad_model_stats$Deduped)# sig
+ anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+
+ table(GC)
+```
+
+anyT
+```{r}
+library(limma)
+#want to know for each kit- is there a sig difference in detection of miRNAS of  different lengths ?
+#or
+#want to know for each length is there a sig difference bewteen kits... This could also be interesting
+GC <-anyT
+#abs_error<-cbind(factor(GC), error_synth[1:6])
+
+#abs_error<-cbind(factor(GC), log2(miRge_synth +1))
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+
+run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+
+ anova(model_stats$Clontech, quad_model_stats$Clontech)
+ anova(model_stats$Illumina, quad_model_stats$Illumina)#sig but less good - explains less
+ anova(model_stats$NEB, quad_model_stats$NEB)
+ anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)
+ anova(model_stats$Deduped, quad_model_stats$Deduped)
+ anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+
+ table(GC)
+```
+
+anyA
+```{r}
+library(limma)
+
+GC <-anyA
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+
+run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+
+ anova(model_stats$Clontech, quad_model_stats$Clontech)#not sig
+ anova(model_stats$Illumina, quad_model_stats$Illumina)
+ anova(model_stats$NEB, quad_model_stats$NEB)
+ anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)
+ anova(model_stats$Deduped, quad_model_stats$Deduped)
+ anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+
+ table(GC)
+```
+anyG
+```{r}
+library(limma)
+
+GC <-anyG
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+
+run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+
+ anova(model_stats$Clontech, quad_model_stats$Clontech)#not sig
+ anova(model_stats$Illumina, quad_model_stats$Illumina)
+ anova(model_stats$NEB, quad_model_stats$NEB)
+ anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)
+ anova(model_stats$Deduped, quad_model_stats$Deduped)
+ anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+
+ table(GC)
+```
+
+anyC
+```{r}
+library(limma)
+
+GC <-anyC
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ 
+ run_model <-function(x){(cor(x[[3]], x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+
+run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+quad_model_stats<-lapply(split_data,run_model_quad)
+lapply(quad_model_stats, summary)
+ anova(model_stats$Clontech, quad_model_stats$Clontech)
+ anova(model_stats$Illumina, quad_model_stats$Illumina)#sig
+ anova(model_stats$NEB, quad_model_stats$NEB)#sig
+ anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)
+ anova(model_stats$Deduped, quad_model_stats$Deduped)
+ anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)
+
+ table(GC)
+```
+
+anyquad
+```{r}
+library(limma)
+
+GC <-(TTTT+ CCCC+ GGGG+ AAAA)
+
+expression <- log2(miRge_synth+1)
+get_perc<-function(x) {(x/mean(x))*100}
+express_perc<-data.frame(lapply(expression, get_perc))
+abs_error<-cbind(factor(GC), express_perc)
+colnames(abs_error)[1] <-"factor"
+
+factordata<-melt(abs_error)
+colnames(factordata)<-c("factor", "kit", "value")
+factordata$factor <-as.numeric(as.character(factordata$factor))
+factordata$quad_Fact <-factordata$factor^2
+
+ split_data <- list() 
+
+for(i in factordata$kit) { 
+  split_data[[i]] <- data.frame(factordata[which(factordata$kit==i),])
+} 
+ run_model <-function(x){(lm(x[[3]]~x[[1]]))}
+model_stats<-lapply(split_data,run_model)
+lapply(model_stats, summary)
+
+
+#run_model_quad <-function(x){(lm(x[[3]]~x[[1]] +x[[4]]))}
+#quad_model_stats<-lapply(split_data,run_model_quad)
+
+ anova(model_stats$Clontech, quad_model_stats$Clontech)#notsig
+ anova(model_stats$Illumina, quad_model_stats$Illumina)#notsig
+ anova(model_stats$NEB, quad_model_stats$NEB)#notsig
+ anova(model_stats$NEXTflex, quad_model_stats$NEXTflex)#notsig
+ anova(model_stats$Deduped, quad_model_stats$Deduped)#notsig
+ anova(model_stats$Fivepercent, quad_model_stats$Fivepercent)#notsig
+
+ table(GC)
+```
