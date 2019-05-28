@@ -19,7 +19,10 @@ colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
 miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
 miR_counts<-miR_counts[-1,]#remove total miRNA counts row
 
+
+Pheno$File<-gsub("directional_dedupped|directional_deduped", "Deduped", Pheno$File)
 Pheno$File<-gsub("NEXTflex_deduped", "Deduped", Pheno$File)
+Pheno$File<-gsub("NEXT", "NEXTflex", Pheno$File)
 Pheno$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno$Kit)
 Pheno$TriplicateGroup<-gsub("NEXTflex_deduped", "Deduped", Pheno$TriplicateGroup)
 Pheno$miRNAtotal <-miRNAtotal
