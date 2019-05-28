@@ -1,0 +1,115 @@
+---
+title: "synth_data_generation"
+author: "Carrie Wright"
+date: "May 31, 2018"
+output: html_document
+---
+
+Folding_data
+```{r}
+library(here)
+folding <-readLines(here("synth_fold_output.txt")) #read in the file from RNA fold
+folding_G <- folding[seq(3, length(folding), 3)] #grab only every thrid line
+folding_Gs <-vapply(strsplit(folding_G," "), `[`, 3, FUN.VALUE=character(1))
+folding_Gs <-gsub(")", "", folding_Gs)
+numericGs <-as.numeric(folding_Gs)
+numericGs[is.na(numericGs)] <- 0
+FoldG<-data.frame(FoldG =numericGs)
+```
+Load the synthetic data
+```{r}
+library(Biostrings)
+library(here)
+
+seqs = readDNAStringSet(here("synth_seqs_named.fa"))
+GCcont<-letterFrequency(seqs, letters = c("CG"), as.prob = TRUE)
+length<-width(seqs)
+seqs<-as.data.frame(seqs)
+seqs$name <-rownames(seqs)
+rownames(seqs) <- NULL
+seqs$GC <- as.vector(GCcont)
+seqs$length <-length
+seqs$RNA<-gsub("T", "U", seqs$x)
+seqs$FoldG<-FoldG$FoldG
+miRge_synth_raw<-read.table(here("Synthdata_five_pecent_double_mapped/miR.Counts.csv"), header = TRUE, sep = ",")
+```
+
+Clean the data
+```{r}
+rownames(miRge_synth_raw)<- miRge_synth_raw$miRNA#make miRNAs rownames
+miRge_synth_raw<-miRge_synth_raw[-1]#remove miRNA column
+miRNAtotalreads<-miRge_synth_raw[1,]
+miRge_synth_raw<-miRge_synth_raw[-1,]#remove miRNA total row
+```
+
+#### Put data together miRge
+```{R}
+
+colnames(miRge_synth_raw) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+miRge_synth_raw<-data.frame(miRge_synth_raw)
+
+# get_greaterthan65536 <-function(x){x[which(x>65536), drop = FALSE]}
+# greater_vals <-list()
+# greater_vals <- lapply(miRge_synth_raw, get_greaterthan65536)
+# 
+# perc_greater <-lapply(greater_vals, function(x){((x-65536)/x)*100})
+# num_greater<-t(data.frame(lapply(greater_vals, length)))
+# num_greater$precent <- (num_greater[,1]/962)*100
+
+average_raw_counts <- colMeans(miRge_synth_raw)
+
+```
+
+###DESeq2
+```{r, eval=TRUE, warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+Pheno <-data.frame(kit =colnames(miRge_synth_raw))
+dds<-DESeqDataSetFromMatrix(countData = miRge_synth_raw, colData = Pheno, design = ~ kit)
+dds <- estimateSizeFactors(dds)
+norm_miR<-data.frame(counts(dds, normalized = TRUE))
+dim(norm_miR)
+miRge_synth<-norm_miR
+
+# greater_vals <- lapply(norm_miR, get_greaterthan65536)
+# perc_greater <-lapply(greater_vals, function(x){((x-65536)/x)*100})
+# num_greater<-t(data.frame(lapply(greater_vals, length)))
+# num_greater$precent <- (num_greater[,1]/962)*100
+
+average_norm_counts <- colMeans(norm_miR)
+```
+
+#sorting and adding seq info
+```{r}
+library(gtools)
+seq_names_sorted<-mixedsort(seqs$name, decreasing = TRUE)
+sorted_seqs <-seqs[match(seq_names_sorted, seqs$name),]
+sorted_miRge_synth <-miRge_synth[match(seq_names_sorted, rownames(miRge_synth)),]
+identical(rownames(sorted_miRge_synth), sorted_seqs$name)
+seqs <-sorted_seqs
+miRge_synth<-data.frame(sorted_miRge_synth)
+```
+
+ Function to Determine Error Across Sequences
+```{R}
+library(reshape2)
+library(ggplot2)
+
+my_scale <- function(x) { 
+  errorData<<-(x - colMeans(x))
+  errorData<-abs(errorData)
+  errorData<-data.frame(errorData)
+  error_synth<-errorData
+  error_synth<<-log2(error_synth+1)
+  } 
+
+```
+####caluclate error for data - creates synth object
+```{r}
+my_scale(miRge_synth)
+```
+
+```{r}
+save(miRge_synth, seqs, error_synth, file = here("normalized_synth.rmd"))
+```
+
+
