@@ -1,0 +1,22 @@
+---
+title: "Untitled"
+author: "Carrie Wright"
+date: "5/28/2019"
+output: html_document
+---
+# This script was run as sh 
+```{bash}
+# want to also use the aligned files that were used to create the deduped files for the 5% control
+
+< list_for_UMI.txt parallel -P4 "samtools view  -b -F 4 -h NEXT_acc_{}_readyforUMItools.bam > mapped_NEXT_{}.bam"
+< list_for_UMI.txt parallel -P4 "bam2fastx -q -Q -A -o mapped_NEXT_{}.fq mapped_NEXT_{}.bam"
+
+#make Five percent bams
+
+< list_for_UMI.txt parallel -P4 "samtools view -s 0.05 -b -h mapped_NEXT_files/mapped_NEXT_{}.bam > Fivepercent_double/Fivepercent_double_NEXT_{}.bam"
+
+#make fastq files from bams
+
+< list_for_UMI.txt parallel -P4 "bam2fastx -q -Q -A -o Fivepercent_double/Five_double_{}.fq Fivepercent_double/Fivepercent_double_NEXT_{}.bam"
+```
+

@@ -1,0 +1,75 @@
+---
+title: "Untitled"
+author: "Carrie Wright"
+date: "5/28/2019"
+output: html_document
+---
+# This script was run with sh 
+```{bash}
+#update list_for_UMI.txt file with list of IDs for NEXT_trim2.{}_R1.fq named files
+#update directory
+
+mkdir UMI_duplicates_rem_lib_align_new_bowtie
+
+inDir=/media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq/
+outDir=/media/Backup1_/smallRNA/FullHiSeq_mismatch0/repro/samples_lanesCombined/trimmed_fastq/UMI_duplicates_rem_lib_align_new_bowtie
+
+#reading every 4th line starting with line 2, get first 4 characters of sequence
+awk2='NR%4==2'
+< list_for_UMI.txt parallel -P4 "cat $inDir/mm0_NEXT_trim1.{}_R1.fq | awk '$awk2' | cut -d' ' -f2 | cut -c1-4 > $outDir/first4_{}.txt"
+
+#reading every 4th line starting with line 2, get last 4 characters of sequence
+< list_for_UMI.txt parallel -P4 "cat $inDir/mm0_NEXT_trim1.{}_R1.fq | awk '$awk2' | sed 's/^.*\(.\{4\}\)/\1/' > $outDir/last4_{}.txt"
+
+#pasting first UMI 4 nuc. with last UMI 4 nuc.
+< list_for_UMI.txt parallel -P4 "paste -d'\0' $outDir/first4_{}.txt $outDir/last4_{}.txt > $outDir/UMI_{}.txt"
+
+#quadruple UMIs
+< list_for_UMI.txt parallel -P4 "awk '{for(i=0;i<4;i++)print}' $outDir/UMI_{}.txt >$outDir/quad_UMI_{}.txt"
+
+# add an "_" to the front of every UMI line
+awk3='$0="_"$0'
+< list_for_UMI.txt parallel -P4 "awk '$awk3'  $outDir/quad_UMI_{}.txt > $outDir/final_UMI_{}.txt"
+
+# add the UMI to the fastq file identifier line
+awk4='{getline p<f} (NR%4==1){$1=$1" "$2;$2=p}1'
+< list_for_UMI.txt parallel -P4 "awk '$awk4' OFS= f=$outDir/final_UMI_{}.txt $inDir/mm0_NEXT_trim1.{}_R1.fq > $outDir/NEXT_{}_UMItools_R1.fq"
+
+#remove reads from fastq with Ns in the UMI:
+< list_for_UMI.txt parallel -P4 "sed -e '/_N\|_.*N/,+3d' $outDir/NEXT_{}_UMItools_R1.fq > $outDir/NEXT_Ns_rem_{}_UMItools_R1.fq"
+
+#remove random 4 base pair seqs that make up the UMI from the fastq read sequence line:
+< list_for_UMI.txt parallel -P4 "cutadapt -u 4 -o $outDir/trim2_{}_forUMI_tools.fq $outDir/NEXT_Ns_rem_{}_UMItools_R1.fq"
+
+< list_for_UMI.txt parallel -P4 "cutadapt -m 18 -u  -4 -o $outDir/trimmed_{}_forUMI_tools.fq $outDir/trim2_{}_forUMI_tools.fq"
+
+
+#remove space form the identifier of the fastq
+< list_for_UMI.txt parallel -P4 "sed 's/ /-/' $outDir/trimmed_{}_forUMI_tools.fq > $outDir/nospace_trimmed_{}_forUMI_tools.fq"
+
+#bowtie allignment
+< list_for_UMI.txt parallel -P18 "/media/DATA/carrie/programs/bowtie-1.2.2-linux-x86_64/bowtie /media/DATA/carrie/miRge/miRge-master/miRge.seqLibs/human
+/mirna --fullref -l 15 -n 2 -S $outDir/nospace_trimmed_{}_forUMI_tools.fq $outDir/NEXT_acc_{}_readyforUMItools.sam"
+
+#convert to bams
+< list_for_UMI.txt parallel -P18 "samtools view -bS -o $outDir/NEXT_acc_{}_readyforUMItools.bam $outDir/NEXT_acc_{}_readyforUMItools.sam"
+
+#index and sort bams
+< list_for_UMI.txt parallel -P18 "samtools sort $outDir/NEXT_acc_{}_readyforUMItools.bam $outDir/NEXT_acc_{}_readyforUMItools_sorted"
+< list_for_UMI.txt parallel -P18 "samtools index $outDir/NEXT_acc_{}_readyforUMItools_sorted.bam"
+
+#make mapped files
+< list_for_UMI.txt parallel -P18 "samtools -b -F 4 -h $outDir/NEXT_acc_{}_readyforUMItools_sorted.bam > $outDir/mapped_{}.bam"
+< list_for_UMI.txt parallel -P18 "bam2fastx -q -Q -A -o $outDir/mapped_{}.fq $outDir/mapped_{}.bam"
+#UMItools
+< list_for_UMI.txt parallel -P18 "umi_tools dedup --method directional -I $outDir/NEXT_acc_{}_readyforUMItools_sorted.bam -S $outDir/directional_deduped
+_acc_{}_UMItools.bam"
+
+
+#convert deduped bam files to fastq files
+<list_for_UMI.txt parallel -P18 "bam2fastx -q -Q -A -o $outDir/directional_deduped_lib_align_seed15_{}_bam2fastq.fq $outDir/directional_deduped_acc_{}_U
+MItools.bam"
+
+
+```
+

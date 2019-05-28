@@ -1,0 +1,21 @@
+---
+title: "brain_trimming_code"
+author: "Carrie Wright"
+date: "5/28/2019"
+output: html_document
+---
+
+# This script was run with sh 
+```{bash}
+< trim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -a TGGAATTCTCGGGTGCCAAGG -o $outDir/NEXT_trim1.{}.fq $inDir/NEXTFlex{}_*_R1_001.fastq.gz"
+
+< trim_sample_list.txt parallel -P3 "/home/carrie/cutadapt -m 18 -u 3 -a AAAAAAAAAA -o  $outDir/Clontech_trimmed.{}.fq $inDir/Clontech{}_*_R1_001.fastq.gz"
+
+< trim_sample_list.txt parallel -P3 "/home/carrie/cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG -o $outDir/Illumina_trimmed.{}.fq $inDir/Illumina{}_*_R1_001.fastq.gz" 
+
+< trim_sample_list.txt parallel -P3 "/home/carrie/cutadapt -m 18 -a AGATCGGAAGAGCACACGTCT -o $outDir/NEB_trimmed.{}.fq $inDir/NEB{}_*_R1_001.fastq.gz"
+
+< NEXTtrim_sample_list.txt parallel -P4 "/home/carrie/cutadapt -u 4 -o $outDir/NEXT_trim2.{}.fq $inDir/NEXT_trim1.{}.fq"
+
+< NEXTtrim_sample_list.txt parallel -P3 "/home/carrie/cutadapt -m 18 -u -4 -o $outDir/NEXT_trimmed.{}.fq $inDir/NEXT_trim2.{}.fq"
+```
