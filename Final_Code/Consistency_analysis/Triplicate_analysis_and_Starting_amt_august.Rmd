@@ -1,0 +1,967 @@
+---
+title: "ComparsionofAmt"
+author: "Carrie Wright"
+date: "2/13/2018"
+output: html_document
+---
+
+
+###Prepare for UMI tools Shell Script on SRV4 
+###then run miRge
+
+###load data into R
+```{r, echo=FALSE}
+library(here)
+load(here("Complete_data/one_batch_thresh10across_trip.rda"))# created in miRNA_detection_June.Rmd
+```
+
+
+###Functions#
+
+```{r, echo = FALSE, message = FALSE, eval = TRUE}
+library(dplyr)
+
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(unique(names(data)), m= 2))
+}
+
+get_test_results<- function(data,test_names, pairedvalue) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  length_kits <<-list()
+  for(i in names(test_names)){
+    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+    length_kits[[i]]<<-c(length(Kit1[[1]]), length(Kit2[[1]]))
+  }
+}
+
+get_ttestStats<- function(x, tested_kits) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+    mean_1st_method = format(x$estimate[[1]], digits =2), 
+    mean_2nd_method =format(x$estimate[[2]], digits =2))
+}
+
+get_t.es.g <- function(ts){
+  t.es.g <<-list()
+  for(i in names(length_kits)){
+  t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
+  }
+}
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+
+
+```
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE, eval = TRUE}
+
+library(reshape2)
+library(limma)
+library(edgeR)
+library(dplyr)
+
+    errorData <-list()
+    errordata <-data.frame()
+    
+get_error<- function(data) {
+  for(i in names(data)){
+  data_kit <-data[which(names(data) ==i)]
+  data_kit <-as.data.frame(data_kit[[1]])
+  errordata <-data_kit - rowMeans(data_kit)
+  errordata <-abs(errordata)
+  #error_for_graph<<-melt(errordata)
+  errordata <-log2(errordata +1)
+  errorData[[i]]<<-errordata
+  }
+}
+```
+
+
+Higher t is worse = higher error
+###Overall Error
+
+```{r, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(compute.es)
+errorData_all <-list()
+
+get_error(data = split_amt_thresh$`100`)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_all[[1]] <-lapply(mean_errors_1, data.frame)
+
+get_error(data = split_amt_thresh$`250`)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_all[[2]] <-lapply(mean_errors_1, data.frame)
+
+get_error(data = split_amt_thresh$`500`)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_all[[3]] <-lapply(mean_errors_1, data.frame)
+
+get_error(data = split_amt_thresh$`1000`)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_all[[4]] <-lapply(mean_errors_1, data.frame)
+
+errorData <-NULL
+get_error(data = split_amt_thresh$`1500`)
+mean_errors_1500 <- lapply(errorData, rowMeans)
+errorData_all[[5]] <-lapply(mean_errors_1500, data.frame)
+
+errorData <-NULL
+get_error(data = split_amt_thresh$`2000`)
+mean_errors_1 <- lapply(errorData, rowMeans)
+errorData_all[[6]] <-lapply(mean_errors_1, data.frame)
+
+names(errorData_all)<- unique(Pheno$startingAmt)
+
+
+Names_thresh <-list()
+get_names_thresh<-function(data) {
+Names_thresh<<-intersect(intersect(intersect(rownames(as.data.frame(data[[1]])), rownames(as.data.frame(data[[2]]))), rownames(as.data.frame(data[[3]]))), rownames(as.data.frame(data[[4]])))}
+
+
+errorAll <-melt(errorData_all)
+names(errorAll)<- c("variable", "value"  ,  "Method"   ,    "Starting_Amount" )
+errorAll$Method<-factor(errorAll$Method, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+errorAll$Starting_Amount<-factor(errorAll$Starting_Amount, levels = c("100", "250", "500", "1000", "1500", "2000"))
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 6
+cols = gg_color_hue(n)
+
+boxplotwidth <- data.frame(width =c(rep(1,6), rep(.3,3), rep(.5, 4), rep(1, 18)))
+pdf(file =here("Figures/Raw_plots/Fig.5.e.pdf"),width=12,height=4, onefile=FALSE)
+ggplot(errorAll, aes(x = Starting_Amount, y = value))+ geom_jitter(width = .3, size = 2, aes(col = Method, alpha = 0.7))+ geom_boxplot(outlier.shape = NA, varwidth = FALSE, notch = FALSE) + facet_grid(.~Method)+  ggtitle(label = "Inconsistency Across Triplicates")+ labs( x= "Starting Amount", y = " Error from the Mean of Triplicates")+
+      theme(axis.title.x = element_text(size =0), 
+            plot.title = element_text(size = 20, face = "bold"),
+            strip.text = element_text(size = 13),
+            axis.text.x = element_text(size = 15, angle = 60, hjust = 1),
+            axis.text.y = element_text(size = 15), 
+            axis.title.y = element_text(size =13),
+            legend.position= "none")  +scale_color_manual(values =cols)+ geom_smooth(method = "loess", se=TRUE, color="black", aes(group=1, fill = Method))
+dev.off()
+errorAll$Starting_Amount <-as.numeric(as.character(errorAll$Starting_Amount))
+anova(lm(errorAll$value~ errorAll$Method))
+anova(lm(errorAll$value~ errorAll$Starting_Amount))
+library(sjstats)
+anova_stats(anova(lm(errorAll$value~ errorAll$Method)))
+split_errorAll <-list()
+for(kit in errorAll$Method){
+ split_errorAll[[kit]]<- errorAll[which(errorAll$Method == kit),]$value}
+
+get_test_names(split_errorAll)
+
+get_test_results(data = split_errorAll, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across #lower t indicates lower error across triplicates 
+
+error_mean <-lapply(split_errorAll, mean)
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+get_perc_diff(data.frame(error_mean))
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+msplit_errorAll <-melt(split_errorAll)
+msplit_errorAll$L1 <- factor(msplit_errorAll$L1, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+pdf(file =here("Figures/Raw_plots/Fig.5.f.tall.pdf"),width=3.8,height=4, onefile=FALSE)
+ggplot(msplit_errorAll, aes(x = L1, y = value))+ geom_jitter(width = .3, size = 2, aes(col = L1, alpha = 0.7))+ geom_boxplot(outlier.shape = NA, varwidth = FALSE, notch = FALSE) +  ggtitle(label = "Inconsistency Across Triplicates")+ labs( x= "Method", y = " Error from the Mean of Triplicates")+
+      theme(axis.title.x = element_text(size =0), 
+            plot.title = element_text(size = 20, face = "bold"),
+            strip.text = element_text(size = 13),
+            axis.text.x = element_text(size = 15, angle = 60, hjust = 1),
+            axis.text.y = element_text(size = 15), 
+            axis.title.y = element_text(size =13),
+            legend.position= "none")
+dev.off()
+
+ get_t.es.g(ts = tresults)
+ t(data.frame(t.es.g))
+ length_kits
+```
+1000ng data
+```{r}
+# stats comparing kits should maybe only be done on 1000ng input - or does it matter?
+Error1000 <- errorAll[which(errorAll$Starting_Amount == "1000"),]
+error_1000 <-list()
+for(kit in Error1000$Method){
+error_1000[[kit]]<- Error1000[which(Error1000$Method == kit),]$value}
+test_names <- data.frame(combn(names(error_1000), m= 2))
+
+get_test_results(data = error_1000, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+t(ttestStats_across) #lower t indicates lower error across triplicates
+m_1000 <- melt(error_1000)
+m_1000$L1 <- factor(m_1000$L1, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+anova(lm(m_1000$value~ m_1000$L1))
+anova_stats(anova(lm(m_1000$value~ m_1000$L1)))
+trip_error_1000ng <-data.frame(lapply(error_1000, mean))
+get_perc_diff(data.frame(trip_error_1000ng))
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+pdf(file =here("Figures/Raw_plots/Inconsistencyacrosstriplicates_1000ng.pdf"),width=3.8,height=4, onefile=FALSE)
+ggplot(m_1000, aes(x = L1, y = value))+ geom_jitter(width = .3, size = 2, aes(col = L1, alpha = 0.7))+ geom_boxplot(outlier.shape = NA, varwidth = FALSE, notch = FALSE) +  ggtitle(label = "Inconsistency Across Triplicates 1000ng")+ labs( x= "Starting Amount", y = " Error from the Mean of Triplicates")+
+      theme(axis.title.x = element_text(size =0), 
+            plot.title = element_text(size = 20, face = "bold"),
+            strip.text = element_text(size = 13),
+            axis.text.x = element_text(size = 15, angle = 60, hjust = 1),
+            axis.text.y = element_text(size = 15), 
+            axis.title.y = element_text(size =13),
+            legend.position= "none")  +scale_color_manual(values =cols)
+dev.off()
+
+get_t.es.g(ts = tresults)
+ t(data.frame(t.es.g))
+ length_kits
+
+```
+
+
+
+
+
+How is each method influenced by starting amount
+```{r}
+for(kit in errorAll$Method){
+ split_errorAll[[kit]]<- errorAll[which(errorAll$Method == kit),]}
+summary(lm(split_errorAll$Clontech$value~ split_errorAll$Clontech$Starting_Amount))
+summary(lm(split_errorAll$Illumina$value~ split_errorAll$Illumina$Starting_Amount))
+summary(lm(split_errorAll$NEB$value~ split_errorAll$NEB$Starting_Amount))
+summary(lm(split_errorAll$NEXTflex$value~ split_errorAll$NEXTflex$Starting_Amount))
+summary(lm(split_errorAll$Deduped$value~ split_errorAll$Deduped$Starting_Amount))
+summary(lm(split_errorAll$Fivepercent$value~ split_errorAll$Fivepercent$Starting_Amount))
+
+cor(split_errorAll$Clontech$value, split_errorAll$Clontech$Starting_Amount)
+cor(split_errorAll$Illumina$value, split_errorAll$Illumina$Starting_Amount)
+cor(split_errorAll$NEB$value, split_errorAll$NEB$Starting_Amount)
+cor(split_errorAll$NEXTflex$value, split_errorAll$NEXTflex$Starting_Amount)
+cor(split_errorAll$Deduped$value, split_errorAll$Deduped$Starting_Amount)
+cor(split_errorAll$Fivepercent$value, split_errorAll$Fivepercent$Starting_Amount)
+
+anova_stats(anova(lm(split_errorAll$Clontech$value~ split_errorAll$Clontech$Starting_Amount)))
+anova_stats(anova(lm(split_errorAll$Illumina$value~ split_errorAll$Illumina$Starting_Amount)))
+anova_stats(anova(lm(split_errorAll$NEB$value~ split_errorAll$NEB$Starting_Amount)))
+anova_stats(anova(lm(split_errorAll$NEXTflex$value~ split_errorAll$NEXTflex$Starting_Amount)))
+anova_stats(anova(lm(split_errorAll$Deduped$value~ split_errorAll$Deduped$Starting_Amount)))
+anova_stats(anova(lm(split_errorAll$Fivepercent$value~ split_errorAll$Fivepercent$Starting_Amount)))
+
+#also want to know when is there more error - at what starting amount for each kit does it appear to be better
+
+Clontech <-split(split_errorAll$Clontech$value, split_errorAll$Clontech$Starting_Amount)
+NEXTflex <-split(split_errorAll$NEXTflex$value, split_errorAll$NEXTflex$Starting_Amount)
+Illumina<-split(split_errorAll$Illumina$value, split_errorAll$Illumina$Starting_Amount)
+NEB<-split(split_errorAll$NEB$value, split_errorAll$NEB$Starting_Amount)
+Deduped<-split(split_errorAll$Deduped$value, split_errorAll$Deduped$Starting_Amount)
+Fivepercent<-split(split_errorAll$Fivepercent$value, split_errorAll$Fivepercent$Starting_Amount)
+
+test_names <- data.frame(combn(names(Clontech), m= 2))
+get_test_results(data = Clontech, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+t(ttestStats_across) #lower t indicates lower error across triplicates
+get_t.es.g(ts = tresults)
+ t(data.frame(t.es.g))
+ length_kits
+ 
+test_names <- data.frame(combn(names(NEB), m= 2))
+get_test_results(data = NEB, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+t(ttestStats_across) #lower t indicates lower error across triplicates
+get_t.es.g(ts = tresults)
+ t(data.frame(t.es.g))
+ length_kits
+ 
+test_names <- data.frame(combn(names(NEXTflex), m= 2))
+get_test_results(data = NEXTflex, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+t(ttestStats_across) #lower t indicates lower error across triplicates
+get_t.es.g(ts = tresults)
+ t(data.frame(t.es.g))
+ length_kits
+ 
+test_names <- data.frame(combn(names(Deduped), m= 2))
+get_test_results(data = Deduped, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+t(ttestStats_across) #lower t indicates lower error across triplicates
+get_t.es.g(ts = tresults)
+ t(data.frame(t.es.g))
+ length_kits
+
+test_names <- data.frame(combn(names(Fivepercent), m= 2))
+get_test_results(data = Fivepercent, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats, tested_kits = tested_kits))
+colnames(ttestStats_across)<-tested_kits
+t(ttestStats_across)
+get_t.es.g(ts = tresults)
+ t(data.frame(t.es.g))
+ length_kits
+ #lower t indicates lower error across triplicates
+#maybe look at how the mean of the triplicates for each amounts is correlated to the mean of the other amounts- but with the raw data - not the error? to know how similar they are to one another?????
+
+#percent change
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+error_mean <-data.frame(lapply(Clontech, mean))
+names(error_mean)<-names(Clontech)
+get_perc_diff(error_mean)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+
+error_mean <-data.frame(lapply(NEXTflex, mean))
+names(error_mean)<-names(NEXTflex)
+get_perc_diff(error_mean)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+error_mean <-data.frame(lapply(Deduped, mean))
+names(error_mean)<-names(Deduped)
+get_perc_diff(error_mean)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+error_mean <-data.frame(lapply(Fivepercent, mean))
+names(error_mean)<-names(Fivepercent)
+get_perc_diff(error_mean)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+
+
+get_test_names(NEB)
+error_mean <-data.frame(lapply(NEB, mean))
+names(error_mean)<-names(NEB)
+get_perc_diff(error_mean)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+```
+
+
+
+Find Intersection across starting Amt and Kit
+```{r}
+
+#get miRNA names
+miRNA_names <- list()
+for(amt in names(split_amt_thresh)){
+miRNA_names[[amt]] <- lapply(split_amt_thresh[[amt]], rownames)}
+
+#intersection of 100ng lists
+Names_thresh_100 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_100<<-intersect(intersect(intersect(intersect(data[[1]], data[[3]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`100`)
+
+Names_thresh_250 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_250<<-intersect(intersect(intersect(intersect(data[[1]], data[[3]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`250`)  
+
+Names_thresh_500 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_500<<-intersect(intersect(intersect(intersect(data[[1]], data[[3]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`500`)  
+
+Names_thresh_1000 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_1000<<-intersect(intersect(intersect(intersect(intersect(data[[1]], data[[2]]), data[[3]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`1000`)  
+
+Names_thresh_1500 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_1500<<-intersect(intersect(intersect(intersect(data[[1]], data[[2]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`1500`) 
+
+Names_thresh_2000 <-list()
+get_names_thresh<-function(data) {
+Names_thresh_2000<<-intersect(intersect(intersect(intersect(data[[1]], data[[2]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = miRNA_names$`2000`)
+
+
+Names_total <-list()
+get_names_thresh<-function(data) {
+Names_total<<-intersect(intersect(intersect(intersect(intersect(data[[1]], data[[2]]), data[[3]]), data[[4]]), data[[5]]), data[[6]])}
+get_names_thresh(data = list(Names_thresh_100, Names_thresh_250, Names_thresh_500, Names_thresh_1000, Names_thresh_1500, Names_thresh_2000))  
+
+#remove compound miRNAs
+Names_total<-Names_total[-grep("/", Names_total)]
+
+finding_rows<-function(x){x[rownames(x) %in% Names_total, , drop= FALSE]}
+errorData_test<-list()
+for(amt in names(errorData_all)){
+errorData_test[[amt]] <- lapply(errorData_all[[amt]], finding_rows)}
+
+identical(rownames(errorData_test$`100`$Clontech), rownames(errorData_test$`1000`$NEXTflex))
+
+#remove missing data
+errorData_test$`100`$Illumina<-NULL
+errorData_test$`250`$Illumina<-NULL
+errorData_test$`500`$Illumina<-NULL
+errorData_test$`1500`$NEB<-NULL
+errorData_test$`2000`$NEB<-NULL
+
+#make into dataframe
+errorData_testdf <-data.frame(errorData_test)
+colnames(errorData_testdf) <-c(names(errorData_test$`100`), names(errorData_test$`250`), names(errorData_test$`500`), names(errorData_test$`1000`), names(errorData_test$`1500`), names(errorData_test$`2000`))
+#expression data!
+expressData_test<-list()
+for(amt in names(split_amt_thresh)){
+expressData_test[[amt]] <- lapply(split_amt_thresh[[amt]], finding_rows)}
+
+#now take mean
+expressData_test_mean<-list()
+for(amt in names(expressData_test)){
+expressData_test_mean[[amt]] <- lapply(expressData_test[[amt]], rowMeans)}
+
+#remove missing data
+expressData_test_mean$`100`$Illumina<-NULL
+expressData_test_mean$`250`$Illumina<-NULL
+expressData_test_mean$`500`$Illumina<-NULL
+expressData_test_mean$`1500`$NEB<-NULL
+expressData_test_mean$`2000`$NEB<-NULL
+
+#make into dataframe
+expressData_test_meandf <-data.frame(expressData_test_mean)
+colnames(expressData_test_meandf) <-c(names(errorData_test$`100`), names(errorData_test$`250`), names(errorData_test$`500`), names(errorData_test$`1000`), names(errorData_test$`1500`), names(errorData_test$`2000`))
+expressData_test_meandf<- log2(expressData_test_meandf +1)
+```
+
+#### variance of within error### 
+```{r}
+
+library(ggplot2)
+yGene <-as.matrix(errorData_testdf)
+load(here("hsa_miRNA_info.rda"))
+seqs <- seqs_human[seqs_human$name %in% rownames(errorData_testdf),]
+seqs <-seqs[order(seqs$name),]
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last <- data.frame(x =lastStuff(str=seqs$seqs, 1))####uncomment to get last n bases
+seqs_first <-data.frame(x =strtrim(seqs$seqs, c(1)))###uncomment to get first n bases and comment next line
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_two <- data.frame(x =lastStuff(str=seqs$seqs, 2))####uncomment to get last n bases
+seqs_first_two <-data.frame(x =strtrim(seqs$seqs, c(2)))###uncomment to get first n bases and comment next line
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_three<- data.frame(x =lastStuff(str=seqs$seqs, 3))####uncomment to get last n bases
+seqs_first_three <-data.frame(x =strtrim(seqs$seqs, c(3)))###uncomment to get first n bases and comment next line
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_four <- data.frame(x =lastStuff(str=seqs$seqs, 4))####uncomment to get last n bases
+seqs_first_four <-data.frame(x =strtrim(seqs$seqs, c(4)))###uncomment to get first n bases and comment next line
+
+TTTT<-sapply(gregexpr("UUUU", seqs$seqs), function(x) sum(x != -1))
+GGGG<-sapply(gregexpr("GGGG", seqs$seqs), function(x) sum(x != -1))
+AAAA<-sapply(gregexpr("AAAA", seqs$seqs), function(x) sum(x != -1))
+CCCC<-sapply(gregexpr("CCCC", seqs$seqs), function(x) sum(x != -1))
+patterns <- c("UU", "GG", "CC", "AA")
+
+duplets <- sapply(gregexpr(paste(patterns,collapse="|"), 
+                        seqs$seqs), function(x) sum(x != -1))
+anyT<-sapply(gregexpr("U", seqs$seqs), function(x) sum(x != -1))
+anyG<-sapply(gregexpr("G", seqs$seqs), function(x) sum(x != -1))
+anyC<-sapply(gregexpr("C", seqs$seqs), function(x) sum(x != -1))
+anyA<-sapply(gregexpr("A", seqs$seqs), function(x) sum(x != -1))
+
+pd<-seqs
+pd$First_base <-seqs_first$x
+pd$First_2_bases <-seqs_first_two$x
+pd$First_3_bases <-seqs_first_three$x
+pd$First_4_bases <-seqs_first_four$x
+pd$Last_base <-seqs_last$x
+pd$Last_2_bases <-seqs_last_two$x
+pd$Last_3_bases <-seqs_last_three$x
+pd$Last_4_bases <-seqs_last_four$x
+pd$TTTT <- TTTT
+pd$CCCC <- CCCC
+pd$GGGG <- GGGG
+pd$AAAA <- AAAA
+pd$rep <- (TTTT+ CCCC+ GGGG+ AAAA)
+pd$duplets <-duplets
+pd$anyT <- anyT
+pd$anyC <-anyC
+pd$anyG <- anyG
+pd$anyA <- anyA
+
+```
+
+
+run for each kit
+```{r}
+library(car)
+#overall variance of error
+values<-lapply(split_errorAll, `[`, 2)
+variance <- lapply(values, var)
+boxplot(variance) # interesting the variance in error is really low for deduped - meaning error is more consistent across sequences
+
+yGene <-as.matrix(errorData_testdf$Clontech)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(yGene ~expressData_test_meandf$Clontech+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=pd, singular.ok = TRUE)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+varexpclontech <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+###############
+yGene <-as.matrix(errorData_testdf$Illumina)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+
+  fit = lm(yGene ~expressData_test_meandf$Illumina+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=pd, singular.ok = TRUE)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+varexpIllumina <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+###############
+
+yGene <-as.matrix(errorData_testdf$NEB)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(yGene ~expressData_test_meandf$NEB+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data =pd, singular.ok = TRUE)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+varexpNEB <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+###############
+yGene <-as.matrix(errorData_testdf$NEXTflex)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(yGene ~expressData_test_meandf$NEXTflex+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=pd, singular.ok = TRUE)
+ full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+varexpNEXTflex <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+###############
+yGene <-as.matrix(errorData_testdf$Deduped)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(yGene ~expressData_test_meandf$Deduped+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=pd, singular.ok = TRUE)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+varexpDeduped <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+
+###############
+yGene <-as.matrix(errorData_testdf$Fivepercent)
+
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(yGene ~expressData_test_meandf$Fivepercent+ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data=pd, singular.ok = TRUE)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+varexpFivepercent<-do.call(rbind, lapply(varCompAnalysis, data.frame))
+
+
+#put together
+varCompAnalysis <-list(varexpclontech, varexpIllumina, varexpNEB, varexpNEXTflex, varexpDeduped, varexpFivepercent)
+names(varCompAnalysis) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+#varexp_PctExp<- varexp_PctExp[-grep("(Intercept)",rownames(varexp_PctExp)),]
+rownames(varexp_PctExp)[1] <- "Expression"
+```
+
+
+```{r, eval=FALSE}
+library(pheatmap)
+
+varexp_PctExp3<- varexp_PctExp[-grep("Residual",rownames(varexp_PctExp)),]
+pdf(file =here("Figures/Raw_plots/Fig.5.h.pdf"),width=3,height=7, onefile=FALSE)
+varexp_PctExp3$Fake <- c(100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+pheatmap(varexp_PctExp3, main = "Percent of batch error variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
+dev.off()
+####weighted by overall variance by multiplying by kit variance and dividing by mean of all kit variance
+varexp_PctExp2<-varexp_PctExp3
+varexp_PctExp2<-((varexp_PctExp2*unlist(variance))/mean(unlist(variance)))
+varexp_PctExp2$Fake <- c(100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+pdf(file =here("Figures/Raw_plots/Fig.5.i.pdf"),width=3,height=7, onefile=FALSE)
+pheatmap(varexp_PctExp2, cluster_cols = FALSE, main = "Percent of batch error variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE)
+dev.off()
+```
+
+Expression plot
+```{r}
+#avg_Express - this is the log2 expression
+#Error
+library(ggpubr)
+avg_Express<-expressData_test_meandf
+Error <-errorData_testdf
+Clontech_exp <-data.frame(Error =Error$Clontech, Expression =avg_Express$Clontech, Kit = rep("Clontech",228))
+Illumina_exp <-data.frame(Error =Error$Illumina, Expression =avg_Express$Illumina, Kit = rep("Illumina",228))
+NEB_exp <-data.frame(Error =Error$NEB, Expression =avg_Express$NEB, Kit = rep("NEB",228))
+NEXTflex_exp <-data.frame(Error =Error$NEXTflex, Expression =avg_Express$NEXTflex, Kit = rep("NEXTflex",228))
+Deduped_exp <-data.frame(Error =Error$Deduped, Expression =avg_Express$Deduped, Kit = rep("Deduped",228))
+Fivepercent_exp <-data.frame(Error =Error$Fivepercent, Expression =avg_Express$Fivepercent, Kit = rep("Fivepercent",228))
+
+exp_error <- rbind(Clontech_exp, Illumina_exp, NEB_exp, NEXTflex_exp, Deduped_exp, Fivepercent_exp)
+pdf(file =here("Figures/Raw_plots/Fig.5.g.pdf"),width=10,height=4, onefile=FALSE)
+ggplot(exp_error, aes(x = Expression, y = Error, col = Kit)) + geom_point(aes(alpha = 0.4))+ stat_smooth(method = "loess")+ facet_grid(.~Kit) + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1), axis.text.y = element_text(size =15, hjust = 1), axis.title=element_text(size = 20), plot.title = element_text(size = 30), strip.text.x = element_text(size = 20)) + labs( x= "Expression", y = " Error across triplicates", title = " Relationship of Error and Expression") + stat_cor(method = "pearson", label.x = 10, label.y = 15, size =4.5, col = "black", label.sep = "\n")
+dev.off()
+summary(lm(Clontech_exp$Error ~ Clontech_exp$Expression))
+summary(lm(Illumina_exp$Error ~ Illumina_exp$Expression))
+summary(lm(NEB_exp$Error ~ NEB_exp$Expression))
+summary(lm(NEXTflex_exp$Error ~ NEXTflex_exp$Expression))
+summary(lm(Deduped_exp$Error ~ Deduped_exp$Expression))
+summary(lm(Fivepercent_exp$Error ~ Fivepercent_exp$Expression))
+cor.test(y =Clontech_exp$Error, x =Clontech_exp$Expression)
+cor.test(y =Illumina_exp$Error,x =Illumina_exp$Expression)
+cor.test(y =NEB_exp$Error,x =NEB_exp$Expression)
+cor.test(y =NEXTflex_exp$Error,x =NEXTflex_exp$Expression)
+cor.test(y =Deduped_exp$Error, x =Deduped_exp$Expression)
+cor.test(y =Fivepercent_exp$Error, x =Fivepercent_exp$Expression)
+```
+
+Are high error miRNAs the same across methods?
+Catplots for starting amount
+```{r}
+library(ggrepel)
+
+ranks_error<-data.frame(sapply(-errorData_testdf, rank))#ranked so 1 is the highest error
+rownames(ranks_error)<-rownames(errorData_testdf)
+Clontech_ranks <-(ranks_error[grep("Clontech", colnames(ranks_error))])
+Illumina_ranks <-(ranks_error[grep("Illumina", colnames(ranks_error))])
+NEB_ranks <-(ranks_error[grep("NEB", colnames(ranks_error))])
+NEXTflex_ranks <-(ranks_error[grep("NEXTflex", colnames(ranks_error))])
+Deduped_ranks <-(ranks_error[grep("Deduped", colnames(ranks_error))])
+Fivepercent_ranks <-(ranks_error[grep("Fivepercent", colnames(ranks_error))])
+ranked_miRNA<-list()
+
+Clontech_miRNAs <- data.frame("100" =rownames(ranks_error)[order(Clontech_ranks$Clontech)], 
+                              "250" =rownames(ranks_error)[order(Clontech_ranks$Clontech.1)],
+                              "500" =rownames(ranks_error)[order(Clontech_ranks$Clontech.2)],
+                              "1000"=rownames(ranks_error)[order(Clontech_ranks$Clontech.3)],
+                              "1500"= rownames(ranks_error)[order(Clontech_ranks$Clontech.4)],
+                              "2000" =rownames(ranks_error)[order(Clontech_ranks$Clontech.5)])
+NEXTflex_miRNAs <- data.frame("100" =rownames(ranks_error)[order(NEXTflex_ranks$NEXTflex)], 
+                              "250" =rownames(ranks_error)[order(NEXTflex_ranks$NEXTflex.1)],
+                              "500" =rownames(ranks_error)[order(NEXTflex_ranks$NEXTflex.2)],
+                              "1000"=rownames(ranks_error)[order(NEXTflex_ranks$NEXTflex.3)],
+                              "1500"= rownames(ranks_error)[order(NEXTflex_ranks$NEXTflex.4)],
+                              "2000" =rownames(ranks_error)[order(NEXTflex_ranks$NEXTflex.5)])
+Deduped_miRNAs <- data.frame("100" =rownames(ranks_error)[order(Deduped_ranks$Deduped)], 
+                              "250" =rownames(ranks_error)[order(Deduped_ranks$Deduped.1)],
+                              "500" =rownames(ranks_error)[order(Deduped_ranks$Deduped.2)],
+                              "1000"=rownames(ranks_error)[order(Deduped_ranks$Deduped.3)],
+                              "1500"= rownames(ranks_error)[order(Deduped_ranks$Deduped.4)],
+                              "2000" =rownames(ranks_error)[order(Deduped_ranks$Deduped.5)])
+Fivepercent_miRNAs <- data.frame("100" =rownames(ranks_error)[order(Fivepercent_ranks$Fivepercent)], 
+                              "250" =rownames(ranks_error)[order(Fivepercent_ranks$Fivepercent.1)],
+                              "500" =rownames(ranks_error)[order(Fivepercent_ranks$Fivepercent.2)],
+                              "1000"=rownames(ranks_error)[order(Fivepercent_ranks$Fivepercent.3)],
+                              "1500"= rownames(ranks_error)[order(Fivepercent_ranks$Fivepercent.4)],
+                              "2000" =rownames(ranks_error)[order(Fivepercent_ranks$Fivepercent.5)])
+NEB_miRNAs <- data.frame("100" =rownames(ranks_error)[order(NEB_ranks$NEB)], 
+                              "250" =rownames(ranks_error)[order(NEB_ranks$NEB.1)],
+                              "500" =rownames(ranks_error)[order(NEB_ranks$NEB.2)],
+                              "1000"=rownames(ranks_error)[order(NEB_ranks$NEB.3)])
+Illumina_miRNAs <- data.frame("1000"=rownames(ranks_error)[order(Illumina_ranks$Illumina)],
+                              "1500"= rownames(ranks_error)[order(Illumina_ranks$Illumina.1)],
+                              "2000" =rownames(ranks_error)[order(Illumina_ranks$Illumina.2)])
+
+
+ranked_miRNA <-data.frame(Clontech_miRNAs, Illumina_miRNAs, NEB_miRNAs, NEXTflex_miRNAs,  Deduped_miRNAs, Fivepercent_miRNAs)
+
+
+Clontech_miRNAs[1:10,]
+Illumina_miRNAs[1:10,]
+NEB_miRNAs[1:10,]
+NEXTflex_miRNAs[1:10,]
+Deduped_miRNAs[1:10,]
+Fivepercent_miRNAs[1:10,]
+
+
+library(ffpe)
+
+
+
+#####Clontech
+catplots <-list()
+for(i in 1:6){
+  catplots[[i]] = CATplot(Clontech_ranks[[i]],Clontech_ranks[[4]],make.plot=F)
+}
+library(RColorBrewer)
+trop = cols <- brewer.pal(9, "Set1")
+pdf(file =here("Supplement/Figures/StartingAmt_trip_error_Clontech.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[1]],ylim=c(0,1),col=trop[2],lwd=3,type="l",ylab="Concordance Between Clontech Starting Amounts",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[2]],col=trop[1],lwd=3,lty=2)
+lines(catplots[[3]],col=trop[4],lwd=3)
+lines(catplots[[5]],col=trop[3],lwd=3,lty=3)
+
+legend(130,0.35,legend=c("1000_vs_100","1000_vs_250", "1000_vs_500","1000_vs_1500","1000_vs_2000"),col=trop[c(2,1,1,3,4)],lty=c(1,2,1,3,1),lwd=3, cex = 1.4)
+dev.off()
+
+######Illumina
+catplots <-list()
+for(i in 1:3){
+  catplots[[i]] = CATplot(Illumina_ranks[[i]],Illumina_ranks[[1]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/StartingAmt_trip_error_Illumina.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[2]],ylim=c(0,1),col=trop[2],lwd=3,type="l",ylab="Concordance Between Illumina Starting Amounts",xlab="Rank", xlim = c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[3]],col=trop[1],lwd=3,lty=2)
+legend(130,0.35,legend=c("1000_vs_1500","1000_vs_2000"),col=trop[c(2,1)],lty=c(1,2),lwd=3, cex = 1.4)
+dev.off()
+
+#####NEB
+catplots <-list()
+for(i in 1:4){
+  catplots[[i]] = CATplot(NEB_ranks[[i]],NEB_ranks[[4]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/StartingAmt_trip_error_NEB.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[1]],ylim=c(0,1),col=trop[2],lwd=3,type="l",ylab="Concordance Between NEB Starting Amounts",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[2]],col=trop[1],lwd=3,lty=2)
+lines(catplots[[3]],col=trop[4],lwd=3)
+
+legend(130,0.35,legend=c("1000_vs_100","1000_vs_250", "1000_vs_500"),col=trop[c(2,1,4)],lty=c(1,2,1),lwd=3, cex = 1.4)
+dev.off()
+
+#####NEXTflex
+catplots <-list()
+for(i in 1:6){
+  catplots[[i]] = CATplot(NEXTflex_ranks[[i]],NEXTflex_ranks[[4]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/StartingAmt_trip_error_NEXTflex.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[1]],ylim=c(0,1),col=trop[2],lwd=3,type="l",ylab="Concordance Between NEXTflex Starting Amounts",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[2]],col=trop[1],lwd=3,lty=2)
+lines(catplots[[3]],col=trop[4],lwd=3)
+lines(catplots[[5]],col=trop[3],lwd=3,lty=3)
+
+legend(130,0.35,legend=c("1000_vs_100","1000_vs_250", "1000_vs_500","1000_vs_1500","1000_vs_2000"),col=trop[c(2,1,1,3,4)],lty=c(1,2,1,3,1),lwd=3, cex = 1.4)
+dev.off()
+#####Deduped
+catplots <-list()
+for(i in c(1,2,3,5,6)){
+  catplots[[i]] = CATplot(Deduped_ranks[[i]],Deduped_ranks[[4]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/StartingAmt_trip_error_Deduped.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[1]],ylim=c(0,1),col=trop[2],lwd=3,type="l",ylab="Concordance Between Deduped Starting Amounts",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[2]],col=trop[1],lwd=3,lty=2)
+lines(catplots[[3]],col=trop[4],lwd=3)
+lines(catplots[[5]],col=trop[3],lwd=3,lty=3)
+lines(catplots[[4]],col=trop[5],lwd=3,lty=3)
+
+legend(130,0.35,legend=c("1000_vs_100","1000_vs_250", "1000_vs_500","1000_vs_1500","1000_vs_2000", "1000_vs_1000"),col=trop[c(2,1,4,3,5)],lty=c(1,2,1,3,1,3),lwd=3, cex = 1.4)
+dev.off()
+#####Fivepercent
+catplots <-list()
+for(i in c(1,2,3,5,6)){
+  catplots[[i]] = CATplot(Fivepercent_ranks[[i]],Fivepercent_ranks[[4]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/StartingAmt_trip_error_Fivepercent.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[1]],ylim=c(0,1),col=trop[2],lwd=3,type="l",ylab="Concordance Between Fivepercent Starting Amounts",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[2]],col=trop[1],lwd=3,lty=2)
+lines(catplots[[3]],col=trop[4],lwd=3)
+lines(catplots[[5]],col=trop[3],lwd=3,lty=3)
+
+legend(130,0.35,legend=c("1000_vs_100","1000_vs_250", "1000_vs_500","1000_vs_1500","1000_vs_2000"),col=trop[c(2,1,1,3,4)],lty=c(1,2,1,3,1),lwd=3, cex = 1.4)
+dev.off()
+```
+#### methods triplicate consistency
+```{r}
+#1000ng -rel to Clontech
+forcatplot_1000 <- list(Clontech_ranks$Clontech.3, Illumina_ranks$Illumina, NEB_ranks$NEB.3, NEXTflex_ranks$NEXTflex.3, Deduped_ranks$Deduped.3, Fivepercent_ranks$Fivepercent.3)
+test <-c(rep(0,228))
+forcatplot_1000[[7]] <- c(rep(0,228))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/Trip_error_Clontech.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods relative to Clontech",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(130,0.5,legend=c("Clontech_vs_Illumina","Clontech_vs_NEB", "Clontech_vs_NEXTflex","Clontech_vs_Deduped","Clontech_vs_Fivepercent", "Perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3, cex = 1.2)
+dev.off()
+
+#1000ng -rel to NEXTflex
+forcatplot_1000 <- list( NEXTflex_ranks$NEXTflex.3,Illumina_ranks$Illumina, NEB_ranks$NEB.3, Clontech_ranks$Clontech.3, Deduped_ranks$Deduped.3, Fivepercent_ranks$Fivepercent.3)
+forcatplot_1000[[7]] <- c(rep(0,228))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/Trip_error_NEXTflex.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods relative to NEXTflex",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(130,0.5,legend=c("NEXTflex_vs_Illumina","NEXTflex_vs_NEB", "NEXTflex_vs_Clontech","NEXTflex_vs_Deduped","NEXTflex_vs_Fivepercent", "Perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3, cex = 1.2)
+dev.off()
+
+#1000ng -rel to Illumina
+forcatplot_1000 <- list(Illumina_ranks$Illumina,Clontech_ranks$Clontech.3,NEB_ranks$NEB.3, NEXTflex_ranks$NEXTflex.3, Deduped_ranks$Deduped.3, Fivepercent_ranks$Fivepercent.3)
+forcatplot_1000[[7]] <- c(rep(0,228))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/Trip_error_Illumina.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods relative to Illumina",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(130,0.5,legend=c("Illumina_vs_Clontech","Illumina_vs_NEB", "Illumina_vs_NEXTflex","Illumina_vs_Deduped","Illumina_vs_Fivepercent", "Perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3, cex = 1.2)
+dev.off()
+
+#1000ng -rel to NEB
+forcatplot_1000 <- list(NEB_ranks$NEB.3,Clontech_ranks$Clontech.3,Illumina_ranks$Illumina, NEXTflex_ranks$NEXTflex.3, Deduped_ranks$Deduped.3, Fivepercent_ranks$Fivepercent.3)
+forcatplot_1000[[7]] <- c(rep(0,228))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/Trip_error_NEB.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods relative to NEB",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(130,0.5,legend=c("NEB_vs_Clontech","NEB_vs_Illumina", "NEB_vs_NEXTflex","NEB_vs_Deduped","NEB_vs_Fivepercent", "Perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3, cex = 1.2)
+dev.off()
+
+#1000ng -rel to Deduped
+forcatplot_1000 <- list(Deduped_ranks$Deduped.3,Clontech_ranks$Clontech.3,Illumina_ranks$Illumina, NEB_ranks$NEB.3, NEXTflex_ranks$NEXTflex.3, Fivepercent_ranks$Fivepercent.3)
+forcatplot_1000[[7]] <- c(rep(0,228))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/Trip_error_Deduped.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods relative to Deduped",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(130,0.5,legend=c("Deduped_vs_Clontech","Deduped_vs_Illumina","Deduped_vs_NEB", "Deduped_vs_NEXTflex","Deduped_vs_Fivepercent", "Perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3, cex = 1.2)
+
+dev.off()
+
+
+#1000ng -rel to Fivepercent
+forcatplot_1000 <- list(Fivepercent_ranks$Fivepercent.3,Clontech_ranks$Clontech.3,Illumina_ranks$Illumina, NEB_ranks$NEB.3, NEXTflex_ranks$NEXTflex.3, Deduped_ranks$Deduped.3)
+forcatplot_1000[[7]] <- c(rep(0,228))
+catplots <-list()
+for(i in 1:7){
+  catplots[[i]] = CATplot(forcatplot_1000[[i]],forcatplot_1000[[1]],make.plot=F)
+}
+pdf(file =here("Supplement/Figures/Trip_error_Fivepercent.pdf"),width=10,height=8, onefile=FALSE)
+par(mar=c(5,5,5,5))
+plot(catplots[[2]],ylim=c(0,1),col=trop[1],lwd=3,type="l",ylab="Concordance Between Methods relative to Fivepercent",xlab="Rank", xlim=c(1,210), cex.lab=1.8, cex.axis=2)
+lines(catplots[[3]],col=trop[2],lwd=3,lty=2)
+lines(catplots[[4]],col=trop[3],lwd=3)
+lines(catplots[[5]],col=trop[4],lwd=3,lty=3)
+lines(catplots[[6]],col=trop[5],lwd=3,lty=1)
+lines(catplots[[1]],col=trop[7],lwd=3,lty=3)
+lines(catplots[[7]], col=trop[9],lwd=3)
+legend(130,0.5,legend=c("Fivepercent_vs_Clontech","Fivepercent_vs_Illumina","Fivepercent_vs_NEB", "Fivepercent_vs_NEXTflex","Fivepercent_vs_Deduped", "Perfect_concordance", "No_concordance"),col=trop[c(1,2,3,4,5,7,9)],lty=c(1,2,1,3,1,3,1),lwd=3, cex = 1.2)
+
+dev.off()
+
+
+```
+
+
+
+
