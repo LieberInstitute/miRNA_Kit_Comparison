@@ -24,4 +24,4 @@ This was evaluated by looking at the correlation of counts for the same sample m
 
 
 The preprocessing for these analysis was all done with shell scripts and the statistical analysis was performed using R.
-See the Final_Code Directory for all code.
+See the *Final_Code* Directory for all code.
