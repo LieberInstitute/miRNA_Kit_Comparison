@@ -1,0 +1,269 @@
+---
+title: "Percentage_May22"
+author: "Carrie Wright"
+date: "May 25, 2018"
+output: html_document
+---
+```{r, echo = TRUE, eval=TRUE}
+library(dplyr)
+library(compute.es)
+
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(unique(names(data)), m= 2))
+}
+
+get_test_results<- function(data,test_names, pairedvalue) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  length_kits <<-list()
+  for(i in names(test_names)){
+    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+    length_kits[[i]]<<-c(length(Kit1[[1]]), length(Kit2[[1]]))
+  }
+}
+
+get_ttestStats<- function(x, tested_kits) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+    mean_1st_method = format(x$estimate[[1]], digits =2), 
+    mean_2nd_method =format(x$estimate[[2]], digits =2), 
+    t.es.g=tes(x$statistic, n.1 = 4, n.2 = 4)$g)
+}
+
+
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+
+```
+
+```{r}
+library(here)
+library(ggplot2)
+library(reshape2)
+library(jaffelab)
+library(RColorBrewer) #set 3 or 1
+library(data.table)
+library(sjstats)
+
+percentages <- read.table(here("competitive_percentages.csv"), sep = ",", header = TRUE)
+colnames(percentages) <-gsub("X.", "", colnames(percentages))
+percentages$name<- paste0(percentages$Method, "_", percentages$StaringAmount_of_totalRNA)
+percentages<- cbind(percentages$File, percentages$unmapped, percentages[22:length(colnames(percentages))])
+colnames(percentages)<- c("File", "undetermined", "miRNA","piRNA", "rRNA", "scaRNA", "snoRNA", "snRNA", "tRNA", "name")
+percentages$File= factor(percentages$File,levels(percentages$File)[percentages$File])# reorder levels of files to be the same as in the dataframe
+mp <-melt(percentages)
+mp$Method <- ss(x = mp$name, "_", 1)
+mp$amount <- ss(x = mp$name, "_", 2)
+mp$File<-factor(mp$File, ordered = TRUE)
+colnames(mp)[3] <-c("Read_type")
+mp$Read_type= factor(mp$Read_type,levels = c("undetermined","rRNA","tRNA", "scaRNA", "snoRNA", "snRNA","piRNA","miRNA"))
+
+pdf(file =here("Figures/Raw_plots/stackedbar_percentages.pdf"),width=10,height=8)
+ggplot(mp, aes(x = File, y = value, color = Read_type)) +geom_bar(stat  = "identity", position = "stack", aes(y =value, fill = Read_type), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 90, face = "bold", colour = "black"), axis.text.y=element_text(size = 15), axis.title.y=element_text(size = 20)) +scale_x_discrete(labels= mp$name)  +ylab("Percentage of reads")   +    scale_fill_manual(values =c("gray", "lightsteelblue4","thistle4",   "maroon2", "olivedrab2", "indianred3", "steelblue2", "orange2"))
+ dev.off() 
+
+
+
+mp1000 <- mp[which(mp$amount == "1000"),]
+mp1000$toagg<-paste0(mp1000$Method,"_", mp1000$Read_type)
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 6
+cols = gg_color_hue(n)
+cols<-cols[1:4]
+
+
+
+aggregate_1000 <- aggregate(mp1000$value, by=list(mp1000$toagg), FUN = mean)
+aggregateSD_1000 <- aggregate(mp1000$value, by=list(mp1000$toagg), FUN = sd)
+aggregate_1000$Method <- ss(aggregate_1000$Group.1, "_", 1)
+aggregate_1000$Read_type <- ss(aggregate_1000$Group.1, "_", 2)
+aggregate_1000$Read_type <- factor(aggregate_1000$Read_type, levels=(aggregate_1000$Read_type)[c(8,1,3,7,2,5,6,4)])
+mp1000$Read_type <- factor(mp1000$Read_type, levels=c("miRNA","piRNA", "snRNA", "snoRNA", "scaRNA","tRNA","rRNA", "undetermined"))
+aggregate_1000$sd <- aggregateSD_1000$x
+aggregate_1000$Read_type <- factor(aggregate_1000$Read_type, levels=c("miRNA","piRNA", "snRNA", "snoRNA", "scaRNA","tRNA","rRNA", "undetermined"))
+aggregate_1000<-aggregate_1000[order(aggregate_1000$Read_type),]
+
+pdf(file =here("Figures/Raw_plots/mapped_types_boxplot_1000.pdf"),width=12.5,height=5)
+ggplot(mp1000, aes(x = Method, y = value, color = Method)) +geom_boxplot(fill = "white", color = "black") +geom_jitter(width = 0.02, size = 3)  +facet_grid(.~Read_type) + scale_color_manual(values = cols)+theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 15, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 16)) +ylab("Percentage of reads") 
+ dev.off() 
+
+pdf(file =here("Figures/Raw_plots/mapped_types_barplot_1000.pdf"),width=12.5,height=5)
+ggplot(aggregate_1000, aes(x = Method, y = x, color = Method))  +geom_bar(stat  = "identity", position = position_dodge(width = 0.9), aes(y =x, fill = Method), color = "black") +geom_errorbar(aes(ymin =aggregate_1000$x-aggregate_1000$sd, ymax=aggregate_1000$x +aggregate_1000$sd),color = "black", position=position_dodge(width = 0.9))+ facet_grid(.~aggregate_1000$Read_type) + geom_jitter(data = mp1000, aes(x = Method, y =value),color = "black", width = 0.02) + facet_grid(.~Read_type) +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 15, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 16)) +ylab("Percentage of reads")  +scale_fill_manual(values = cols)
+dev.off() 
+
+ggplot(aggregate_1000, aes(x = Method, y = x, color = Method))  +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black")+ facet_grid(.~Read_type) + geom_jitter(data = mp1000, aes(x = Method, y =value),color = "black", width = 0.02) + facet_grid(.~Read_type) +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 15, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 16)) +ylab("Percentage of reads")  +scale_fill_manual(values = cols)
+
+# ggplot(aggregate_1000, aes(x = Read_type, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 18)) +ylab("Percentage of reads")+ facet_grid(.~Method)  +scale_fill_manual(values = cols)
+
+mp$Read_type= factor(mp$Read_type,levels = c("undetermined","rRNA","tRNA", "scaRNA", "snoRNA", "snRNA","piRNA","miRNA"))
+
+aggregate_1000$Read_type <- factor(aggregate_1000$Read_type, levels = c("miRNA","piRNA", "snRNA", "snoRNA", "scaRNA","tRNA","rRNA", "undetermined"))
+
+pdf(file = here("Figures/Raw_plots/percentages_1000ng.pdf"),width=12.5,height=5)
+ggplot(aggregate_1000, aes(x = Method, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 15, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 16)) +ylab("Percentage of reads")+ facet_grid(.~Read_type)  +scale_fill_manual(values = cols)
+dev.off()
+
+# ggplot(aggregate_1000, aes(x = Method, y = x, color = Method)) +geom_bar(stat  = "identity", position = "dodge", aes(y =x, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15, colour = "black"), axis.title.y=element_text(size = 20), legend.position = "none", strip.text.x = element_text(size = 18)) +ylab("Percentage of reads")+ facet_grid(Read_type~., scales = "free")  +scale_fill_manual(values = cols)
+
+# ggplot(mp1000, aes(x = Read_type, y = value, color = Method)) +geom_boxplot(aes(y =value, fill = Method), color = "black") +theme( axis.title.x=element_blank(), axis.text.x=element_text( size = 10, angle = 60, face = "bold", colour = "black", hjust = 1), axis.text.y=element_text(size = 15), axis.title.y=element_text(size = 20), legend.position = "none") +ylab("Percentage of reads")+ facet_grid(~Method)  +scale_fill_manual(values = cols)
+
+#stats
+percentages$Method <- ss(percentages$name, "_", 1)
+percentages$amount <-ss(percentages$name, "_", 2)
+percent_1000 <- percentages[which(percentages$amount == "1000"),]
+
+miRNA <-(aov(percent_1000$miRNA ~ percent_1000$Method)) #same as anova(lm(etc...))
+TukeyHSD(miRNA, ordered = FALSE)
+anova(lm(percent_1000$miRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$miRNA ~ percent_1000$Method)))
+anova(lm(percent_1000$undetermined ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$undetermined ~ percent_1000$Method)))
+anova(lm(percent_1000$rRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$rRNA ~ percent_1000$Method)))
+anova(lm(percent_1000$tRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$tRNA ~ percent_1000$Method)))
+anova(lm(percent_1000$piRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$piRNA ~ percent_1000$Method)))
+anova(lm(percent_1000$snoRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$snoRNA ~ percent_1000$Method)))
+anova(lm(percent_1000$snRNA ~ percent_1000$Method))
+sjstats::anova_stats(anova(lm(percent_1000$snRNA ~ percent_1000$Method)))
+anova(lm(percent_1000$scaRNA ~ percent_1000$Method)) # no difference after multiple correction
+sjstats::anova_stats(anova(lm(percent_1000$scaRNA ~ percent_1000$Method)))
+percent_1000$key <- rep(c(1:4), 4)
+percent_1000<-as.data.table(percent_1000)
+
+
+unmapped<-data.frame(dcast(percent_1000, key~Method, value.var = "undetermined"))
+unmapped$key<-NULL
+miRNA<-data.frame(dcast(percent_1000, key~Method, value.var = "miRNA"))
+miRNA$key<-NULL
+rRNA<-data.frame(dcast(percent_1000, key~Method, value.var = "rRNA"))
+rRNA$key<-NULL
+tRNA<-data.frame(dcast(percent_1000, key~Method, value.var = "tRNA"))
+tRNA$key<-NULL
+snRNA<-data.frame(dcast(percent_1000, key~Method, value.var = "snRNA"))
+snRNA$key<-NULL
+snoRNA<-data.frame(dcast(percent_1000, key~Method, value.var = "snoRNA"))
+snoRNA$key<-NULL
+piRNA<-data.frame(dcast(percent_1000, key~Method, value.var = "piRNA"))
+piRNA$key<-NULL
+
+```
+
+```{r}
+
+get_test_names(unmapped)
+get_test_results(data = unmapped, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+get_test_names(miRNA)
+get_test_results(data = miRNA, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+get_perc_diff(data = miRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_test_names(rRNA)
+get_test_results(data = rRNA, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+
+get_test_names(tRNA)
+get_test_results(data = tRNA, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+get_test_names(piRNA)
+get_test_results(data = piRNA, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+get_test_names(snoRNA)
+get_test_results(data = snoRNA, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+get_test_names(snRNA)
+get_test_results(data = snRNA, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+ttestStats_across
+
+
+
+get_perc_diff(data = unmapped)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = miRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = rRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = tRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = piRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = snoRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+get_perc_diff(data = snRNA)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+```
+
+
+
+
+

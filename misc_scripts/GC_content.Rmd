@@ -1,0 +1,41 @@
+---
+title: "GCcontent"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(Biostrings)
+library(here)
+seqs<-Biostrings::readRNAStringSet(here("mature.fa"))
+#seqs<-Biostrings::readRNAStringSet(("/Users/carriewright/Documents/miRNA seq Projects/miRNA_isomiRNA_continued_2017-18_project/mature.fa"))
+seqs2<-data.frame(seqs)
+seqs_human<- seqs[grep("hsa", rownames(seqs2)),]
+human <- data.frame(seqs_human)
+#alphabetFrequency(seqs)
+GCcount<-letterFrequency(seqs_human, letters = c("CG"), as.prob = TRUE)
+save(GCcount, file = "/Users/carriewright/Documents/miRNA seq Projects/Kit_comparison_May22/miRNA_hsa_GC.rda")
+
+range(GCcount)
+hist(GCcount)
+```
+
+```{r, eval = FALSE}
+synth_seqs<-read.csv(("/Users/carriewright/Documents/miRNA seq Projects/miRNA_isomiRNA_continued_2017-18_project/possible_synth_seqs.csv"), header = FALSE)
+synth_seqs<-BStringSet(synth_seqs$V2)
+GCcount_synth<-letterFrequency(synth_seqs, letters = c("CG"), as.prob = TRUE)
+range(GCcount_synth)
+hist(GCcount_synth)
+```
+
+```{r, eval = FALSE}
+#boxplot(GCcount)
+boxplot(GCcount_synth)
+#summary(GCcount)
+summary(GCcount_synth)
+```
+

@@ -1,0 +1,762 @@
+---
+title: "synthetic_IsomiR_analysis"
+author: "Carrie Wright"
+date: "7/30/2018"
+output: html_document
+---
+
+#Generate count data
+```{r}
+library(here)
+
+isomiR_Counts <-read.table(here("Complete_data/synthetic_isomiRanalysis/full/isomirs.csv"), header = TRUE, sep = ",", row.names = NULL)
+colnames(isomiR_Counts)<-colnames(isomiR_Counts)[-(grep("row.names", colnames(isomiR_Counts)))]# shift everything to right
+isomiR_Counts<-as.data.frame(isomiR_Counts)
+
+Counts <-isomiR_Counts[3:(length(isomiR_Counts) -2)]#romove entropy and empty columns
+
+colnames(Counts)<-gsub("NEXT_", "NEXTflex_", colnames(Counts))
+colnames(Counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(Counts))# keep for when we add this
+
+annotation <-isomiR_Counts[1:2]
+
+save(Counts, file =here("Complete_data/synthetic_isomiRanalysis/full//Counts.rda"))
+save(annotation, file = here("Complete_data/synthetic_isomiRanalysis/full/annotation.rda"))
+```
+
+Need to convert from RPM to raw counts
+
+```{r}
+library(here)
+load(here("Complete_data/synthetic_isomiRanalysis/full/Counts.rda"))
+iso_RPM <-Counts
+
+library(XML)
+report_url<-here("Complete_data/synthetic_isomiRanalysis/full/report.html")# from miRge
+urltxt <- readLines(report_url)
+report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
+report <- report [-length(report)]
+report <-as.data.frame(report)
+report <-report[1:9]
+report <-report[seq(from =1, to = nrow(report), by = 5),]# remove extra empty lines
+report <-report[-2,]
+total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))# all isomir and canoncial reads
+total_miRNA<-vapply(strsplit(as.character(report$NULL.All.miRNA.Reads...Filtered.miRNA.Reads),"/"),`[`, 2, FUN.VALUE=character(1))#need to use the filtered number of miRNA reads
+total_miRNA<-gsub("[[:blank:]]", "", total_miRNA)
+total_miRNA<-as.numeric(as.character(total_miRNA))
+
+rep.row<-function(x,n){
+   matrix(rep(x,each=n),nrow=n)
+}
+dimensions<-dim(iso_RPM)
+Totalmatrix<-rep.row((total_miRNA/1000000), dimensions[1])#width of isoRPM2
+
+iso_Raw<- (iso_RPM)*(as.numeric(Totalmatrix))
+iso_Raw <- round(iso_Raw,digits = 0)
+colSums(iso_Raw)
+save(iso_Raw, file = here("Complete_data/synthetic_isomiRanalysis/full//Iso_raw.rda"))
+#save(Pheno, file = here("Complete_data/synthetic_isomiRanalysis//Pheno.rda"))
+save(total_miRNA, report, file = here("Complete_data/synthetic_isomiRanalysis/full//total_miRNA.rda"))
+```
+
+#load processed data
+```{r,eval = TRUE}
+library(here)
+
+load(here("Complete_data/synthetic_isomiRanalysis/full//Iso_raw.rda"))
+load(here("Complete_data/synthetic_isomiRanalysis/full//annotation.rda"))
+load(here("Complete_data/synthetic_isomiRanalysis/full//total_miRNA.rda"))
+```
+
+Normalization
+###DESeq2
+```{r, eval=FALSE, warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+library(reshape2)
+library(ggplot2)
+library(jaffelab)
+
+full_norm_miR <-list()
+Pheno <-data.frame(Methods = factor(ss(colnames(iso_Raw), "_", 1)))
+dds<-DESeqDataSetFromMatrix(countData = iso_Raw, colData = Pheno, design = ~ Methods)
+dds <- estimateSizeFactors(dds)
+full_norm_miR<-data.frame(counts(dds, normalized = TRUE))
+save(Pheno, full_norm_miR, file = here("Complete_data/synthetic_isomiRanalysis/full//fullnorm_miR.rda"))
+
+#howmany isomiRs are there above 100 normalized counts:
+length(which(full_norm_miR$Clontech_trimmed.4_acc.fq>100))
+length(which(full_norm_miR$Illumina_trimmed.4_acc.fq>100))
+length(which(full_norm_miR$NEB_trimmed.4_acc.fq>100))
+length(which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>100))
+length(which(full_norm_miR$Deduped_lib_align_seed15_acc_4_bam2fastq.fq>100))
+length(which(full_norm_miR$Five_double_acc_4.fq>100))
+
+Clontech_100 <- data.frame(Kit = rep("Clontech", length(full_norm_miR$Clontech_trimmed.4_acc.fq[which(full_norm_miR$Clontech_trimmed.4_acc.fq>100)])), Counts =full_norm_miR$Clontech_trimmed.4_acc.fq[which(full_norm_miR$Clontech_trimmed.4_acc.fq>100)], sequence =annotation$sequence[which(full_norm_miR$Clontech_trimmed.4_acc.fq>100)], miRNA = annotation$miRNA[which(full_norm_miR$Clontech_trimmed.4_acc.fq>100)])
+
+Illumina_100 <- data.frame(Kit = rep("Illumina", length(full_norm_miR$Illumina_trimmed.4_acc.fq[which(full_norm_miR$Illumina_trimmed.4_acc.fq>100)])), Counts =full_norm_miR$Illumina_trimmed.4_acc.fq[which(full_norm_miR$Illumina_trimmed.4_acc.fq>100)], sequence =annotation$sequence[which(full_norm_miR$Illumina_trimmed.4_acc.fq>100)], miRNA = annotation$miRNA[which(full_norm_miR$Illumina_trimmed.4_acc.fq>100)])
+
+NEB_100 <- data.frame(Kit = rep("NEB", length(full_norm_miR$NEB_trimmed.4_acc.fq[which(full_norm_miR$NEB_trimmed.4_acc.fq>100)])), Counts =full_norm_miR$NEB_trimmed.4_acc.fq[which(full_norm_miR$NEB_trimmed.4_acc.fq>100)], sequence =annotation$sequence[which(full_norm_miR$NEB_trimmed.4_acc.fq>100)], miRNA = annotation$miRNA[which(full_norm_miR$NEB_trimmed.4_acc.fq>100)])
+
+NEXTflex_100 <- data.frame(Kit = rep("NEXTflex", length(full_norm_miR$NEXTflex_trimmed.4_acc.fq[which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>100)])), Counts =full_norm_miR$NEXTflex_trimmed.4_acc.fq[which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>100)], sequence =annotation$sequence[which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>100)], miRNA = annotation$miRNA[which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>100)])
+
+Deduped_100 <- data.frame(Kit = rep("Deduped", length(full_norm_miR$Deduped_lib_align_seed15_acc_4_bam2fastq.fq[which(full_norm_miR$Deduped_lib_align_seed15_acc_4_bam2fastq.fq>100)])), Counts =full_norm_miR$Deduped_lib_align_seed15_acc_4_bam2fastq.fq[which(full_norm_miR$Deduped_lib_align_seed15_acc_4_bam2fastq.fq>100)], sequence =annotation$sequence[which(full_norm_miR$Deduped_lib_align_seed15_acc_4_bam2fastq.fq>100)], miRNA = annotation$miRNA[which(full_norm_miR$Deduped_lib_align_seed15_acc_4_bam2fastq.fq>100)])
+
+Fivepercent_100 <- data.frame(Kit = rep("Fivepercent", length(full_norm_miR$Five_double_acc_4.fq[which(full_norm_miR$Five_double_acc_4.fq>100)])), Counts =full_norm_miR$Five_double_acc_4.fq[which(full_norm_miR$Five_double_acc_4.fq>100)], sequence =annotation$sequence[which(full_norm_miR$Five_double_acc_4.fq>100)], miRNA = annotation$miRNA[which(full_norm_miR$Five_double_acc_4.fq>100)])
+
+
+#some of the sequences are sequencing errors - should i remove these from the analysis? YES... need to do this...
+length(grep("N", Clontech_100$sequence))
+length(grep("N", Illumina_100$sequence))
+length(Illumina_100$sequence)
+(length(grep("N", Illumina_100$sequence))/length(Illumina_100$sequence))*100 #5 percent
+Illumina_100<-Illumina_100[-grep("N", Illumina_100$sequence),]
+length(grep("N", NEB_100$sequence))
+length(NEB_100$sequence)
+NEB_100 <-NEB_100[-grep("N", NEB_100$sequence),]
+(length(grep("N", NEB_100$sequence))/length(NEB_100$sequence))*100 #2.5 percent
+length(grep("N", NEXTflex_100$sequence))
+length(grep("N", Deduped_100$sequence))
+length(grep("N", Fivepercent_100$sequence))
+
+
+
+False_IsomiRs <-rbind(Clontech_100, Illumina_100, NEB_100, NEXTflex_100, Deduped_100, Fivepercent_100)
+False_isomirs <- data.frame(Clontech =length(Clontech_100$Counts), Illumina =length(Illumina_100$Counts), NEB =length(NEB_100$Counts), NEXTflex =length(NEXTflex_100$Counts), Deduped = length(Deduped_100$Counts), Fivepercent = length(Fivepercent_100$Counts))
+m_iso <-melt(False_isomirs)
+False_IsomiRs_duplicated <-False_IsomiRs[duplicated(False_IsomiRs$sequence),]
+
+##overlap_analysis
+length(which(Clontech_100$sequence %in% Illumina_100$sequence))
+length(which(Clontech_100$sequence %in% NEB_100$sequence))
+length(which(Clontech_100$sequence %in% NEXTflex_100$sequence))
+length(which(NEB_100$sequence %in% Illumina_100$sequence))
+length(which(NEB_100$sequence %in% NEXTflex_100$sequence))
+length(which(Illumina_100$sequence %in% NEXTflex_100$sequence))
+False_IsomiRs_unique <- False_IsomiRs[which(False_IsomiRs$sequence %in% unique(False_IsomiRs$sequence)),]
+length(unique(False_IsomiRs$sequence))/length(False_IsomiRs$sequence)# 72 percent are unique isomiRs overall
+length(False_IsomiRs_duplicated)/length(False_IsomiRs$sequence)
+
+library(dplyr)
+False_IsomiRs_no_deduped_fivepercent<- subset(False_IsomiRs, False_IsomiRs$Kit != "Deduped" & False_IsomiRs$Kit != "Fivepercent") # dont want to include these in the kit comparison
+length(unique(False_IsomiRs_no_deduped_fivepercent$sequence))/length(False_IsomiRs_no_deduped_fivepercent$sequence)
+
+False_IsomiRs_noClontech<- subset(False_IsomiRs_no_deduped_fivepercent,False_IsomiRs_no_deduped_fivepercent$Kit != "Clontech")
+False_IsomiRs_noIllumina<- subset(False_IsomiRs_no_deduped_fivepercent,False_IsomiRs_no_deduped_fivepercent$Kit != "Illumina")
+False_IsomiRs_noNEB<- subset(False_IsomiRs_no_deduped_fivepercent,False_IsomiRs_no_deduped_fivepercent$Kit != "NEB")
+False_IsomiRs_noNEXTflex<- subset(False_IsomiRs_no_deduped_fivepercent,False_IsomiRs_no_deduped_fivepercent$Kit != "NEXTflex")
+
+length(Clontech_100$sequence[which(Clontech_100$sequence %in% False_IsomiRs_noClontech$sequence)])
+length(Illumina_100$sequence[which(Illumina_100$sequence %in% False_IsomiRs_noIllumina$sequence)])
+length(NEB_100$sequence[which(NEB_100$sequence %in% False_IsomiRs_noNEB$sequence)])
+length(NEXTflex_100$sequence[which(NEXTflex_100$sequence %in% False_IsomiRs_noNEXTflex$sequence)])
+
+False_IsomiRs_noClontech_noNEXTflex<-subset(False_IsomiRs_noClontech,False_IsomiRs_noClontech$Kit != "NEXTflex")
+length(NEXTflex_100$sequence[which(NEXTflex_100$sequence %in% False_IsomiRs_noClontech_noNEXTflex$sequence)])
+
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 6
+cols = gg_color_hue(n)
+ggplot(False_IsomiRs, aes(y = Counts, x =Kit, color = Kit)) +geom_boxplot() + scale_fill_manual(values = cols) + ylim(0,1000)
+
+
+pdf(file =here("Figures/Raw_plots/false_isomiR_detection_over_100reads.pdf"),width=5,height=6)
+ggplot(m_iso, aes(x =variable, y=value, fill = variable)) + geom_bar(stat = "identity", aes(y =value, fill = variable), color = "black") + theme(legend.position = "none", axis.text.x = element_text(size =17, angle = 60, hjust = 1, color = "black"), axis.text.y = element_text(size =18, hjust = 1, color = "black"), axis.title.y=element_text(size = 20)) + labs(y = " Detected False IsomiR Sequences")+ scale_fill_manual(values = cols) +geom_text(aes(label = (round(value, digits =2)), size = 5, hjust = 0.5, vjust = 1.5) )
+dev.off()
+
+#percent difference of raw isomiR overall numbers
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(unique(names(data)), m= 2))
+}
+get_test_names(False_isomirs)
+get_perc_diff(data = False_isomirs)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+perc_stats
+
+#howmany isomiRs are there above 10 normalized counts:
+length(which(full_norm_miR$Clontech_trimmed.4_acc.fq>10))
+length(which(full_norm_miR$Illumina_trimmed.4_acc.fq>10))
+length(which(full_norm_miR$NEB_trimmed.4_acc.fq>10))
+length(which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>10))
+
+#howmany isomiRs are there above 0 normalized counts:
+length(which(full_norm_miR$Clontech_trimmed.4_acc.fq>0))
+length(which(full_norm_miR$Illumina_trimmed.4_acc.fq>0))
+length(which(full_norm_miR$NEB_trimmed.4_acc.fq>0))
+length(which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>0))
+
+#howmany isomiRs are there above 1 normalized counts:
+length(which(full_norm_miR$Clontech_trimmed.4_acc.fq>1))
+length(which(full_norm_miR$Illumina_trimmed.4_acc.fq>1))
+length(which(full_norm_miR$NEB_trimmed.4_acc.fq>1))
+length(which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>1))
+
+#howmany isomiRs are there above 1000 normalized counts:
+length(which(full_norm_miR$Clontech_trimmed.4_acc.fq>1000))
+length(which(full_norm_miR$Illumina_trimmed.4_acc.fq>1000))
+length(which(full_norm_miR$NEB_trimmed.4_acc.fq>1000))
+length(which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>1000))
+
+
+#howmany isomiRs are there above 10000 normalized counts:
+length(which(full_norm_miR$Clontech_trimmed.4_acc.fq>10000))
+length(which(full_norm_miR$Illumina_trimmed.4_acc.fq>10000))
+length(which(full_norm_miR$NEB_trimmed.4_acc.fq>10000))
+length(which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>10000))
+
+#howmany isomiRs are there above 100000 normalized counts:
+length(which(full_norm_miR$Clontech_trimmed.4_acc.fq>50000))
+length(which(full_norm_miR$Illumina_trimmed.4_acc.fq>50000))
+length(which(full_norm_miR$NEB_trimmed.4_acc.fq>50000))
+length(which(full_norm_miR$NEXTflex_trimmed.4_acc.fq>50000))
+```
+
+stats of expression of isomirs.. are those that are detected higher in a given kit?
+```{r}
+library(dplyr)
+library(compute.es)
+get_test_names <- function(data){
+  test_names <<- data.frame(combn(unique(names(data)), m= 2))
+}
+
+get_test_results<- function(data,test_names, pairedvalue) {
+  tresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  length_kits <<-list()
+  for(i in names(test_names)){
+    Kit1 <-data[which(names(data) %in% test_names[i][1,])]
+    Kit2 <-data[which(names(data) %in% test_names[i][2,])]
+    tested_names1[[i]]<<-names(data)[names(data) %in% test_names[i][1,]]
+    tested_names2[[i]]<<-names(data)[names(data) %in% test_names[i][2,]]
+    tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = pairedvalue)
+    tested_kits <<-paste0(tested_names1, "&", tested_names2)
+    length_kits[[i]]<<-c(length(Kit1[[1]]), length(Kit2[[1]]))
+  }
+}
+
+get_ttestStats<- function(x, tested_kits) {
+  c(t =format(x$statistic, digits = 2),
+    df = format(x$parameter, digits = 0),
+    p.value = format(x$p.value, scientific = TRUE, digits = 2),
+    bonferroni.threshold = format(.05/length(test_names), digits = 2),
+    sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+    mean_1st_method = format(x$estimate[[1]], digits =2), 
+    mean_2nd_method =format(x$estimate[[2]], digits =2))
+}
+
+get_t.es.g <- function(ts){
+  t.es.g <<-list()
+  for(i in names(length_kits)){
+  t.es.g[[i]]<<-tes(ts[[i]]$statistic, n.1 = length_kits[i][[1]][1], n.2 = length_kits[i][[1]][2])$g
+  }
+}
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+```
+
+
+```{r}
+
+IsomiR_expression <- list(Clontech_100$Counts, Illumina_100$Counts, NEB_100$Counts, NEXTflex_100$Counts, Deduped_100$Counts, Fivepercent_100$Counts)
+anova(lm(False_IsomiRs$Counts~ False_IsomiRs$Kit)) # significant difference in the expression of isomirs across kits F = 47.631, df = 5, p <2.2e-16
+names(IsomiR_expression)<-unique(names(False_isomirs))
+get_test_names(IsomiR_expression)
+get_test_results(data = IsomiR_expression, test_names = test_names, pairedvalue = FALSE)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+t(ttestStats_across)
+
+get_t.es.g(ts = tresults)
+t(data.frame(t.es.g))
+
+
+Mean_express<-data.frame(lapply(IsomiR_expression, mean))
+get_perc_diff(data = Mean_express)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+```
+
+stats on each canonical synth miRNA - how many isomirs - this is old!!!!!!!!!!
+```{r}
+# ### try aggregating by canonical
+# 
+# get_test_results<- function(data,test_names) {
+#   tresults<<-list()
+#   tested_names1<<-list()
+#   tested_names2<<-list()
+#   for(i in names(test_names)){
+#     #tested_names[[i]]<<-(test_names[i][,1])
+#     Kit1<-data[grep(test_names[i][1,], names(data))]
+#     Kit2<-data[grep(test_names[i][2,], names(data))]
+#     #Kit1<-data.frame(select(data, names(data)[names(data) %in% test_names[i][1,]]))
+#     #Kit2<-data.frame(select(data, names(data)[names(data) %in% test_names[i][2,]]))
+#     tested_names1[[i]]<<-names(Kit1)
+#     tested_names2[[i]]<<-names(Kit2)
+#     # colnames(Kit1)<-c("error")
+#     # colnames(Kit2)<-c("error")
+#     tresults[[i]]<<-t.test(x=Kit1[[1]]$x, y=Kit2[[1]]$x, paired = FALSE) ### may have messed things up adding paired = TRUE previously had more ))
+#     tested_kits <<-paste0(tested_names1, "&", tested_names2)
+#   }
+# }
+Clontech_count <-aggregate(Clontech_100$sequence, by =list(Clontech_100$miRNA), FUN = length)
+Clontech_count$Kit <- rep("Clontech", length(Clontech_count$x))
+Illumina_count <-aggregate(Illumina_100$sequence, by =list(Illumina_100$miRNA), FUN = length)
+Illumina_count$Kit <- rep("Illumina", length(Illumina_count$x))
+NEB_count <-aggregate(NEB_100$sequence, by =list(NEB_100$miRNA), FUN = length)
+NEB_count$Kit <- rep("NEB", length(NEB_count$x))
+NEXTflex_count <-aggregate(NEXTflex_100$sequence, by =list(NEXTflex_100$miRNA), FUN = length)
+NEXTflex_count$Kit <- rep("NEXTflex", length(NEXTflex_count$x))
+Deduped_count <-aggregate(Deduped_100$sequence, by =list(Deduped_100$miRNA), FUN = length)
+Deduped_count$Kit <- rep("Deduped", length(Deduped_count$x))
+Fivepercent_count <-aggregate(Fivepercent_100$sequence, by =list(Fivepercent_100$miRNA), FUN = length)
+Fivepercent_count$Kit <- rep("Fivepercent", length(Fivepercent_count$x))
+# 
+# countper_synth_together<-rbind(Clontech =Clontech_count,Illumina = Illumina_count, NEB =NEB_count, NEXTflex =NEXTflex_count, Deduped =Deduped_count, Fivepercent =Fivepercent_count)
+# 
+# anova(lm(countper_synth_together$x~ countper_synth_together$Kit)) # significant difference in the number of isomirs for each synthetic sequenec across kits F = 104.41, df = 5, p <2.2e-16
+# countper_synth <-list( Clontech =Clontech_count,Illumina = Illumina_count, NEB =NEB_count, NEXTflex =NEXTflex_count, Deduped =Deduped_count, Fivepercent =Fivepercent_count)
+# get_test_names(countper_synth)
+# get_test_results(data = countper_synth, test_names = test_names)
+# ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+# colnames(ttestStats_across)<-tested_kits
+# ttestStats_across
+# 
+# 
+# 
+# countper_synth_together$Kit <- factor(countper_synth_together$Kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+# 
+# pdf(file =here("Figures/Raw_plots/false_isomiR_counts_over_100reads.pdf"),width=5,height=6)
+# ggplot(countper_synth_together, aes(x = Kit, y = x, color = Kit))  + geom_jitter(width = 0.3) + geom_boxplot( outlier.shape = NA, color = "black")+ ylab("False IsomiRs Detected for Each Synthetic Sequence")+
+#   theme(axis.title.x = element_text(size =0), 
+#         axis.text.x = element_text(size = 10, face = "bold",angle = 60, hjust = 1, color = "black"),
+#         axis.text.y = element_text(size = 12, hjust = 0.5, color = "black"), 
+#         axis.title.y = element_text(size =15), 
+#         legend.position = "none") + ylim(c(0,75))
+# dev.off()
+# 
+# 
+pdf(file =here("Figures/Raw_plots/false_isomiR_expression_over_100reads.pdf"),width=5,height=6)
+ggplot(False_IsomiRs, aes(x = Kit, y = Counts, color = Kit))  + geom_jitter(width = 0.3) + geom_boxplot( outlier.shape = NA, color = "black")+ ylab("Expression of False IsomiRs")+
+  theme(axis.title.x = element_text(size =0),
+        axis.text.x = element_text(size = 20, angle = 60, hjust = 1, color = "black"),
+        axis.text.y = element_text(size = 20, hjust = 0.5, color = "black"),
+        axis.title.y = element_text(size =20),
+        legend.position = "none") + ylim(c(0,5000))
+dev.off()
+
+```
+
+
+#which sequence factors are more likely to produce isomirs...
+
+
+
+
+#characterize the miRNAs produced.
+```{r}
+library(Biostrings)
+library(here)
+folding <-readLines(here("synth_fold_output.txt")) #read in the file from RNA fold
+folding_G <- folding[seq(3, length(folding), 3)] #grab only every thrid line
+folding_Gs <-vapply(strsplit(folding_G," "), `[`, 3, FUN.VALUE=character(1))
+folding_Gs <-gsub(")", "", folding_Gs)
+numericGs <-as.numeric(folding_Gs)
+numericGs[is.na(numericGs)] <- 0
+FoldG<-data.frame(FoldG =numericGs)
+
+seqs = readDNAStringSet(here("synth_seqs_named.fa"))
+GCcont<-letterFrequency(seqs, letters = c("CG"), as.prob = TRUE)
+#GCcont <-data.frame(GCcont = GCcont)
+length<-width(seqs)
+seqs<-as.data.frame(seqs)
+seqs$name <-rownames(seqs)
+rownames(seqs) <- NULL
+seqs$GC <- as.vector(GCcont)
+seqs$length <-length
+
+seqs$RNA<-gsub("T", "U", seqs$x)
+seqs$FoldG<-FoldG$FoldG
+
+
+```
+
+
+Variance Plot
+```{r}
+library(ggplot2)
+library(car)
+
+#Repeats
+
+TTTT<-sapply(gregexpr("TTTT", seqs$x), function(x) sum(x != -1))
+GGGG<-sapply(gregexpr("GGGG", seqs$x), function(x) sum(x != -1))
+AAAA<-sapply(gregexpr("AAAA", seqs$x), function(x) sum(x != -1))
+CCCC<-sapply(gregexpr("CCCC", seqs$x), function(x) sum(x != -1))
+patterns <- c("TT", "GG", "CC", "AA")
+duplets <- sapply(gregexpr(paste(patterns,collapse="|"), 
+                        seqs$x), function(x) sum(x != -1))
+anyT<-sapply(gregexpr("T", seqs$x), function(x) sum(x != -1))
+anyG<-sapply(gregexpr("G", seqs$x), function(x) sum(x != -1))
+anyC<-sapply(gregexpr("C", seqs$x), function(x) sum(x != -1))
+anyA<-sapply(gregexpr("A", seqs$x), function(x) sum(x != -1))
+
+
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last <- data.frame(x =lastStuff(str=seqs$RNA, 1))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first <-data.frame(x =strtrim(seqs$RNA, c(1)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_two <- data.frame(x =lastStuff(str=seqs$RNA, 2))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_two <-data.frame(x =strtrim(seqs$RNA, c(2)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_three<- data.frame(x =lastStuff(str=seqs$RNA, 3))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_three <-data.frame(x =strtrim(seqs$RNA, c(3)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last_four <- data.frame(x =lastStuff(str=seqs$RNA, 4))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first_four <-data.frame(x =strtrim(seqs$RNA, c(4)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+#seqs$FoldG<-errorFoldG$FoldG
+pd<-seqs
+pd$First_base <-seqs_first$x
+pd$First_2_bases <-seqs_first_two$x
+pd$First_3_bases <-seqs_first_three$x
+pd$First_4_bases <-seqs_first_four$x
+pd$Last_base <-seqs_last$x
+pd$Last_2_bases <-seqs_last_two$x
+pd$Last_3_bases <-seqs_last_three$x
+pd$Last_4_bases <-seqs_last_four$x
+pd$TTTT <- TTTT
+pd$CCCC <- CCCC
+pd$GGGG <- GGGG
+pd$AAAA <- AAAA
+pd$rep <- (TTTT+ CCCC+ GGGG+ AAAA)
+pd$duplets <-duplets
+pd$anyT <- anyT
+pd$anyC <-anyC
+pd$anyG <- anyG
+pd$anyA <- anyA
+
+
+
+#Need to fill out the rest of the synth seqs with zeros
+
+Clontech_none <-data.frame(Group.1 =pd$name[which(!pd$name %in% Clontech_100$miRNA)], x = rep(0, length(pd$x[which(!pd$name %in% Clontech_100$miRNA)])), Kit = rep("Clontech", length(pd$name[which(!pd$name %in% Clontech_100$miRNA)])))
+Clontech_100_full<-rbind(Clontech_count, Clontech_none)
+Clontech_100_full<- Clontech_100_full[order(match(Clontech_100_full$Group.1, seqs$name)),]
+
+Illumina_none <-data.frame(Group.1 =pd$name[which(!pd$name %in% Illumina_100$miRNA)], x = rep(0, length(pd$x[which(!pd$name %in% Illumina_100$miRNA)])), Kit = rep("Illumina", length(pd$name[which(!pd$name %in% Illumina_100$miRNA)])))
+Illumina_100_full<-rbind(Illumina_count, Illumina_none)
+Illumina_100_full<- Illumina_100_full[order(match(Illumina_100_full$Group.1, seqs$name)),]
+
+NEB_none <-data.frame(Group.1 =pd$name[which(!pd$name %in% NEB_100$miRNA)], x = rep(0, length(pd$x[which(!pd$name %in% NEB_100$miRNA)])), Kit = rep("NEB", length(pd$name[which(!pd$name %in% NEB_100$miRNA)])))
+NEB_100_full<-rbind(NEB_count, NEB_none)
+NEB_100_full<- NEB_100_full[order(match(NEB_100_full$Group.1, seqs$name)),]
+
+NEXTflex_none <-data.frame(Group.1 =pd$name[which(!pd$name %in% NEXTflex_100$miRNA)], x = rep(0, length(pd$x[which(!pd$name %in% NEXTflex_100$miRNA)])), Kit = rep("NEXTflex", length(pd$name[which(!pd$name %in% NEXTflex_100$miRNA)])))
+NEXTflex_100_full<-rbind(NEXTflex_count, NEXTflex_none)
+NEXTflex_100_full<- NEXTflex_100_full[order(match(NEXTflex_100_full$Group.1, seqs$name)),]
+
+Deduped_none <-data.frame(Group.1 =pd$name[which(!pd$name %in% Deduped_100$miRNA)], x = rep(0, length(pd$x[which(!pd$name %in% Deduped_100$miRNA)])), Kit = rep("Deduped", length(pd$name[which(!pd$name %in% Deduped_100$miRNA)])))
+Deduped_100_full<-rbind(Deduped_count, Deduped_none)
+Deduped_100_full<- Deduped_100_full[order(match(Deduped_100_full$Group.1, seqs$name)),]
+
+Fivepercent_none <-data.frame(Group.1 =pd$name[which(!pd$name %in% Fivepercent_100$miRNA)], x = rep(0, length(pd$x[which(!pd$name %in% Fivepercent_100$miRNA)])), Kit = rep("Fivepercent", length(pd$name[which(!pd$name %in% Fivepercent_100$miRNA)])))
+Fivepercent_100_full<-rbind(Fivepercent_count, Fivepercent_none)
+Fivepercent_100_full<- Fivepercent_100_full[order(match(Fivepercent_100_full$Group.1, seqs$name)),]
+
+seq_counts <-cbind(Clontech_100_full$x, Illumina_100_full$x, NEB_100_full$x, NEXTflex_100_full$x, Deduped_100_full$x, Fivepercent_100_full$x)
+colnames(seq_counts)<- c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent")
+
+yGene <-as.matrix(seq_counts)
+varCompAnalysis = apply(t(yGene),1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  #fit = lm(y ~ GC + length +FoldG + First_base + Last_base+ First_2_bases + First_4_bases + Last_2_bases +  +rep + duplets+ GGGG+ TTTT + CCCC + AAAA +anyA +anyC + anyG + anyT, data=pd)
+  fit = lm(y ~ GC+  + length +FoldG  +First_2_bases + Last_2_bases+ anyA + anyT + anyC + duplets + GGGG + TTTT + CCCC +AAAA , data = pd)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("Kit", "variable")
+#colnames(labels_varexp)<-c("variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+#VarExp$variable <- factor(VarExp$variable,levels = c("GC" ,"length" ,"FoldG" , "First_base", "Last_base", "First_2_bases", "First_4_bases", "Last_2_bases" , "Last_4_bases", "rep", "duplets", "AAAA", "TTTT", "CCCC", "GGGG", 'Residuals'),ordered = TRUE)
+VarExp$KitF <- factor(VarExp$Kit,levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"), ordered = TRUE)
+
+
+seq_counts <-data.frame(seq_counts)
+ variance <- lapply(seq_counts, var)
+ boxplot(variance)
+
+VarExp[which(VarExp$variable == "First_base"),]
+VarExp[which(VarExp$variable == "Last_base"),]
+VarExp[grep("First", VarExp$variable),]
+VarExp[grep("Last", VarExp$variable),]
+
+```
+
+
+```{r, eval=TRUE}
+library(pheatmap)
+varexp2 <-do.call(cbind, lapply(varCompAnalysis, data.frame))
+varexp_PctExp<-varexp2[grep("PctExp", colnames(varexp2))]
+colnames(varexp_PctExp) <- c("Clontech","Illumina","NEB","NEXTflex","Deduped", "Fivepercent")
+varexp_PctExp<- varexp_PctExp[-grep("Residuals",rownames(varexp_PctExp)),]
+#varexp_PctExp<- varexp_PctExp[-grep("Intercept",rownames(varexp_PctExp)),]
+pdf(file =here("Figures/Raw_plots/isomirvariance.pdf"),width=3,height=7, onefile = FALSE)
+pheatmap(varexp_PctExp, main = "Percent of sequence detection variance explained", cluster_cols = FALSE, cluster_rows = FALSE)
+dev.off()
+varexp_PctExp2<-((varexp_PctExp*variance)/mean(unlist(variance)))
+pdf(file =here("Figures/Raw_plots/isomirvariance_weighted.pdf"),width=3,height=7, onefile=FALSE)
+pheatmap(varexp_PctExp2, main = "Percent of sequence detection variance explained \n weighted by overall varaince for each kit", cluster_rows = FALSE, cluster_cols = FALSE)
+dev.off()
+```
+Counts per synth analysis
+
+
+```{r}
+library(sjstats)
+seq_counts_m<-melt(seq_counts)
+anova(lm(seq_counts_m$value~ seq_counts_m$variable)) # significant difference in the number of isomirs for each synthetic sequenec across kits F = 176.37, df = 5, p <2.2e-16
+anova_stats(anova(lm(seq_counts_m$value~ seq_counts_m$variable)))
+countper_synth <-list( Clontech =Clontech_count,Illumina = Illumina_count, NEB =NEB_count, NEXTflex =NEXTflex_count, Deduped =Deduped_count, Fivepercent =Fivepercent_count)
+
+
+ get_test_results<- function(data,test_names) {
+   tresults<<-list()
+   tested_names1<<-list()
+   tested_names2<<-list()
+   for(i in names(test_names)){
+     Kit1<-data[grep(test_names[i][1,], names(data))]
+     Kit2<-data[grep(test_names[i][2,], names(data))]
+     tested_names1[[i]]<<-names(Kit1)
+     tested_names2[[i]]<<-names(Kit2)
+     tresults[[i]]<<-t.test(x=Kit1[[1]], y=Kit2[[1]], paired = TRUE) 
+     tested_kits <<-paste0(tested_names1, "&", tested_names2)
+   }
+ }
+ library(compute.es)
+ get_ttestStats<- function(x) {
+   c(t =format(x$statistic, digits = 2),
+     df = format(x$parameter, digits = 0),
+     p.value = format(x$p.value, scientific = TRUE, digits = 2),
+     bonferroni_thresh = format(.05/length(test_names), digits = 2),
+     sig = ifelse(x$p.value<(.05/length(test_names)), "yes", "no"),
+     t.es.g = tes(x$statistic, n.1 = 662, n.2 = 962)$g)
+ }
+
+
+get_test_names(seq_counts)
+get_test_results(data = seq_counts, test_names = test_names)
+ttestStats_across<-data.frame(lapply(tresults, get_ttestStats))
+colnames(ttestStats_across)<-tested_kits
+t(ttestStats_across)
+
+
+get_perc_diff <-function(data) {
+  percresults<<-list()
+  tested_names1<<-list()
+  tested_names2<<-list()
+  tested_kits<<-list()
+  for(i in names(test_names)){
+    percresults[[i]]<<-((colMeans(data)[ which(names(colMeans(data))==test_names[i][1,])]-colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])/ colMeans(data)[ which(names(colMeans(data))==test_names[i][2,])])*100
+    tested_names1[[i]]<<-test_names[i][1,]
+    tested_names2[[i]]<<-test_names[i][2,]
+    tested_kits[[i]] <<-paste0(tested_names1[[i]], "&", tested_names2[[i]])
+    }
+}
+
+get_perc_diff(data = seq_counts)
+perc_stats<-data.frame(percresults)
+colnames(perc_stats)<-tested_kits
+t(perc_stats)
+
+
+#countper_synth_together$Kit <- factor(countper_synth_together$Kit, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+
+pdf(file =here("Figures/Raw_plots/false_isomiR_counts_over_100reads_including_zeros.pdf"),width=5,height=6)
+ggplot(seq_counts_m, aes(x = variable, y = value, color = variable))  + geom_jitter(width = 0.3) + geom_boxplot( outlier.shape = NA, color = "black")+ ylab("False IsomiRs Detected for Each Synthetic Sequence")+
+  theme(axis.title.x = element_text(size =0), 
+        axis.text.x = element_text(size = 20,angle = 60, hjust = 1, color = "black"),
+        axis.text.y = element_text(size = 20, hjust = 0.5, color = "black"), 
+        axis.title.y = element_text(size =20), 
+        legend.position = "none") + ylim(c(0,75))
+dev.off()
+
+```
+
+
+Which IsomiRs are similar across kits?
+
+```{r}
+IsomiRs_inAll<-pd[which(seq_counts$Clontech>0 &seq_counts$Illumina>0 &seq_counts$NEB>0 & seq_counts$NEXTflex>0 & seq_counts$Deduped>0 &seq_counts$Fivepercent >0),]
+not_IsomiRs_inAll<-pd[which(seq_counts$Clontech<1 &seq_counts$Illumina<1 &seq_counts$NEB<1 & seq_counts$NEXTflex<1 & seq_counts$Deduped<1 &seq_counts$Fivepercent <1),]
+
+not_IsomiRs_inAll <-pd[which(!seqs$name %in% IsomiRs_inAll$name),]
+t.test(not_IsomiRs_inAll$GC, IsomiRs_inAll$GC)# significant - less GC in the not_IsomiRs
+t.test(not_IsomiRs_inAll$length, IsomiRs_inAll$length) #not significant
+t.test(not_IsomiRs_inAll$FoldG, IsomiRs_inAll$FoldG) #not significant
+t.test(not_IsomiRs_inAll$duplets, IsomiRs_inAll$duplets)
+  t.test(not_IsomiRs_inAll$anyT, IsomiRs_inAll$anyT)
+  t.test(not_IsomiRs_inAll$anyA, IsomiRs_inAll$anyA)
+  t.test(not_IsomiRs_inAll$anyC, IsomiRs_inAll$anyC)
+  t.test(not_IsomiRs_inAll$anyG, IsomiRs_inAll$anyG)
+
+  library(GGally)
+ggpairs(seq_counts)
+```
+
+Last and First good Plots of expression relative to the mean!
+```{r, eval = TRUE}
+Clontech_100_full$First_2_bases <- pd$First_2_bases
+Clontech_first<-aggregate(Clontech_100_full$x, by = list(Clontech_100_full$First_2_bases), FUN = sum)
+
+rownames(Clontech_first)<- Clontech_first$Group.1
+Clontech_first$Group.1<- NULL
+Clontech_first$x2<- Clontech_first$x
+pheatmap(Clontech_first)
+library(pheatmap)
+library(here)
+
+seq_counts$bases<- pd$First_2_bases
+seq_counts_first<-aggregate(seq_counts[1:6], by = list(seq_counts$bases), FUN = mean)
+rownames(seq_counts_first) <- seq_counts_first$Group.1
+seq_counts_first$Group.1<-NULL
+pdf(here("Figures/Raw_plots/isomirs_by_first_bases_mean.pdf"), width = 3, height = 7, onefile = FALSE)
+pheatmap(seq_counts_first, cluster_cols = FALSE)
+dev.off()
+
+seq_counts$bases<- pd$First_2_bases
+seq_counts_first<-aggregate(seq_counts[1:6], by = list(seq_counts$bases), FUN = sum)
+rownames(seq_counts_first) <- seq_counts_first$Group.1
+seq_counts_first$Group.1<-NULL
+pdf(here("Figures/Raw_plots/isomirs_by_first_bases_sum.pdf"), width = 3, height = 7, onefile = FALSE)
+pheatmap(seq_counts_first, cluster_cols = FALSE)
+dev.off()
+
+
+###get seq info
+lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+seqs_last <- data.frame(x =lastStuff(str=seqs$RNA, 2))####uncomment to get last n bases
+rownames(seqs_last)<-seqs$name
+seqs_first <-data.frame(x =strtrim(seqs$RNA, c(2)))###uncomment to get first n bases and comment next line
+rownames(seqs_first)<-seqs$name
+
+errorData_toplot<-log2(seq_counts+1)
+get_perc<-function(x) {(x/mean(x))*100}
+errorData_toplot<-data.frame(lapply(errorData_toplot, get_perc))
+errorLast<-cbind(seqs_last, errorData_toplot)
+errorFirst<-cbind(seqs_first, errorData_toplot)
+
+
+
+
+####get Breaks
+aggdata <-aggregate(errorFirst[-1], by=list(errorFirst$x), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
+sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+sorted_aggdata <<- sorted_aggdata
+paletteLength <- 10
+
+myBreaks_below<-seq(to=max(sorted_aggdata[sorted_aggdata<100]), from = round(min(sorted_aggdata))-3, length.out = paletteLength*abs(min(sorted_aggdata))/10)
+myBreaks_above<-seq(to=round(max(sorted_aggdata))+3, from = min(sorted_aggdata[sorted_aggdata>100]), length.out = paletteLength*(max(sorted_aggdata))/10)
+myBreaks_first <- c(myBreaks_below, myBreaks_above)
+
+aggdata <-aggregate(errorLast[-1], by=list(errorLast$x), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
+sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+sorted_aggdata <<- sorted_aggdata
+paletteLength <- paletteLength
+
+myBreaks_below<-seq(to=max(sorted_aggdata[sorted_aggdata<100]), from = round(min(sorted_aggdata))-3, length.out = paletteLength*abs(min(sorted_aggdata))/10)
+myBreaks_above<-seq(to=round(max(sorted_aggdata))+3, from = min(sorted_aggdata[sorted_aggdata>100]), length.out = paletteLength*(max(sorted_aggdata))/10)
+myBreaks_last <- c(myBreaks_below, myBreaks_above)
+
+myBreaks<-append(myBreaks_first,myBreaks_last[which(myBreaks_last>max(myBreaks_first))])
+myBreaks<-append(myBreaks_first[which(myBreaks_first<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks_last[which(myBreaks_last<min(myBreaks))], myBreaks)
+myBreaks<-append(myBreaks,myBreaks_last[which(myBreaks_last>max(myBreaks))])
+
+myColorbelow<-colorRampPalette(c("blue","white"))(length(which(myBreaks<100))) ### change for white 
+myColorabove<-colorRampPalette(c("white","red"))(length(which(myBreaks>100)))### change for white
+myColor<-c(myColorbelow, myColorabove)
+###################
+
+```
+
+relative percentage heatmaps
+```{r}
+library(pheatmap)
+make_heatmap <-function(Data, title){
+aggdata <-aggregate(Data[-1], by=list(Data$x), FUN=mean)
+rownames(aggdata) <- aggdata$Group.1
+aggdata<-aggdata[which(colnames(aggdata)!="Group.1")]
+sorted_aggdata <- aggdata[match(rownames(aggdata), sort(rownames(aggdata))),]  
+#sorted_aggdata <<-sorted_aggdata
+pheatmap(sorted_aggdata, color = myColor, breaks =myBreaks, cluster_cols = FALSE, cluster_rows = TRUE, main = title)
+}
+
+make_heatmap(Data = errorFirst, title = "Consistency of expression of sequences with different first base")
+#First<-ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(90, 110))
+make_heatmap(Data = errorLast, title = "Consistency of expression of sequences with different last base")
+#Last<-ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_bar(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(90, 110))
+
+#Last<-ggplot(melt(t(sorted_aggdata)), aes(x=Var2, y = value, fill = Var1)) + geom_boxplot(stat = "identity")+facet_grid(~Var1)+theme(legend.position="none")+coord_cartesian(ylim=c(90, 110))
+
+firstdata <-melt(errorFirst)
+ggplot(data = firstdata, aes(x=x, y = value, fill = variable)) + geom_jitter() + geom_boxplot()+facet_grid(~variable)+theme(legend.position="none")+labs(y = "Expression relative to the mean", title = "Consistency of synthetic sequence detection with across different first bases", x = NULL)
+
+
+
+lastdata <-melt(errorLast)
+ggplot(data = lastdata, aes(x=x, y = value, fill = variable))  + geom_jitter()+geom_boxplot()+facet_grid(~variable)+theme(legend.position="none") +labs(y = "Expression relative to the mean", title = "Consistency of synthetic sequence detection across different last 2 bases", x = NULL)
+```

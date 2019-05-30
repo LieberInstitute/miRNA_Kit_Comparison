@@ -1,0 +1,225 @@
+---
+title: "Correlationplot"
+author: "Carrie Wright"
+date: "6/18/2018"
+output: html_document
+---
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+load the data
+```{r, eval=TRUE, echo=FALSE}
+library(here)
+Pheno<- read.table(here("Complete_data/Pheno.txt"), header = TRUE)
+miR_counts<-read.table(here("Complete_data/miR.Counts.csv"), header = TRUE, sep = ",")
+
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+
+colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
+colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+miR_counts<-miR_counts[-1,]#remove total miRNA counts row
+
+Pheno$File<-gsub("NEXTflex_deduped", "Deduped", Pheno$File)
+Pheno$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno$Kit)
+Pheno$TriplicateGroup<-gsub("NEXTflex_deduped", "Deduped", Pheno$TriplicateGroup)
+Pheno$miRNAtotal <-miRNAtotal
+ 
+identical(as.character(Pheno$File), colnames(data.frame(miR_counts))) ###Check that these match 
+identical(rownames(miRNAtotal), Pheno$File)
+#remove extra samples
+Pheno<- Pheno[-2,]
+miR_counts<- miR_counts[,-2]
+
+#remove Fivepercent
+#Pheno<- Pheno[1:81,]
+#miR_counts<-miR_counts[,1:81]
+#Pheno<- Pheno[-6,]
+#miR_counts<-miR_counts[,-6]
+# #remove Deduped
+#   Pheno<- Pheno[1:62,]
+# miR_counts<-miR_counts[,1:62]
+# Pheno<- Pheno[-5,]
+# miR_counts<-miR_counts[,-5]
+miR_counts<- miR_counts[which(Pheno$startingAmt =="1000")]
+Pheno <- Pheno[which(Pheno$startingAmt =="1000"),]#grab just the 1000ng samples
+```
+
+ 
+ 
+
+###DESeq2
+```{r, eval=TRUE,warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+dds<-DESeqDataSetFromMatrix(countData = miR_counts, colData = Pheno, design = ~ Kit)
+dds <- estimateSizeFactors(dds)
+norm_miR_counts<-data.frame(counts(dds, normalized = TRUE))
+dim(norm_miR_counts)
+```
+
+###genefilter
+```{r, eval=TRUE, echo = FALSE}
+library(genefilter)
+
+poverafun <- genefilter::pOverA(p = 1, A = 1)#at least one raw read in all samples #379
+ffun <- filterfun(poverafun)
+index <- genefilter(miR_counts, ffun)
+thresh_miR_counts <- norm_miR_counts[index,]
+dim(thresh_miR_counts)
+```
+
+
+
+
+
+###correlationplot
+```{r, eval = TRUE}
+library(GGally)
+set.seed(42)
+log_thresh_miR_counts <-sapply(thresh_miR_counts, log2)
+rownames(log_thresh_miR_counts)<-rownames(thresh_miR_counts)
+thresh_miR_counts<-log_thresh_miR_counts
+thresh_miR_counts<-data.frame(thresh_miR_counts)
+# make average for miR_Counts by kit
+split_kit <- list() 
+for(i in Pheno$Kit) { 
+  split_kit[[i]] <- data.frame(thresh_miR_counts[which(Pheno$Kit==i)]) #raw counts
+} 
+
+avg_1000ng <-lapply(split_kit,rowMeans)
+avg_1000ng<-data.frame(avg_1000ng)
+pdf(file =here("Figures/Raw_plots/correlation.pdf"),width=10.5,height=7)
+ggpairs(avg_1000ng)
+dev.off()
+# estimated density in diagonal
+```
+
+##MA plot
+```{r}
+library(ggplot2)
+
+data_1000ng<-as.matrix(avg_1000ng)
+
+make_plot<-function(dfma){ggplot(dfma, aes(x = A, y = M)) +geom_hline(color = "blue3", yintercept = 0, size=2)+ geom_point(size = 3)+ stat_smooth(se = FALSE, method = "loess", color = "red", size=2)+ ylim(c(-7,7))+  xlim(4,18)+theme(axis.text.x = element_text(size = 40), axis.text.y = element_text(size = 40), axis.title.x = element_text(size = 40), axis.title.y = element_text(size = 40))}
+
+make_MA_df <- function(x, y){
+M = x - y
+A = (x + y)/2
+dfma <<- data.frame(A, M)}
+
+##### manually
+make_MA_df(x =avg_1000ng$Clontech, y = avg_1000ng$Illumina)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_Illumina.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$Clontech, y = avg_1000ng$NEB)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_NEB.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+
+make_MA_df(x =avg_1000ng$Clontech, y = avg_1000ng$NEXTflex)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_NEXTflex.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$Clontech, y = avg_1000ng$Deduped)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_Deduped.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$Clontech, y = avg_1000ng$Fivepercent)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_Clontech_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$Illumina, y = avg_1000ng$NEB)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_NEB.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$Illumina, y = avg_1000ng$NEXTflex)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_NEXTflex.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$Illumina, y = avg_1000ng$Deduped)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_Deduped.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$Illumina, y = avg_1000ng$Fivepercent)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_Illumina_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$NEB, y = avg_1000ng$NEXTflex)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEB_NEXTflex.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$NEB, y = avg_1000ng$Deduped)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEB_Deduped.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$NEB, y = avg_1000ng$Fivepercent)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEB_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$NEXTflex, y = avg_1000ng$Deduped)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEXTflex_Deduped.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$NEXTflex, y = avg_1000ng$Fivepercent)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_NEXTflex_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+
+make_MA_df(x =avg_1000ng$Deduped, y = avg_1000ng$Fivepercent)
+pdf(file =here("Figures/Raw_plots/MA_plots/MA_Deduped_Fivepercent.pdf"),width=6,height=4, onefile=FALSE)
+make_plot(dfma)
+dev.off()
+```
+
+
+###Dendrogram to see how data clusters after normalization of counts
+```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
+library(rafalib)
+library(dendextend)
+library(reshape2)
+
+
+yGene <-as.matrix(thresh_miR_counts)
+miRNAc <- hclust(dist(t(yGene)))
+pdD<-Pheno
+pdD$Kit<-as.factor(pdD$Kit)
+pdD$TriplicateGroup<-as.factor(pdD$TriplicateGroup)
+par(mar=c(10,2,3,0))
+colors<-as.numeric(pdD$Kit)
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 6
+cols = gg_color_hue(n)
+repeat_colors <-function(x){rep(x,6)}
+cols2 <- lapply(cols, repeat_colors)
+cols2<-unlist(cols2)
+cols2 <-cols2[order(miRNAc$order)]
+
+myplclust(miRNAc, labels=pdD$TriplicateGroup,lab.col=(cols2), main = "Counts cluster by library prep kit")
+
+```
+
+

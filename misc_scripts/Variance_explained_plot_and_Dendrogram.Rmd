@@ -1,0 +1,468 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+load the data
+```{r, eval=TRUE, echo=FALSE}
+library(here)
+Pheno<- read.table(here("Complete_data/Pheno.txt"), header = TRUE)
+miR_counts<-read.table(here("Complete_data/miR.Counts.csv"), header = TRUE, sep = ",")
+
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+
+colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
+colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+miR_counts<-miR_counts[-1,]#remove total miRNA counts row
+
+Pheno$File<-gsub("NEXTflex_deduped", "Deduped", Pheno$File)
+Pheno$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno$Kit)
+Pheno$TriplicateGroup<-gsub("NEXTflex_deduped", "Deduped", Pheno$TriplicateGroup)
+Pheno$miRNAtotal <-miRNAtotal
+ 
+identical(as.character(Pheno$File), colnames(data.frame(miR_counts))) ###Check that these match 
+identical(rownames(miRNAtotal), Pheno$File)
+#remove extra samples
+Pheno<- Pheno[-2,]
+miR_counts<- miR_counts[,-2]
+
+#remove Fivepercent
+# Pheno<- Pheno[1:81,]
+# miR_counts<-miR_counts[,1:81]
+# Pheno<- Pheno[-6,]
+# miR_counts<-miR_counts[,-6]
+# #remove Deduped
+#   Pheno<- Pheno[1:62,]
+# miR_counts<-miR_counts[,1:62]
+# Pheno<- Pheno[-5,]
+# miR_counts<-miR_counts[,-5]
+```
+
+ 
+ 
+
+###DESeq2
+```{r, eval=TRUE,warning=FALSE, message=FALSE, echo =FALSE}
+library(DESeq2)
+dds<-DESeqDataSetFromMatrix(countData = miR_counts, colData = Pheno, design = ~ Kit)
+dds <- estimateSizeFactors(dds)
+norm_miR_counts<-data.frame(counts(dds, normalized = TRUE))
+dim(norm_miR_counts)
+```
+
+###genefilter
+```{r, eval=TRUE, echo = FALSE}
+library(genefilter)
+
+poverafun <- genefilter::pOverA(p = 1, A = 1)#at least one raw read in all samples #379
+
+ffun <- filterfun(poverafun)
+index <- genefilter(miR_counts, ffun)
+thresh_miR_counts <- norm_miR_counts[index,]
+dim(thresh_miR_counts)
+
+```
+
+#variance explained plot
+```{r}
+library(ggplot2)
+library(car)
+yGene<-as.matrix(log2(thresh_miR_counts +1))
+
+pd<-Pheno
+colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup", "Triplicate" ,  "Total_miRNA_Mapped_Reads")
+modFull = model.matrix(~Method + Starting_Amount +Total_miRNA_Mapped_Reads, data=pd)
+
+varCompAnalysis = apply(yGene,1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~   Method + Starting_Amount + Batch +Total_miRNA_Mapped_Reads, data=pd)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("miRNA", "variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+VarExp$variable<-gsub("Total_miRNA_Mapped_Reads", "Total miRNA\nMapped Reads", VarExp$variable)
+VarExp$variable<-gsub("Starting_Amount", "Starting\nAmount", VarExp$variable)
+
+VarExp$variable <- factor(VarExp$variable,
+                         levels = c('Method','Starting\nAmount', 'Batch', 'Total miRNA\nMapped Reads','Residuals'),ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = "red"), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=3)
+pdf(file =here("Figures/Raw_plots/Fig.2.variance.pdf"),width=8,height=9)
+plotfull  +
+  labs(y="Percent of Variance Explained", x ="none") + 
+  scale_fill_manual(values = c("red"))+
+  theme(legend.position = "none", axis.title.x=element_blank() , axis.text.y=element_text(size = 30, angle = 0, face = "bold", color = "black"), axis.text.x=element_text(size = 20, angle = 30, face = "bold", colour = "black", hjust = 1), 
+        axis.title.y=element_text(size=30, color = "black", face = "bold"), plot.title = element_text(size = 20, face = "bold"))
+dev.off()
+```
+
+
+
+
+
+
+
+###Dendrogram to see how data clusters after normalization of counts
+```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
+library(rafalib)
+library(dendextend)
+library(reshape2)
+library(here)
+
+miRNAc <- hclust(dist(t(yGene)))
+pdD<-Pheno
+pdD$Kit<-as.factor(pdD$Kit)
+pdD$TriplicateGroup<-as.factor(pdD$TriplicateGroup)
+
+par(mar=c(16,2,3,0))
+#bottom, left, top, right
+colors<-as.numeric(pdD$Kit)
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+n = 6
+cols = gg_color_hue(n)
+
+
+cols2<-gsub("Clontech","#F8766D" ,pdD$Kit)
+cols2<-gsub("Illumina","#B79F00" ,cols2)
+cols2<-gsub("NEB","#00BA38" ,cols2)
+cols2<-gsub("NEXTflex","#00BFC4" ,cols2)
+cols2<-gsub("Deduped","#619CFF" ,cols2)
+cols2<-gsub("Fivepercent","#F564E3" ,cols2)
+
+Pheno<-read.table(here("Pheno_Dendrogram.csv"), header =TRUE, sep = ",")
+pdf(file =here("Figures/Raw_plots/Fig.2.d.pdf"),width=13,height=4.25) 
+myplclust(miRNAc, labels=Pheno$Trip_Group,lab.col=(cols2), cex =.6)
+dev.off()
+```
+
+
+
+
+
+
+
+
+#variance explained plot just Clontech
+```{r}
+library(ggplot2)
+
+Clontech<- norm_miR_counts[which(Pheno$Kit == "Clontech")]
+library(genefilter)
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least one raw read in all Clontech Samples
+
+
+ffun <- filterfun(poverafun)
+index <- genefilter(Clontech, ffun)
+Clontech <- Clontech[index,]
+
+yGene<-as.matrix(log2(Clontech +1))
+
+
+pd<-Pheno[which(Pheno$Kit == "Clontech"),]
+colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup", "Triplicate" ,  "Total_miRNA_Mapped_Reads")
+
+
+varCompAnalysis = apply(yGene,1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~   Starting_Amount + Batch , data=pd)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("miRNA", "variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+Method<-VarExp[which(VarExp$variable == "Method"),]
+ VarExp$variable <- factor(VarExp$variable,
+                         levels = c('Method','Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[1]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_clontech_type2.pdf"),width=7,height=5)
+plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
+  labs(y="Percent of Variance Explained", x ="none") + 
+  scale_fill_manual(values = cols[1])+
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
+        axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
+dev.off()
+VarExp$Method <- rep("Clontech", length(VarExp$miRNA))
+VarExp_Clontech <- VarExp
+```
+
+#variance explained plot just Illumina
+```{r}
+library(ggplot2)
+
+Illumina<- norm_miR_counts[which(Pheno$Kit == "Illumina")]
+library(genefilter)
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least one raw read in all Clontech Samples
+
+
+ffun <- filterfun(poverafun)
+index <- genefilter(Illumina, ffun)
+Illumina <- Illumina[index,]
+
+yGene<-as.matrix(log2(Illumina +1))
+
+
+pd<-Pheno[which(Pheno$Kit == "Illumina"),]
+colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup", "Triplicate" ,  "Total_miRNA_Mapped_Reads")
+
+
+varCompAnalysis = apply(yGene,1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~   Starting_Amount + Batch , data=pd)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("miRNA", "variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+Method<-VarExp[which(VarExp$variable == "Method"),]
+ VarExp$variable <- factor(VarExp$variable,
+                         levels = c('Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[2]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_Illumina_type2.pdf"),width=7,height=5)
+plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
+  labs(y="Percent of Variance Explained", x ="none") + 
+  scale_fill_manual(values = cols[2])+
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
+        axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
+dev.off()
+
+VarExp$Method <- rep("Illumina", length(VarExp$miRNA))
+VarExp_Illumina <- VarExp
+```
+#variance explained plot just NEB
+```{r}
+library(ggplot2)
+
+NEB<- norm_miR_counts[which(Pheno$Kit == "NEB")]
+library(genefilter)
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least one raw read in all Clontech Samples
+
+
+ffun <- filterfun(poverafun)
+index <- genefilter(NEB, ffun)
+NEB <- NEB[index,]
+
+yGene<-as.matrix(log2(NEB +1))
+
+pd<-Pheno[which(Pheno$Kit == "NEB"),]
+colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup", "Triplicate" ,  "Total_miRNA_Mapped_Reads")
+
+
+varCompAnalysis = apply(yGene,1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~   Starting_Amount + Batch , data=pd)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("miRNA", "variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+Method<-VarExp[which(VarExp$variable == "Method"),]
+ VarExp$variable <- factor(VarExp$variable,
+                         levels = c('Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[3]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_NEB_type2.pdf"),width=7,height=5)
+plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
+  labs(y="Percent of Variance Explained", x ="none") + 
+  scale_fill_manual(values = cols[3])+
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
+        axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
+dev.off()
+
+VarExp$Method <- rep("NEB", length(VarExp$miRNA))
+VarExp_NEB <- VarExp
+```
+
+#variance explained plot just NEXTflex
+```{r}
+library(ggplot2)
+
+NEXTflex<- norm_miR_counts[which(Pheno$Kit == "NEXTflex")]
+library(genefilter)
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least one raw read in all Clontech Samples
+
+
+ffun <- filterfun(poverafun)
+index <- genefilter(NEXTflex, ffun)
+NEXTflex <- NEXTflex[index,]
+
+yGene<-as.matrix(log2(NEXTflex +1))
+
+pd<-Pheno[which(Pheno$Kit == "NEXTflex"),]
+colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup", "Triplicate" ,  "Total_miRNA_Mapped_Reads")
+
+
+varCompAnalysis = apply(yGene,1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~   Starting_Amount + Batch , data=pd)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("miRNA", "variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+Method<-VarExp[which(VarExp$variable == "Method"),]
+ VarExp$variable <- factor(VarExp$variable,
+                         levels = c('Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[4]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_NEXTflex_type2.pdf"),width=7,height=5)
+plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
+  labs(y="Percent of Variance Explained", x ="none") + 
+  scale_fill_manual(values = cols[4])+
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
+        axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
+dev.off()
+
+VarExp$Method <- rep("NEXTflex", length(VarExp$miRNA))
+VarExp_NEXTflex <- VarExp
+```
+
+#variance explained plot just Deduped
+```{r}
+library(ggplot2)
+
+Deduped<- norm_miR_counts[which(Pheno$Kit == "Deduped")]
+library(genefilter)
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least one raw read in all Clontech Samples
+
+
+ffun <- filterfun(poverafun)
+index <- genefilter(Deduped, ffun)
+Deduped <- Deduped[index,]
+
+yGene<-as.matrix(log2(Deduped +1))
+
+pd<-Pheno[which(Pheno$Kit == "Deduped"),]
+colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup", "Triplicate" ,  "Total_miRNA_Mapped_Reads")
+
+
+varCompAnalysis = apply(yGene,1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~   Starting_Amount + Batch , data=pd)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("miRNA", "variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+Method<-VarExp[which(VarExp$variable == "Method"),]
+ VarExp$variable <- factor(VarExp$variable,
+                         levels = c('Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[5]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_Deduped_type2.pdf"),width=7,height=5)
+plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
+  labs(y="Percent of Variance Explained", x ="none") + 
+  scale_fill_manual(values = cols[5])+
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
+        axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
+dev.off()
+
+VarExp$Method <- rep("Deduped", length(VarExp$miRNA))
+VarExp_Deduped <- VarExp
+```
+
+#variance explained plot just Fivpercent
+```{r}
+library(ggplot2)
+
+Fivepercent<- norm_miR_counts[which(Pheno$Kit == "Fivepercent")]
+library(genefilter)
+poverafun <- genefilter::pOverA(p = 1, A = 10)#at least one raw read in all Clontech Samples
+
+
+ffun <- filterfun(poverafun)
+index <- genefilter(Fivepercent, ffun)
+Fivepercent <- Fivepercent[index,]
+
+yGene<-as.matrix(log2(Fivepercent +1))
+
+pd<-Pheno[which(Pheno$Kit == "Fivepercent"),]
+colnames(pd)<-c("File", "Method", "Batch", "Starting_Amount", "TriplicateGroup", "Triplicate" ,  "Total_miRNA_Mapped_Reads")
+
+
+varCompAnalysis = apply(yGene,1,function(y) {
+  if(runif(1) < 1e-4) cat(".")
+  fit = lm(y ~   Starting_Amount + Batch, data=pd)
+  full =Anova(fit, type = "II")
+  fullSS =full$"Sum Sq"
+  signif(cbind(full,PctExp=fullSS/
+                 sum(fullSS)*100),3)
+})
+
+
+varexp <-do.call(rbind, lapply(varCompAnalysis, data.frame))
+labels_varexp <- data.frame(do.call('rbind', strsplit(as.character(rownames(varexp)),'.',fixed=TRUE)))
+colnames(labels_varexp)<-c("miRNA", "variable")
+VarExp<-cbind(labels_varexp,varexp$PctExp)
+Method<-VarExp[which(VarExp$variable == "Method"),]
+ VarExp$variable <- factor(VarExp$variable,
+                         levels = c('Starting_Amount', 'Batch', 'Total_miRNA_Mapped_Reads','Residuals'),ordered = TRUE)
+plotfull<-ggplot(VarExp, aes(factor(variable), varexp$PctExp))+ geom_boxplot(aes(fill = cols[6]), notch = TRUE, outlier.shape=NA) +geom_jitter(col = "black", alpha =0.6, position=position_jitter(0.2), cex=1.9)
+pdf(file =here("Figures/Raw_plots/var_Fivepercent_type2.pdf"),width=7,height=5)
+plotfull +ggtitle("Percent of Variance of Each miRNA\n Explained by Influential Factors") +
+  labs(y="Percent of Variance Explained", x ="none") + 
+  scale_fill_manual(values = cols[6])+
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold"), axis.text.x=element_text(size = 10, angle = 0, face = "bold", colour = "black"),
+        axis.title.y=element_text(size=20), plot.title = element_text(size = 20, face = "bold"))
+dev.off()
+
+VarExp$Method <- rep("Fivepercent", length(VarExp$miRNA))
+VarExp_Fivepercent <- VarExp
+```
+
+
+```{r}
+VarExp<-rbind(VarExp_Clontech, VarExp_Illumina, VarExp_NEB, VarExp_NEXTflex, VarExp_Deduped, VarExp_Fivepercent)
+
+VarExp$Method <-factor(VarExp$Method, levels = c("Clontech", "Illumina", "NEB", "NEXTflex", "Deduped", "Fivepercent"))
+pdf(file =here("Figures/Raw_plots/var_kits_together_type2.pdf"),width=15,height=5, onefile=FALSE)
+ggplot(VarExp, aes(x =factor(variable), y =`varexp$PctExp`), colour = "black")+ geom_boxplot(notch = TRUE, outlier.shape=NA, aes(fill = Method)) +geom_jitter(aes(alpha =0.6), width = 0.2) + facet_grid(.~Method)+
+  labs(y="Percent of Variance Explained", x ="none") + 
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.text.y=element_text(size = 30, angle = 0, face = "bold", hjust = 1), axis.text.x=element_text(size = 10, angle = 20, face = "bold", colour = "black", hjust = 1),
+        axis.title.y=element_text(size=20),strip.text.x = element_text(size = 20, colour = "black")) 
+dev.off()
+
+
+```
+

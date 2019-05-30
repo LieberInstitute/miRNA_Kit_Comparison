@@ -1,0 +1,67 @@
+---
+title: "checking UMI long enough"
+author: "Carrie Wright"
+date: "9/18/2018"
+output: html_document
+---
+
+```{r}
+library(here)
+Pheno<- read.table(here("Complete_data/Pheno.txt"), header = TRUE)
+miR_counts<-read.table(here("Complete_data/miR.Counts.csv"), header = TRUE, sep = ",")
+load(here("Complete_data/IsomiR_data/iso_raw.rda")) # not normalized to RPM - had to create in isomiR data anlsyis markdown
+
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+
+colnames(miR_counts)<-gsub("directional_dedupped|directional_deduped", "Deduped", colnames(miR_counts))
+colnames(miR_counts)<-gsub("NEXT_", "NEXTflex_", colnames(miR_counts))
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+miR_counts<-miR_counts[-1,]#remove total miRNA counts row
+
+Pheno$File<-gsub("NEXTflex_deduped", "Deduped", Pheno$File)
+Pheno$Kit<-gsub("NEXTflex_deduped", "Deduped", Pheno$Kit)
+Pheno$TriplicateGroup<-gsub("NEXTflex_deduped", "Deduped", Pheno$TriplicateGroup)
+Pheno$miRNAtotal <-miRNAtotal
+ 
+#remove extra samples
+Pheno<- Pheno[-2,]
+miR_counts<- miR_counts[,-2]
+load(here("Complete_data/IsomiR_data/annotation.rda"))
+
+```
+
+```{r}
+miR_9_5p_counts <-data.frame(t(miR_counts[grep("miR-9-5p", rownames(miR_counts)),]))[which(Pheno$Kit == "NEXTflex"),]
+miR_9_5p_isomiRs <-iso_Raw[grep("miR-9-5p", annotation$miRNA),]
+miR_9_5p_total_isomiR<-data.frame(colSums(miR_9_5p_isomiRs))[which(Pheno$Kit == "NEXTflex"),]
+together<-data.frame(cbind(miR_9_5p_counts, miR_9_5p_total_isomiR))
+rownames(together)<-Pheno$File[which(Pheno$Kit == "NEXTflex")]
+together$percent_iso <-(together$miR_9_5p_total_isomiR/together$miR_9_5p_counts)*100
+together$canonical <- together$miR_9_5p_counts-together$miR_9_5p_total_isomiR
+which(together$canonical>65536)
+
+miR_137_counts <-data.frame(t(miR_counts[grep("miR-137", rownames(miR_counts)),]))[which(Pheno$Kit == "NEXTflex"),]
+miR_137_isomiRs <-iso_Raw[grep("miR-137", annotation$miRNA),]
+miR_137_total_isomiR<-data.frame(colSums(miR_137_isomiRs))[which(Pheno$Kit == "NEXTflex"),]
+miR_137together<-data.frame(cbind(miR_137_counts, miR_137_total_isomiR))
+rownames(together)<-Pheno$File[which(Pheno$Kit == "NEXTflex")]
+miR_137together$percent_iso <-(miR_137together$miR_137_total_isomiR/miR_137together$miR_137_counts)*100
+miR_137together$canonical <- miR_137together$miR_137_counts-miR_137together$miR_137_total_isomiR
+which(miR_137together$canonical>65536)
+#how many cycles for each - all 18 cycles
+together$canonical/(2^18)# assume 100% efficiency
+together$canonical/((2^18)*.5) #assume 50 % efficiency
+together$canonical/((2^18)*.2)# assume 20% efficiency
+together$possible_starting<-together$canonical/((2^18)*.1) # assume 10% efficiency - assume largest possible numbers - still WAY bellow 65,536
+#checking a lower expressing miRNA
+miR_137together$canonical/(2^18) # assume 100% efficiency
+together$total <- miRNAtotal[grep("NEXT", rownames(miRNAtotal)),]
+
+together$can_miR_9_5p_perc_of_miRNA<-(together$canonical/ together$total*100)# at most 17.4 % of miRNA reads
+which(together$canonical>5)
+miR_137together$total <-miRNAtotal[grep("NEXT", rownames(miRNAtotal)),]
+miR_137together$can_miR_137_perc_of_miRNA<-(miR_137together$canonical/miR_137together$total)*100
+miR_137together$possible_starting <- miR_137together$canonical/((2^18)*.1)# assume 10% efficiency - assume largest possible numbers
+```
+

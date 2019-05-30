@@ -1,0 +1,97 @@
+---
+title: "Checking_miRNA_length"
+author: "Carrie Wright"
+date: "11/15/2017"
+output: html_document
+---
+
+
+
+```{r, echo=TRUE}
+#library(pheatmap)
+library(Biostrings)
+mature_miRNAs<-Biostrings::readRNAStringSet(here("mature.fa"))
+#mature_miRNAs<-Biostrings::readRNAStringSet(("/Users/carriewright/Documents/miRNA seq Projects/mature_hsa.fa"))
+mature_miRNAs<-mature_miRNAs[grep("hsa", names(mature_miRNAs)),]
+miRNAs<-as.data.frame(mature_miRNAs)
+lengths<-stringr::str_length(miRNAs$x)
+save(lengths, file = "/Users/carriewright/Documents/miRNA seq Projects/Kit_comparison_May22/miRNA_hsa_lengths.rda")
+```
+
+```{r}
+table(lengths)
+hist(lengths)
+```
+
+Check Percentages
+```{r}
+#22Bases
+(1150/2588)*100
+#21Bases
+(513/2588)*100
+#>22Bases
+
+```
+
+```{r setup, include=FALSE}
+########Old heat map stuff
+
+# lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+# 
+# seqs<-as.data.frame(synth_seq)
+# seqs_order<-order(seqs$x)
+# seqs_ordered<-as.character(seqs$x[order(seqs$x)])
+# seqs_4_ordered <-strtrim(seqs_ordered, c(3))###uncomment to get first n bases and comment next line
+# seqs_4_ordered <-lastStuff(str=seqs_ordered, 3)####uncomment to get last n bases
+# error_ordered<-lapply(synth_error_pheat, function(x) x[order(seqs$x)] )
+# error_ordered<-data.frame(error_ordered)
+# error_for_collapse<-data.frame(seq = seqs_4_ordered, error_ordered)
+# aggdata <-aggregate(error_ordered, by=list(seqs_4_ordered), FUN=mean)
+# errorM<-as.matrix(aggdata[,2:5])
+# rownames(errorM)<-aggdata[,1]
+# 
+# 
+# paletteLength <- 50
+# myColor <- colorRampPalette(c("yellow", "white", "blue"))(paletteLength)
+# myColor <- colorRampPalette(c("blue", "white", "red"))(paletteLength)
+# 
+# myColor <- colorRampPalette(c("blue", "yellow", "red"))(paletteLength)
+# 
+# # length(breaks) == length(paletteLength) + 1
+# # use floor and ceiling to deal with even/odd length pallettelengths
+# myBreaks <- c(seq(min(errorM), 0, length.out=ceiling(paletteLength/2) + 1), 
+#               seq(max(errorM)/paletteLength, max(errorM), length.out=floor(paletteLength/2)))
+
+# Plot the heatmap
+# pheatmap(errorM, color=myColor, breaks=myBreaks)
+# 
+# pheatmap(errorM, cluster_rows=F, cluster_cols=T, main = "First_2")#this does not allow for reordering of the rows.
+# pheatmap(errorM, main = "First_2")#this does not allow for reordering of the rows.
+# 
+# errorM_binary <- sign(errorM)
+# pheatmap(errorM_binary, cluster_rows=F, cluster_cols=T, main = "First_2")
+# 
+# pheatmap(errorM, cluster_rows=F, cluster_cols=T, main = "First_2")
+
+####HEATmap of length#######
+
+
+# library(pheatmap)
+# library(stringr)
+# #below is a function to just have the last n bases of sequences with an example
+# lastStuff<-function(str, n){result <-substr(str,(nchar(str)+1)-n,nchar(str))}
+# 
+# seqs<-as.data.frame(synth_seq)
+# seqs<-as.character(seqs$x)
+# lengths<-stringr::str_length(seqs)
+# seqs_ordered <-seqs[order(lengths)]
+# error_ordered<-lapply(synth_error, function(x) x[order(lengths)] )
+# error_ordered<-data.frame(error_ordered)
+# error_for_collapse<-data.frame(Length = lengths, error_ordered)
+# aggdata <-aggregate(error_for_collapse, by=list(lengths), FUN=mean)
+# errorM<-as.matrix(aggdata[,3:6])
+# rownames(errorM)<-aggdata[,1]
+# 
+# pheatmap(errorM, cluster_rows=F, cluster_cols=T, main = "Length")#this does not allow for reordering of the rows.
+
+```

@@ -1,0 +1,92 @@
+---
+title: "Percentage_analysis"
+author: "Carrie Wright"
+date: "3/2/2018"
+output: html_document
+---
+```{r}
+library(XML)
+miR_counts<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/ReproData/miR.Counts.csv", header = TRUE, sep = ",")
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+report_url<-"/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/Percentage_of_reads_analysis/restrictive_trimming_report.html"
+report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
+report <-as.data.frame(report)
+report <-report[1:9]
+
+report <-report[seq(from =1, to = nrow(report), by = 5),]
+total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
+report$miRNAtotalreads <- miRNAtotal
+report$percentmiRNA <-as.vector((miRNAtotal/total_reads)*100)
+report$percentnoncoding <-as.vector((as.numeric(as.character(report$NULL.Other.Noncoding.RNA.Reads))/total_reads)*100)
+report$percentmRNA<-as.vector((as.numeric(as.character(report$NULL.mRNA.Reads))/total_reads)*100)
+report$percenthairpin <-as.vector((as.numeric(as.character(report$NULL.Hairpin.Reads))/total_reads)*100)
+percentages <-report[grep("percent", colnames(report))]
+rownames(percentages) <- report$NULL.File.name.s.
+percentages$total <- rowSums(percentages)
+
+report_restrictive <-report
+percentages_restrictive <-percentages
+```
+
+```{r}
+### UPDATE WITH NEW DATA!
+library(XML)
+miR_counts<-read.table("/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/DATA_ANALYSIS/Kit_comparison_project/isomiR_data_extended/miR.Counts.csv", header = TRUE, sep = ",")
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+#miRNAtotal <-data.frame(miRNAtotal)
+#miRNAtotal <- miRNAtotal[-(grep("fq.", miRNAtotal$miRNAtotal)),]
+report_url<-"/Users/carriewright/Documents/miRNA seq Projects/miRNA_kit_comparison_project/Percentage_of_reads_analysis/liberal_trimming_report.html"
+report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
+report <- report [-length(report)]
+report <-as.data.frame(report)
+report <-report[1:9]
+
+report <-report[seq(from =1, to = nrow(report), by = 5),]
+total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
+report$miRNAtotalreads <- miRNAtotal
+report$percentmiRNA <-as.vector((miRNAtotal/total_reads)*100)
+report$percentnoncoding <-as.vector((as.numeric(as.character(report$NULL.Other.Noncoding.RNA.Reads))/total_reads)*100)
+report$percentmRNA<-as.vector((as.numeric(as.character(report$NULL.mRNA.Reads))/total_reads)*100)
+report$percenthairpin <-as.vector((as.numeric(as.character(report$NULL.Hairpin.Reads))/total_reads)*100)
+percentages <-report[grep("percent", colnames(report))]
+rownames(percentages) <- report$NULL.File.name.s.
+percentages$total <- rowSums(percentages)
+
+report_liberal<-report
+percentages_liberal <-percentages
+```
+
+```{r}
+### 16 lim data
+library(XML)
+library(here)
+miR_counts<-read.table(here("IsomiR_data_new_incomplete/miR.Counts.csv"), header = TRUE, sep = ",")
+rownames(miR_counts)<- miR_counts$miRNA#make miRNA rownames
+miR_counts<-miR_counts[,2:length(colnames(miR_counts))]#remove miRNA col
+miRNAtotal<-t(miR_counts[1,])#extract the total miRNA counts... in case we want them
+#miRNAtotal <-data.frame(miRNAtotal)
+#miRNAtotal <- miRNAtotal[-(grep("fq.", miRNAtotal$miRNAtotal)),]
+report_url<-here("IsomiR_data_new_incomplete/report.html")
+report<-readHTMLTable(doc = report_url, header = TRUE) #need to read every third line
+report <- report [-length(report)]
+report <-as.data.frame(report)
+report <-report[1:9]
+
+report <-report[seq(from =1, to = nrow(report), by = 5),]
+total_reads <-as.numeric(as.character(report$NULL.Total.Input.Reads))
+report$miRNAtotalreads <- miRNAtotal
+report$percentmiRNA <-as.vector((miRNAtotal/total_reads)*100)
+report$percentnoncoding <-as.vector((as.numeric(as.character(report$NULL.Other.Noncoding.RNA.Reads))/total_reads)*100)
+report$percentmRNA<-as.vector((as.numeric(as.character(report$NULL.mRNA.Reads))/total_reads)*100)
+report$percenthairpin <-as.vector((as.numeric(as.character(report$NULL.Hairpin.Reads))/total_reads)*100)
+percentages <-report[grep("percent", colnames(report))]
+rownames(percentages) <- report$NULL.File.name.s.
+percentages$total <- rowSums(percentages)
+
+report_liberal<-report
+percentages_16lim <-percentages
+```

@@ -1,0 +1,43 @@
+---
+title: "May22_miRNA_info"
+author: "Carrie Wright"
+date: "May 25, 2018"
+output: html_document
+---
+Folding_data
+```{r}
+library(here)
+folding <-readLines(here("mature_hsa_fold_output.txt")) #read in the file from RNA fold
+folding_G <- folding[seq(3, length(folding), 3)] #grab only every thrid line
+folding_Gs <-vapply(strsplit(folding_G," "), `[`, 3, FUN.VALUE=character(1))
+folding_Gs <-gsub(")", "", folding_Gs)
+numericGs <-as.numeric(folding_Gs)
+numericGs[is.na(numericGs)] <- 0
+FoldG<-data.frame(FoldG =numericGs)
+
+```
+
+```{r}
+library(Biostrings)
+library(here)
+library(jaffelab)
+seqs<-Biostrings::readRNAStringSet(here("mature_hsa.fa"))
+seqs_human <-data.frame(seqs)
+#alphabetFrequency(seqs)
+GCcount<-data.frame(letterFrequency(seqs, letters = c("CG"), as.prob = TRUE))
+
+
+#GCcont <-data.frame(GCcont = GCcont)
+length<-width(seqs)
+seqs_human$name <-rownames(seqs_human)
+seqs_human$name <-jaffelab::ss(seqs_human$name,pattern = " ", 1)
+rownames(seqs_human) <- NULL
+seqs_human$GC <- GCcount$C.G
+seqs_human$length <-length
+
+seqs_human$cDNA<-gsub("U", "T", seqs_human$seqs)
+seqs_human$FoldG<-FoldG$FoldG
+save(seqs_human, file = here("hsa_miRNA_info.rda"))
+```
+
+
