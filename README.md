@@ -1,4 +1,6 @@
 # miRNA_Kit_Comparison
+[![DOI](https://zenodo.org/badge/80064322.svg)](https://zenodo.org/badge/latestdoi/80064322)
+
 This project evaluates 4 different commercially available small RNA sequencing kits and two computational preprocessing methods, one to collapse data to the reads present before amplification and a random subset control to determine if differences between the deduped data and the raw data was simply due to using fewer reads.
 
 
